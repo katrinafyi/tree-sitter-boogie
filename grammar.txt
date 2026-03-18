@@ -60,7 +60,7 @@ unary_expr               ::=  ( "-" unary_expr | neg_op unary_expr | coercion_ex
 neg_op                   ::=  ( "!" | "¬" )
 coercion_expr            ::=  array_expr { ":" ( type | nat ) }
 array_expr               ::=  atom_expr { "[" [ exprs [ ":=" expr ] | ":=" expr ] "]" }
-atom_expr                ::=  ( bool_lit | nat | dec | float | bv_lit | ident [ "(" ( expr | ε ) ")" ] | old_expr | arith_coercion_expr | paren_expr | forall_expr | exists_expr | lambda_expr | if_then_else_expr | code_expr )
+atom_expr                ::=  ( bool_lit | nat | dec | dec_float | bv_lit | ident [ "(" ( expr | "" ) ")" ] | old_expr | arith_coercion_expr | paren_expr | forall_expr | exists_expr | lambda_expr | if_then_else_expr | code_expr )
 bool_lit                 ::=  "false" | "true"
 nat                      ::=  digits
 dec                      ::=  ( decimal | dec_float )
@@ -80,7 +80,7 @@ quant_body               ::=  ( type_params [ bound_vars ] | bound_vars ) qsep {
 bound_vars               ::=  attr_typed_idents_wheres
 qsep                     ::=  ( "::" | "•" )
 if_then_else_expr        ::=  "if" expr "then" expr "else" expr
-code_expr                ::=  "|{" { local_vars } spec_block { speck_block  } "}|"
+code_expr                ::=  "|{" { local_vars } spec_block { spec_block  } "}|"
 spec_block               ::=  ident ":" { label_or_cmd } ( "goto" idents | "return" expr ) ";"
 attr_typed_idents_wheres ::=  attr_typed_idents_where { "," attr_typed_idents_where }
 attr_typed_idents_where  ::=  { attr } typed_idents_where
@@ -92,94 +92,11 @@ type_params              ::=  "<" idents ">"
 attr                     ::=  attr_or_trigger
 attr_or_trigger          ::=  "{" ( ":" ident [ attr_param { "," attr_param } ] | exprs ) "}"
 attr_param               ::=  ( string | expr )
-string                   ::=  quote { string_char | "\\\"" } quote
-quote                    ::=  "\""
-string_char              ::=  any character, except newline or quote
+string                   ::=  quote { string_char | '\"' } quote
+quote                    ::=  '"'
+string_char              ::=[^\u0022\u000a\u000d]
 ident                    ::=  [ "\\" ] non_digit { non_digit | digit }
 non_digit                ::=  ( "A…Z" | "a…z" | "'" | "~" | "#" | "$" | "^" | "_" | "." | "?" | "`" )
 digits                   ::=  digit { digit }
 digit                    ::=  "0…9"
 
-Table Of Contents
-
-    The Boogie IVL language reference
-        Types
-            Bitvector types
-            Map types
-            Creating new types
-        Global declarations
-            Axioms
-            Functions
-            Global Variables
-            Implementations
-            Procedures
-            Type aliases
-            Type constructors
-        Expressions
-            Boolean Constants
-                true
-                false
-            Boolean operators
-                Logical and
-                Logical or
-                Logical iff
-                Logical implication
-                Logical not
-                For all
-                Exists
-            Bitvector constants
-            Bitvector operators
-                Concatenation
-                Extraction
-                Other operators
-            Integer constants
-            Integer operators
-                Addition
-                Subtraction
-                Negation
-                Multiplication
-                Integer Division
-                Real Division
-                Modulus
-                Coerce to real
-            Real constants
-            Real operators
-                Addition
-                Subtraction
-                Negation
-                Multiplication
-                Division
-                Power
-                Coerce to Integer
-            Other overloaded operators
-                Equality expressions
-                If then else expressions
-                Old expressions
-        Unstructured implementations
-            Commands
-                Assignment
-                assume
-                assert
-                call
-                call forall
-                goto
-                havoc
-                return
-        Structured implementations
-            Commands
-                break
-                if
-                while
-        Attributes
-        Comments
-        Triggers
-        Inconsistent assumptions
-        Debug information
-        Namespaces
-        Grammar
-
-This Page
-
-    Show Source
-
-Quick search
