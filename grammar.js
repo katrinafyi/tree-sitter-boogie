@@ -18,8 +18,9 @@ export default grammar({
 
   precedences: $ => [
     [$.type, $.var_or_type]
-
   ],
+
+  extras: $ => [$.comment],
 
   rules: {
     /*
@@ -38,6 +39,8 @@ export default grammar({
           $.var_decl,
         ),
       ),
+
+    comment: $ => /\/\/.*\n/,
     /*
      * a:2
      * axiom_decl               ::=  "axiom" ( attr )* proposition ";"
@@ -421,14 +424,17 @@ export default grammar({
      * logical_expr             ::=  rel_expr ( and_op rel_expr ( and_op rel_expr )* | or_op rel_expr ( or_op rel_expr )* )?
      */
     logical_expr: ($) =>
-      seq(
-        $.rel_expr,
-        optional(
-          choice(
-            seq($.and_op, $.rel_expr, repeat(seq($.and_op, $.rel_expr))),
-            seq($.or_op, $.rel_expr, repeat(seq($.or_op, $.rel_expr))),
+      choice(
+        seq(
+          $.rel_expr,
+          optional(
+            choice(
+              seq($.and_op, $.rel_expr, repeat(seq($.and_op, $.rel_expr))),
+              seq($.or_op, $.rel_expr, repeat(seq($.or_op, $.rel_expr))),
+            ),
           ),
         ),
+        $.if_then_else_expr
       ),
     /*
      * a:49
@@ -539,7 +545,6 @@ export default grammar({
         $.forall_expr,
         $.exists_expr,
         $.lambda_expr,
-        $.if_then_else_expr,
         $.code_expr,
       ),
     /*
@@ -644,7 +649,7 @@ export default grammar({
      * a:82
      * if_then_else_expr        ::=  "if" expr "then" expr "else" expr
      */
-    if_then_else_expr: ($) => seq("if", $.expr, "then", $.expr, "else", $.expr),
+    if_then_else_expr: ($) => seq("if", $.expr, "then", $.expr, "else", $.logical_expr),
     /*
      * a:83
      * code_expr                ::=  "|{" ( local_vars )* spec_block ( spec_block  )* "}|"
