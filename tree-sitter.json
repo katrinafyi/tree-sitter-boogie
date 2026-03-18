@@ -1,0 +1,38 @@
+{
+  "$schema": "https://tree-sitter.github.io/tree-sitter/assets/schemas/config.schema.json",
+  "grammars": [
+    {
+      "name": "boogie",
+      "camelcase": "Boogie",
+      "title": "Boogie",
+      "scope": "source.boogie",
+      "file-types": [
+        "boogie"
+      ],
+      "injection-regex": "^boogie$",
+      "class-name": "TreeSitterBoogie"
+    }
+  ],
+  "metadata": {
+    "version": "0.1.0",
+    "license": "MIT",
+    "description": "Tree-sitter grammar for the Boogie IVL",
+    "authors": [
+      {
+        "name": "Kait Lam"
+      }
+    ],
+    "links": {
+      "repository": "https://github.com/tree-sitter/tree-sitter-boogie"
+    }
+  },
+  "bindings": {
+    "c": true,
+    "go": true,
+    "node": true,
+    "python": true,
+    "rust": true,
+    "swift": true,
+    "zig": false
+  }
+}
