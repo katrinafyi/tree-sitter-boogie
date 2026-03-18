@@ -11,11 +11,6 @@
 export default grammar({
   name: "boogie",
 
-  conflicts: $ => [
-    [$.type],
-    [$.type_args]
-  ],
-
   precedences: $ => [
     [$.type, $.var_or_type]
   ],
@@ -345,7 +340,7 @@ export default grammar({
      * type                     ::=  ( type_atom | ident ( type_args )? | map_type )
      */
     type: ($) =>
-      choice($.type_atom, seq($.ident, optional($.type_args)), $.map_type),
+      choice($.type_atom, $.map_type),
     /*
      * a:38
      * type_args                ::=  ( type_atom ( type_args )? | ident ( type_args )? | map_type )
@@ -758,8 +753,7 @@ export default grammar({
      * ident                    ::=  ( "\\" )? non_digit ( non_digit | digit )*
      * non_digit                ::=  ( "A…Z" | "a…z" | "'" | "~" | "#" | "$" | "^" | "_" | "." | "?" | "`" )
      */
-    ident: ($) =>
-      /\\?[A-Za-z'~#$^_.?`][\dA-Za-z'~#$^_.?`]*/,
+    ident: ($) => /\\?[A-Za-z'~#$^_.?`@][\dA-Za-z'~#$^_.?`@]*/,
     /*
      * a:100
      * digits                   ::=  digit ( digit )*
