@@ -20,7 +20,9 @@ export default grammar({
     [$.type, $.var_or_type]
   ],
 
-  extras: $ => [$.comment],
+  extras: $ => [$.comment, /\s+/],
+
+  word: $ => $.ident,
 
   rules: {
     /*
@@ -358,7 +360,7 @@ export default grammar({
      * a:39
      * type_atom                ::=  ( "int" | "real" | "bool" | "(" type ")" )
      */
-    type_atom: ($) => choice("int", "real", "bool", seq("(", $.type, ")")),
+    type_atom: ($) => choice("int", "real", "bool", $.bvtype, seq("(", $.type, ")")),
     /*
      * a:40
      * map_type                 ::=  ( type_params )? "[" ( type ( "," type )* )? "]" type
@@ -538,7 +540,7 @@ export default grammar({
         $.nat,
         $.dec,
         $.bv_lit,
-        seq($.ident, optional(seq("(", optional($.expr), ")"))),
+        seq($.ident, optional(seq("(", optional(seq($.expr, repeat(seq(",", $.expr, optional(","))))), ")"))),
         $.old_expr,
         $.arith_coercion_expr,
         $.paren_expr,
@@ -566,18 +568,17 @@ export default grammar({
      * a:67
      * decimal                  ::=  digits "e" ( "-" )? digits
      */
-    decimal: ($) => seq($.digits, "e", optional("-"), $.digits),
+    decimal: ($) => /\d+e-?\d+/,
     /*
      * a:68
      * dec_float                ::=  digits "." digits ( "e" ( "-" )? digits )?
      */
-    dec_float: ($) =>
-      seq($.digits, ".", $.digits, optional(seq("e", optional("-"), $.digits))),
+    dec_float: ($) => /\d+\.\d+(?:e-?\d+)?/,
     /*
      * a:69
      * bv_lit                   ::=  digits "bv" digits
      */
-    bv_lit: ($) => seq($.digits, "bv", $.digits),
+    bv_lit: ($) => seq($.digits, $.bvtype),
     /*
      * a:70
      * old_expr                 ::=  "old" "(" expr ")"
@@ -740,7 +741,7 @@ export default grammar({
      * a:95
      * string                   ::=  quote ( string_char | '\"' )* quote
      */
-    string: ($) => seq($.quote, repeat(choice($.string_char, '\"')), $.quote),
+    string: ($) => /"([^"\\]|\\["\\fnrt])*"/, // from bnfc
     /*
      * a:96
      * quote                    ::=  '"'
@@ -751,27 +752,18 @@ export default grammar({
      * string_char              ::=[^\u0022\u000a\u000d]
      */
     string_char: ($) => /[^\u0022\u000a\u000d]/,
+    bvtype: $ => /bv\d+/,
     /*
      * a:98
      * ident                    ::=  ( "\\" )? non_digit ( non_digit | digit )*
-     */
-    ident: ($) =>
-      prec.left(seq(optional("\\"), $.non_digit, repeat(choice($.non_digit, $.digit)))),
-    /*
-     * a:99
      * non_digit                ::=  ( "A…Z" | "a…z" | "'" | "~" | "#" | "$" | "^" | "_" | "." | "?" | "`" )
      */
-    non_digit: ($) =>
-      choice("A…Z", "a…z", "'", "~", "#", "$", "^", "_", ".", "?", "`"),
+    ident: ($) =>
+      /\\?[A-Za-z'~#$^_.?`][\dA-Za-z'~#$^_.?`]*/,
     /*
      * a:100
      * digits                   ::=  digit ( digit )*
      */
-    digits: ($) => seq($.digit, repeat($.digit)),
-    /*
-     * a:101
-     * digit                    ::=  "0…9"
-     */
-    digit: ($) => "0…9",
+    digits: ($) => /\d+/,
   },
 });
