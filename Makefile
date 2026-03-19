@@ -14,11 +14,11 @@ RR_ZIP ?= https://www.bottlecaps.de/rr/download/rr-2.6-java11.zip
 
 Boogie/Source/Core/BoogiePL.atg:
 	rm -rf Boogie
-	cd `mktemp -d` && wget -O - $(BOOGIE_TAR) | tar xzf - && mv boogie-* $(CURDIR)/Boogie
+	cd `mktemp -d` && wget -nv -O - $(BOOGIE_TAR) | tar xzf - && mv boogie-* $(CURDIR)/Boogie
 
 CocoR-CPP/src/Coco.cpp:
 	rm -rf CocoR-CPP
-	cd `mktemp -d` && wget -O - $(COCOR_CPP_TAR) | tar xzf - && mv CocoR-CPP-* $(CURDIR)/CocoR-CPP
+	cd `mktemp -d` && wget -nv -O - $(COCOR_CPP_TAR) | tar xzf - && mv CocoR-CPP-* $(CURDIR)/CocoR-CPP
 
 CocoR-CPP/src/Coco: CocoR-CPP/src/Coco.cpp
 	make -C CocoR-CPP/src
@@ -32,7 +32,7 @@ boogie.ebnf: fix-ebnf.sh unpatched.ebnf
 
 tree-sitter-ebnf-generator/src/lua/parse_grammar.lua:
 	rm -rf tree-sitter-ebnf-generator
-	cd `mktemp -d` && wget -O - $(EBNF_GEN) | tar xzf - \
+	cd `mktemp -d` && wget -nv -O - $(EBNF_GEN) | tar xzf - \
 		&& mv tree-sitter-ebnf-generator-* $(CURDIR)/tree-sitter-ebnf-generator
 
 unpatched.js: tree-sitter-ebnf-generator/src/lua/parse_grammar.lua boogie.ebnf fix-grammar.sh
@@ -48,7 +48,7 @@ fix-grammar.diff:
 	diff -u unpatched.js grammar.js > $@; if [ $$? -gt 1 ]; then false; fi
 
 rr.war:
-	t=`mktemp` && wget -O $$t $(RR_ZIP) && unzip $$t $@
+	t=`mktemp` && wget -nv -O $$t $(RR_ZIP) && unzip $$t $@
 
 rr/index.html: unpatched.ebnf rr.war
 	t=`mktemp` && java -jar rr.war -html -noembedded $< > $$t && unzip -d rr $$t
