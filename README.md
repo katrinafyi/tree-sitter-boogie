@@ -30,8 +30,8 @@ To generate the railroad diagram, you can use:
 make rr/index.html
 ```
 The railroad diagram is generated from the initial EBNF, so it is an accurate
-representation of the official BoogiePL.atg, but may differ slightly from the Tree-sitter
-grammar.
+representation of the official BoogiePL.atg. However, it may differ slightly
+from the Tree-sitter grammar because of the applied patches.
 
 [from BoogiePL.atg]: https://github.com/boogie-org/boogie/blob/master/Source/Core/BoogiePL.atg
 [mingodad/CocoR-CPP]: https://github.com/mingodata/CocoR-CPP

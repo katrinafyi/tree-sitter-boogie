@@ -1,6 +1,13 @@
 .PHONY: all clean distclean
 all: grammar.js src/parser.c
 
+force:
+	rm -rf grammar.js
+	$(MAKE) grammar.js
+
+test: src/parser.c
+	tree-sitter test
+
 clean: clean-treesitter
 	rm -rf boogie.ebnf unpatched.js unpatched.ebnf rr.ebnf
 	rm -rf CocoR-CPP/src/Coco
@@ -22,7 +29,7 @@ CocoR-CPP/src/Coco.cpp:
 	cd `mktemp -d` && wget -nv -O - $(COCOR_CPP_TAR) | tar xzf - && mv CocoR-CPP-* $(CURDIR)/CocoR-CPP
 
 CocoR-CPP/src/Coco: CocoR-CPP/src/Coco.cpp
-	make -C CocoR-CPP/src
+	$(MAKE) -C CocoR-CPP/src
 
 unpatched.ebnf: CocoR-CPP/src/Coco Boogie/Source/Core/BoogiePL.atg fix-ebnf.sh
 	$< Boogie/Source/Core/BoogiePL.atg -genRREBNF -frames CocoR-CPP/src
@@ -40,7 +47,6 @@ unpatched.js: tree-sitter-ebnf-generator/src/lua/parse_grammar.lua boogie.ebnf f
 	$< boogie.ebnf \
 		| ./fix-grammar.sh > $@
 
-.PHONY: grammar.js
 grammar.js: unpatched.js fix-grammar.diff
 	cp $< $@
 	if ! patch $@ --merge -i fix-grammar.diff; then touch -d '2004-02-29 00:00:00' $@; false; fi
