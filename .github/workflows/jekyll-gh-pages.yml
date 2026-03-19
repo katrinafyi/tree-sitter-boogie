@@ -34,6 +34,10 @@ jobs:
       - uses: actions/configure-pages@v5
 
       - run: make rr/index.html
+      - name: rm -rf !(README.md|rr)
+        run: |
+          shopt -s extglob
+          rm -rf !(README.md|rr)
 
       - uses: actions/jekyll-build-pages@v1
         with:

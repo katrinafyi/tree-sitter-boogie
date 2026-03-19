@@ -1,4 +1,4 @@
-.PHONY: all clean distclean
+.PHONY: all force test clean distclean
 all: grammar.js src/parser.c
 
 force:
@@ -9,7 +9,7 @@ test: treesitter
 	tree-sitter test
 
 clean: clean-treesitter
-	rm -rf boogie.ebnf unpatched.js unpatched.ebnf rr.ebnf
+	rm -rf boogie.ebnf unpatched.js unpatched.ebnf rr.ebnf rr
 	rm -rf CocoR-CPP/src/Coco
 
 distclean: clean

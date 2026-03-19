@@ -5,6 +5,7 @@
 /unpatched.js
 /unpatched.ebnf
 /rr.war
+/rr
 
 # Rust artifacts
 target/
