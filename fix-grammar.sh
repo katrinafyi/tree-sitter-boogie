@@ -17,7 +17,7 @@ cat <<EOF
 const regexseq = (...args) => new RegExp("(?:" + args.map(x => x.source).join("") + ")");
 const regexrepeat = (arg) => new RegExp("(?:" + arg.source + ")*");
 const regexchoice = (...args) => new RegExp("(?:" + args.map(x => x.source).join("|") + ")");
-const regexoptional = arg => new RegExp("(?:" + arg + ")?");
+const regexoptional = arg => new RegExp("(?:" + arg.source + ")?");
 
 
 EOF

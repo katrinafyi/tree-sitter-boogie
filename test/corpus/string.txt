@@ -1,0 +1,135 @@
+===
+string basic
+===
+
+function f() returns (int) {
+  "a!!!!!!!!\\"
+}
+
+---
+
+(BoogiePL
+  (Function
+    (Ident
+      (ident))
+    (VarOrType
+      (Type
+        (TypeAtom)))
+    (Expression
+      (ImpliesExpression
+        (LogicalExpression
+          (RelationalExpression
+            (BvTerm
+              (Term
+                (Factor
+                  (Power
+                    (IsConstructor
+                      (UnaryExpression
+                        (CoercionExpression
+                          (ArrayExpression
+                            (AtomExpression
+                              (string))))))))))))))))
+
+===
+string escaped quote
+===
+
+function f() returns (int) {
+  "a!!!!!!!!\"aaa"
+}
+
+---
+
+(BoogiePL
+  (Function
+    (Ident
+      (ident))
+    (VarOrType
+      (Type
+        (TypeAtom)))
+    (Expression
+      (ImpliesExpression
+        (LogicalExpression
+          (RelationalExpression
+            (BvTerm
+              (Term
+                (Factor
+                  (Power
+                    (IsConstructor
+                      (UnaryExpression
+                        (CoercionExpression
+                          (ArrayExpression
+                            (AtomExpression
+                              (string))))))))))))))))
+
+===
+string non-escaped quote - backslash - hmmmmmmm
+===
+
+function f() returns (int) {
+  "a!!!!!!!!\\"aaa"
+}
+---
+
+(BoogiePL
+  (Function
+    (Ident
+      (ident))
+    (VarOrType
+      (Type
+        (TypeAtom)))
+    (Expression
+      (ImpliesExpression
+        (LogicalExpression
+          (RelationalExpression
+            (BvTerm
+              (Term
+                (Factor
+                  (Power
+                    (IsConstructor
+                      (UnaryExpression
+                        (CoercionExpression
+                          (ArrayExpression
+                            (AtomExpression
+                              (string))))))))))))))))
+
+===
+string non-escaped quote - no backslash
+:error
+===
+
+function f() returns (int) {
+  "a!!!!!!!!"aa"
+}
+---
+
+===
+string with space
+===
+
+function f() returns (int) {
+  "     ! -_aa"
+}
+---
+
+(BoogiePL
+  (Function
+    (Ident
+      (ident))
+    (VarOrType
+      (Type
+        (TypeAtom)))
+    (Expression
+      (ImpliesExpression
+        (LogicalExpression
+          (RelationalExpression
+            (BvTerm
+              (Term
+                (Factor
+                  (Power
+                    (IsConstructor
+                      (UnaryExpression
+                        (CoercionExpression
+                          (ArrayExpression
+                            (AtomExpression
+                              (string))))))))))))))))

@@ -1,0 +1,28 @@
+==================
+Basic usage
+==================
+
+function f() returns (bool) { true }
+
+---
+
+(BoogiePL
+  (Function
+    (Ident
+      (ident))
+    (VarOrType
+      (Type
+        (TypeAtom)))
+    (Expression
+      (ImpliesExpression
+        (LogicalExpression
+          (RelationalExpression
+            (BvTerm
+              (Term
+                (Factor
+                  (Power
+                    (IsConstructor
+                      (UnaryExpression
+                        (CoercionExpression
+                          (ArrayExpression
+                            (AtomExpression)))))))))))))))
