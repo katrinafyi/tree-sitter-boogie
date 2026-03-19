@@ -63,5 +63,6 @@ rr.ebnf: unpatched.ebnf to-hash-x.sh
 rr/index.html: rr.ebnf rr.war
 	rm -rf rr
 	t=`mktemp` && java -jar rr.war -html -noembedded $< > $$t && unzip -d rr $$t
+	sed -i 's|xlink:href="#|xlink:href="https://katrinafyi.github.io/tree-sitter-boogie/rr/#|g' rr/diagram/*.svg
 
 include Makefile.treesitter
