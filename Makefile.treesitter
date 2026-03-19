@@ -47,7 +47,7 @@ ifneq ($(filter $(shell uname),FreeBSD NetBSD DragonFly),)
 	PCLIBDIR := $(PREFIX)/libdata/pkgconfig
 endif
 
-all: lib$(LANGUAGE_NAME).a lib$(LANGUAGE_NAME).$(SOEXT) $(LANGUAGE_NAME).pc
+treesitter: lib$(LANGUAGE_NAME).a lib$(LANGUAGE_NAME).$(SOEXT) $(LANGUAGE_NAME).pc
 
 lib$(LANGUAGE_NAME).a: $(OBJS)
 	$(AR) $(ARFLAGS) $@ $^
@@ -69,7 +69,7 @@ $(LANGUAGE_NAME).pc: bindings/c/$(LANGUAGE_NAME).pc.in
 $(PARSER): grammar.js
 	$(TS) generate $^
 
-install: all
+install: treesitter
 	install -d '$(DESTDIR)$(DATADIR)'/tree-sitter/queries/boogie '$(DESTDIR)$(INCLUDEDIR)'/tree_sitter '$(DESTDIR)$(PCLIBDIR)' '$(DESTDIR)$(LIBDIR)'
 	install -m644 bindings/c/tree_sitter/$(LANGUAGE_NAME).h '$(DESTDIR)$(INCLUDEDIR)'/tree_sitter/$(LANGUAGE_NAME).h
 	install -m644 $(LANGUAGE_NAME).pc '$(DESTDIR)$(PCLIBDIR)'/$(LANGUAGE_NAME).pc
@@ -88,11 +88,11 @@ uninstall:
 		'$(DESTDIR)$(PCLIBDIR)'/$(LANGUAGE_NAME).pc
 	$(RM) -r '$(DESTDIR)$(DATADIR)'/tree-sitter/queries/boogie
 
-clean:
+clean-treesitter:
 	$(RM) $(OBJS) $(LANGUAGE_NAME).pc lib$(LANGUAGE_NAME).a lib$(LANGUAGE_NAME).$(SOEXT)
-	$(RM) -rf $(SRC_DIR)
+	$(RM) -r $(SRC_DIR) build
 
 test:
 	$(TS) test
 
-.PHONY: all install uninstall clean test
+.PHONY: treesitter install uninstall clean-treesitter test

@@ -1,4 +1,8 @@
-src
+/src
+/Boogie
+/CocoR-CPP
+/tree-sitter-ebnf-generator
+boogie*.ebnf
 
 # Rust artifacts
 target/
