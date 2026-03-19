@@ -13,7 +13,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: sudo apt-get install --no-install-recommends lua5.4 tree-sitter-cli
+      - run: sudo apt-get install --no-install-recommends lua5.4
+      - run: sudo npm i -g tree-sitter-cli
       - run: make force
       - run: make test
       - run: git diff -- grammar.js
