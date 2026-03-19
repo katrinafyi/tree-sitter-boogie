@@ -5,7 +5,7 @@ force:
 	rm -rf grammar.js
 	$(MAKE) grammar.js
 
-test: src/parser.c
+test: treesitter
 	tree-sitter test
 
 clean: clean-treesitter
