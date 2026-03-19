@@ -1,5 +1,5 @@
 .PHONY: all clean distclean
-all: boogie.ebnf
+all: grammar.js src/parser.c
 
 clean: clean-treesitter
 	rm -rf boogie.ebnf grammar.js unpatched.js
