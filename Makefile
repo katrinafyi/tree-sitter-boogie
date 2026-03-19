@@ -3,7 +3,7 @@
 all: boogie.ebnf
 
 clean: clean-treesitter
-	rm -rf Boogie CocoR-CPP boogie.ebnf tree-sitter-ebnf-generator
+	rm -rf Boogie CocoR-CPP boogie.ebnf tree-sitter-ebnf-generator grammar.js grammar.js.orig
 
 BOOGIE_TAR ?= https://github.com/boogie-org/boogie/archive/bc7292d41e938338e27f0771bd195ca9dace16dd.tar.gz
 COCOR_CPP_TAR ?= https://github.com/rina-forks/CocoR-CPP/archive/master.tar.gz
@@ -29,8 +29,15 @@ tree-sitter-ebnf-generator/src/lua/parse_grammar.lua:
 	cd `mktemp -d` && wget -O - $(EBNF_GEN) | tar xzf - \
 		&& mv tree-sitter-ebnf-generator-* $(CURDIR)/tree-sitter-ebnf-generator
 
-grammar.js: tree-sitter-ebnf-generator/src/lua/parse_grammar.lua boogie.ebnf fix-grammar
+unpatched.js: tree-sitter-ebnf-generator/src/lua/parse_grammar.lua boogie.ebnf fix-grammar.sh
 	$< boogie.ebnf \
 		| ./fix-grammar.sh > $@
+
+grammar.js: unpatched.js fix-grammar.diff
+	cp $< $@
+	if ! patch $@ --merge -i fix-grammar.diff; then touch -d '2004-02-29 00:00:00' $@; false; fi
+
+fix-grammar.diff:
+	diff -u unpatched.js grammar.js > $@; if [ $$? -gt 1 ]; then false; fi
 
 include Makefile.treesitter
