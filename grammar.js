@@ -993,13 +993,13 @@ module.exports = grammar({
       ),
     /*
      * boogie.ebnf:125
-     * decimal ::=  [0-9] [0-9]* [e] [\u002d]? [0-9] [0-9]*
+     * decimal ::=  [0-9] [0-9]* [e] [-]? [0-9] [0-9]*
      */
     decimal: $ =>
-      regexseq(/[0-9]/, regexrepeat(/[0-9]/), /[e]/, regexoptional(/[\u002d]/), /[0-9]/, regexrepeat(/[0-9]/)),
+      regexseq(/[0-9]/, regexrepeat(/[0-9]/), /[e]/, regexoptional(/[-]/), /[0-9]/, regexrepeat(/[0-9]/)),
     /*
      * boogie.ebnf:126
-     * dec_float ::=  [0-9] [0-9]* [.] [0-9] [0-9]* ( [e] [\u002d]? [0-9] [0-9]* )?
+     * dec_float ::=  [0-9] [0-9]* [.] [0-9] [0-9]* ( [e] [-]? [0-9] [0-9]* )?
      */
     dec_float: $ =>
       regexseq(
@@ -1008,16 +1008,16 @@ module.exports = grammar({
         /[.]/,
         /[0-9]/,
         regexrepeat(/[0-9]/),
-        regexoptional(regexseq(/[e]/, regexoptional(/[\u002d]/), /[0-9]/, regexrepeat(/[0-9]/)))
+        regexoptional(regexseq(/[e]/, regexoptional(/[-]/), /[0-9]/, regexrepeat(/[0-9]/)))
       ),
     /*
      * boogie.ebnf:127
-     * float ::=  [\u002d]? [0] [x] [0-9A-Fa-f] [0-9A-Fa-f]* [.] [0-9A-Fa-f] [0-9A-Fa-f]* [e] [\u002d]? [0-9] [0-9]* [f] [0-9] [0-9]* [e] [0-9] [0-9]* | [0] [N] [a] [N] [0-9] [0-9]* [e] [0-9] [0-9]* | [0] [n] [a] [n] [0-9] [0-9]* [e] [0-9] [0-9]* | [0] [+] [o] [o] [0-9] [0-9]* [e] [0-9] [0-9]* | [0] [\u002d] [o] [o] [0-9] [0-9]* [e] [0-9] [0-9]*
+     * float ::=  [-]? [0] [x] [0-9A-Fa-f] [0-9A-Fa-f]* [.] [0-9A-Fa-f] [0-9A-Fa-f]* [e] [-]? [0-9] [0-9]* [f] [0-9] [0-9]* [e] [0-9] [0-9]* | [0] [N] [a] [N] [0-9] [0-9]* [e] [0-9] [0-9]* | [0] [n] [a] [n] [0-9] [0-9]* [e] [0-9] [0-9]* | [0] [+] [o] [o] [0-9] [0-9]* [e] [0-9] [0-9]* | [0] [-] [o] [o] [0-9] [0-9]* [e] [0-9] [0-9]*
      */
     float: $ =>
       regexchoice(
         regexseq(
-          regexoptional(/[\u002d]/),
+          regexoptional(/[-]/),
           /[0]/,
           /[x]/,
           /[0-9A-Fa-f]/,
@@ -1026,7 +1026,7 @@ module.exports = grammar({
           /[0-9A-Fa-f]/,
           regexrepeat(/[0-9A-Fa-f]/),
           /[e]/,
-          regexoptional(/[\u002d]/),
+          regexoptional(/[-]/),
           /[0-9]/,
           regexrepeat(/[0-9]/),
           /[f]/,
@@ -1071,7 +1071,7 @@ module.exports = grammar({
         ),
         regexseq(
           /[0]/,
-          /[\u002d]/,
+          /[-]/,
           /[o]/,
           /[o]/,
           /[0-9]/,
