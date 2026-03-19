@@ -2,7 +2,7 @@
 all: grammar.js src/parser.c
 
 clean: clean-treesitter
-	rm -rf boogie.ebnf grammar.js unpatched.js
+	rm -rf boogie.ebnf unpatched.js
 
 distclean: clean
 	rm -rf Boogie CocoR-CPP tree-sitter-ebnf-generator
@@ -35,6 +35,7 @@ unpatched.js: tree-sitter-ebnf-generator/src/lua/parse_grammar.lua boogie.ebnf f
 	$< boogie.ebnf \
 		| ./fix-grammar.sh > $@
 
+.PHONY: grammar.js
 grammar.js: unpatched.js fix-grammar.diff
 	cp $< $@
 	if ! patch $@ --merge -i fix-grammar.diff; then touch -d '2004-02-29 00:00:00' $@; false; fi
