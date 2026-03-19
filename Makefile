@@ -2,7 +2,8 @@
 all: grammar.js src/parser.c
 
 clean: clean-treesitter
-	rm -rf boogie.ebnf unpatched.js unpatched.ebnf
+	rm -rf boogie.ebnf unpatched.js unpatched.ebnf rr.ebnf
+	rm -rf CocoR-CPP/src/Coco
 
 distclean: clean
 	rm -rf Boogie CocoR-CPP tree-sitter-ebnf-generator rr.war
@@ -50,7 +51,11 @@ fix-grammar.diff:
 rr.war:
 	t=`mktemp` && wget -nv -O $$t $(RR_ZIP) && unzip $$t $@
 
-rr/index.html: unpatched.ebnf rr.war
+rr.ebnf: unpatched.ebnf to-hash-x.sh
+	./to-hash-x.sh < $< > $@
+
+rr/index.html: rr.ebnf rr.war
+	rm -rf rr
 	t=`mktemp` && java -jar rr.war -html -noembedded $< > $$t && unzip -d rr $$t
 
 include Makefile.treesitter

@@ -961,10 +961,14 @@ module.exports = grammar({
       seq(repeat($.Attribute), $.Ident),
     /*
      * boogie.ebnf:121
-     * ident ::=  [\\]? [#-$'.?A-Z^-z~] ( [#-$'.?A-Z^-z~] | [0-9] )*
+     * ident ::=  [\\]? [\u0023-$'.?A-Z^-z~] ( [\u0023-$'.?A-Z^-z~] | [0-9] )*
      */
     ident: $ =>
-      regexseq(regexoptional(/[\\]/), /[#-$'.?A-Z^-z~]/, regexrepeat(regexchoice(/[#-$'.?A-Z^-z~]/, /[0-9]/))),
+      regexseq(
+        regexoptional(/[\\]/),
+        /[\u0023-$'.?A-Z^-z~]/,
+        regexrepeat(regexchoice(/[\u0023-$'.?A-Z^-z~]/, /[0-9]/))
+      ),
     /*
      * boogie.ebnf:122
      * bvlit ::=  [0-9] [0-9]* [b] [v] [0-9] [0-9]*
@@ -979,23 +983,23 @@ module.exports = grammar({
       regexseq(/[0-9]/, regexrepeat(/[0-9]/)),
     /*
      * boogie.ebnf:124
-     * string ::=  ["] ( [\u0000-\u0009\u000b-\u000c\u000e-!#-\uffff] | [\\] ["] )* ["]
+     * string ::=  ["] ( [\u0000-\u0009\u000b-\u000c\u000e-!\u0023-\uffff] | [\\] ["] )* ["]
      */
     string: $ =>
       regexseq(
         /["]/,
-        regexrepeat(regexchoice(/[\u0000-\u0009\u000b-\u000c\u000e-!#-\uffff]/, regexseq(/[\\]/, /["]/))),
+        regexrepeat(regexchoice(/[\u0000-\u0009\u000b-\u000c\u000e-!\u0023-\uffff]/, regexseq(/[\\]/, /["]/))),
         /["]/
       ),
     /*
      * boogie.ebnf:125
-     * decimal ::=  [0-9] [0-9]* [e] [-]? [0-9] [0-9]*
+     * decimal ::=  [0-9] [0-9]* [e] [\u002d]? [0-9] [0-9]*
      */
     decimal: $ =>
-      regexseq(/[0-9]/, regexrepeat(/[0-9]/), /[e]/, regexoptional(/[-]/), /[0-9]/, regexrepeat(/[0-9]/)),
+      regexseq(/[0-9]/, regexrepeat(/[0-9]/), /[e]/, regexoptional(/[\u002d]/), /[0-9]/, regexrepeat(/[0-9]/)),
     /*
      * boogie.ebnf:126
-     * dec_float ::=  [0-9] [0-9]* [.] [0-9] [0-9]* ( [e] [-]? [0-9] [0-9]* )?
+     * dec_float ::=  [0-9] [0-9]* [.] [0-9] [0-9]* ( [e] [\u002d]? [0-9] [0-9]* )?
      */
     dec_float: $ =>
       regexseq(
@@ -1004,16 +1008,16 @@ module.exports = grammar({
         /[.]/,
         /[0-9]/,
         regexrepeat(/[0-9]/),
-        regexoptional(regexseq(/[e]/, regexoptional(/[-]/), /[0-9]/, regexrepeat(/[0-9]/)))
+        regexoptional(regexseq(/[e]/, regexoptional(/[\u002d]/), /[0-9]/, regexrepeat(/[0-9]/)))
       ),
     /*
      * boogie.ebnf:127
-     * float ::=  [-]? [0] [x] [0-9A-Fa-f] [0-9A-Fa-f]* [.] [0-9A-Fa-f] [0-9A-Fa-f]* [e] [-]? [0-9] [0-9]* [f] [0-9] [0-9]* [e] [0-9] [0-9]* | [0] [N] [a] [N] [0-9] [0-9]* [e] [0-9] [0-9]* | [0] [n] [a] [n] [0-9] [0-9]* [e] [0-9] [0-9]* | [0] [+] [o] [o] [0-9] [0-9]* [e] [0-9] [0-9]* | [0] [-] [o] [o] [0-9] [0-9]* [e] [0-9] [0-9]*
+     * float ::=  [\u002d]? [0] [x] [0-9A-Fa-f] [0-9A-Fa-f]* [.] [0-9A-Fa-f] [0-9A-Fa-f]* [e] [\u002d]? [0-9] [0-9]* [f] [0-9] [0-9]* [e] [0-9] [0-9]* | [0] [N] [a] [N] [0-9] [0-9]* [e] [0-9] [0-9]* | [0] [n] [a] [n] [0-9] [0-9]* [e] [0-9] [0-9]* | [0] [+] [o] [o] [0-9] [0-9]* [e] [0-9] [0-9]* | [0] [\u002d] [o] [o] [0-9] [0-9]* [e] [0-9] [0-9]*
      */
     float: $ =>
       regexchoice(
         regexseq(
-          regexoptional(/[-]/),
+          regexoptional(/[\u002d]/),
           /[0]/,
           /[x]/,
           /[0-9A-Fa-f]/,
@@ -1022,7 +1026,7 @@ module.exports = grammar({
           /[0-9A-Fa-f]/,
           regexrepeat(/[0-9A-Fa-f]/),
           /[e]/,
-          regexoptional(/[-]/),
+          regexoptional(/[\u002d]/),
           /[0-9]/,
           regexrepeat(/[0-9]/),
           /[f]/,
@@ -1067,7 +1071,7 @@ module.exports = grammar({
         ),
         regexseq(
           /[0]/,
-          /[-]/,
+          /[\u002d]/,
           /[o]/,
           /[o]/,
           /[0-9]/,
