@@ -4,6 +4,8 @@
 /tree-sitter-ebnf-generator
 /boogie*.ebnf
 /unpatched.js
+/unpatched.ebnf
+/rr.war
 
 # Rust artifacts
 target/
