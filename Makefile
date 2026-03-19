@@ -1,9 +1,11 @@
-
-.PHONY: all clean
+.PHONY: all clean distclean
 all: boogie.ebnf
 
 clean: clean-treesitter
-	rm -rf Boogie CocoR-CPP boogie.ebnf tree-sitter-ebnf-generator grammar.js grammar.js.orig
+	rm -rf boogie.ebnf grammar.js unpatched.js
+
+distclean: clean
+	rm -rf Boogie CocoR-CPP tree-sitter-ebnf-generator
 
 BOOGIE_TAR ?= https://github.com/boogie-org/boogie/archive/bc7292d41e938338e27f0771bd195ca9dace16dd.tar.gz
 COCOR_CPP_TAR ?= https://github.com/rina-forks/CocoR-CPP/archive/master.tar.gz
