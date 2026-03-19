@@ -1,5 +1,23 @@
---- unpatched.js	2026-03-19 17:36:36.813557818 +1000
-+++ grammar.js	2026-03-19 17:33:20.161169178 +1000
+--- unpatched.js	2026-03-19 17:44:22.295540428 +1000
++++ grammar.js	2026-03-19 17:40:38.986367258 +1000
+@@ -59,7 +59,7 @@
+           $.GlobalVars,
+           $.InvariantDecl,
+           seq("yield", choice($.InvariantDecl, $.YieldProcedureDecl)),
+-          seq($.Pure, choice($.Procedure, $.ActionDecl)),
++          seq(optional($.Pure), choice($.Procedure, $.ActionDecl)),
+           $.Implementation
+         )
+       ),
+@@ -169,7 +169,7 @@
+      * Pure ::=  ( "pure" )?
+      */
+     Pure: $ =>
+-      optional("pure"),
++      ("pure"),
+     /*
+      * boogie.ebnf:24
+      * Procedure ::=  "procedure" ProcSignature ( ";" Spec* | Spec* ImplBody )
 @@ -650,6 +650,8 @@
       * LogicalExpression ::=  RelationalExpression ( AndOp RelationalExpression ( AndOp RelationalExpression )* | OrOp RelationalExpression ( OrOp RelationalExpression )* )?
       */
@@ -34,3 +52,12 @@
      /*
       * boogie.ebnf:112
       * CodeExpression ::=  "|{" LocalVars* SpecBlock ( SpecBlock )* "}|"
+@@ -941,7 +943,7 @@
+      * AttributeParameter ::=  ( string | Expression )
+      */
+     AttributeParameter: $ =>
+-      choice($.string, $.Expression),
++      $.Expression,
+     /*
+      * boogie.ebnf:116
+      * QSep ::=  "::" | "\u2022"
