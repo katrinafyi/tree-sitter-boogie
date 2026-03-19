@@ -32,4 +32,5 @@ sed '
 ' \
   | sed 's optional("pure") ("pure") ' \
   | sed 's $.Pure optional($.Pure) g' \
-  | sed 's|choice($.string, $.Expression)|$.Expression|'
+  | sed 's|choice($.string, $.Expression)|$.Expression|' \
+  | sed 's/ \+$//g'
