@@ -1,9 +1,11 @@
 # tree-sitter-boogie
 
-This is a Tree-sitter grammar for [the Boogie IVL](https://boogie-docs.readthedocs.io/en/latest/)
-(intermediate verification language). Its Github repo [is here](https://github.com/boogie-org/boogie).
+(Not to be confused with [tree-sitter-groovy](https://github.com/murtaza64/tree-sitter-groovy).)
 
-This is derived from the [its EBNF grammar](https://boogie-docs.readthedocs.io/en/latest/LangRef.html#grammar),
+This is a Tree-sitter grammar for [the Boogie intermediate verification language](https://boogie-docs.readthedocs.io/en/latest/)
+([Github](https://github.com/boogie-org/boogie)).
+
+The grammar is derived from [its EBNF grammar](https://boogie-docs.readthedocs.io/en/latest/LangRef.html#grammar),
 run through [tree-sitter-ebnf-generator](https://github.com/eatkins/tree-sitter-ebnf-generator)
 (with some [scripted](https://github.com/katrinafyi/tree-sitter-boogie/blob/main/translate.sh)
 and manual pre-processing beforehand).
