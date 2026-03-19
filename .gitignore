@@ -2,7 +2,8 @@
 /Boogie
 /CocoR-CPP
 /tree-sitter-ebnf-generator
-boogie*.ebnf
+/boogie*.ebnf
+/unpatched.js
 
 # Rust artifacts
 target/
