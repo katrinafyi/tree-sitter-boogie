@@ -1,0 +1,9 @@
+[wrap-file]
+directory = boogie-bc7292d41e938338e27f0771bd195ca9dace16dd
+
+source_url = https://github.com/boogie-org/boogie/archive/bc7292d41e938338e27f0771bd195ca9dace16dd.tar.gz
+source_filename = boogie.tar.gz
+source_hash = 45a195be6397fcb1c870ccb7bd0aa893e50fc9f2c8531ca3723f5ee01344da60
+
+patch_directory = boogie-atg
+

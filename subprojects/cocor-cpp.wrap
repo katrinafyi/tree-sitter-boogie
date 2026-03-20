@@ -1,0 +1,12 @@
+[wrap-file]
+directory = CocoR-CPP-7ecc82e26ee6c8930a387de1fb8e8c45d9b64c7b
+
+source_url = https://github.com/rina-forks/CocoR-CPP/archive/7ecc82e26ee6c8930a387de1fb8e8c45d9b64c7b.tar.gz
+source_filename = cocor-cpp.tar.gz
+source_hash = ff8ea6c764bc0e45a9f02e96a92a453d680b28bf70603e531d927a8f453f58e9
+
+patch_directory = cocor-cpp
+
+[provide]
+program_names = CocoR-CPP
+
