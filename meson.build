@@ -85,7 +85,12 @@ rr_ebnf = custom_target(
 )
 
 java = find_program('java')
-rr_jar = find_program('rr.jar')
+
+rr_jar = find_program('rr.jar', required: false)
+if not rr_jar.found()
+  rr_jar = subproject('rr').get_variable('rr_jar')
+endif
+
 rr_zip = custom_target(
   'rr.zip',
   output: 'rr.zip',
