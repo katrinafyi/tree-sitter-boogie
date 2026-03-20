@@ -1,0 +1,14 @@
+[wrap-file]
+directory = rr
+lead_directory_missing = true
+
+; source_url = https://repo1.maven.org/maven2/de/bottlecaps/rr/rr-webapp/2.6/rr-webapp-2.6.war
+source_url = https://www.bottlecaps.de/rr/download/rr-2.6-java11.zip
+source_filename = rr.zip
+source_hash = b8ea90a4b08317974b0f7e7230f919f113239190d2d2b62253893f157c270612
+
+patch_directory = rr
+
+[provide]
+program_names = rr.jar
+

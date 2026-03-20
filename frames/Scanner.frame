@@ -1,0 +1,20 @@
+-->begin
+#if !defined(-->prefixCOCO_SCANNER_H__)
+#define -->prefixCOCO_SCANNER_H__
+-->namespace_open
+-->casing0
+-->commentsheader
+-->namespace_close
+-->implementation
+-->begin
+-->namespace_open
+-->declarations
+-->initialization
+-->casing1
+-->casing2
+-->comments
+-->scan1
+-->scan2
+-->scan22
+-->scan3
+-->namespace_close

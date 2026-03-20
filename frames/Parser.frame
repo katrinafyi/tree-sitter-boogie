@@ -1,0 +1,20 @@
+-->begin
+#if !defined(-->prefixCOCO_PARSER_H__)
+#define -->prefixCOCO_PARSER_H__
+-->headerdef
+-->namespace_open
+-->constantsheader
+-->declarations
+-->productionsheader
+-->namespace_close
+-->implementation
+-->begin
+-->namespace_open
+-->pragmas
+-->tbase
+-->productions
+-->parseRoot
+-->constants
+-->initialization
+-->errors
+-->namespace_close

@@ -5,13 +5,13 @@ project(
   default_options : {
     'warning_level': '3',
     'datadir': meson.project_source_root(),
+    'wrap_mode': 'forcefallback'
   },
 )
 
-ts_ebnf_gen = subproject('ts-ebnf-gen', required : get_option('subproject_ebnf_gen'))
+# ts_ebnf_gen = subproject('ts-ebnf-gen', required : get_option('subproject_ebnf_gen'))
 parse_grammar = find_program('parse_grammar.lua')
-
-cocor_cpp = subproject('cocor-cpp', required : get_option('subproject_coco'))
+# cocor_cpp = subproject('cocor-cpp', required : get_option('subproject_coco'))
 cocor = find_program('CocoR-CPP')
 
 if get_option('boogie_atg') == ''
@@ -22,12 +22,14 @@ endif
 
 fs = import('fs')
 
+frames = files('frames/Parser.frame', 'frames/Scanner.frame')
+
 unpatched_ebnf = custom_target(
   'unpatched-ebnf',
   output: ['Parser.ebnf'],
   command: [
     cocor, boogie_atg, '-genRREBNF',
-    '-frames', fs.parent(cocor_cpp.get_variable('frame').full_path()),
+    '-frames', fs.parent(frames[0].full_path()),
     '-o', '@OUTDIR@'
   ]
 )
@@ -74,4 +76,29 @@ grammar_js = custom_target(
   install: true,
   install_dir: get_option('datadir'),
   install_tag: 'grammar'
+)
+
+rr_ebnf = custom_target(
+  'rr.ebnf',
+  output: 'rr.ebnf',
+  command: [
+    'sh', '-c', '$0 < $1 > $2',
+    files('./to-hash-x.sh'), unpatched_ebnf, '@OUTPUT@'
+  ]
+)
+
+java = find_program('java')
+rr_jar = find_program('rr.jar')
+rr_zip = custom_target(
+  'rr.zip',
+  output: 'rr.zip',
+  command: [
+    java,
+    '-jar',
+    rr_jar,
+    '-html',
+    '-noembedded',
+    '-out:rr.zip',
+    rr_ebnf
+  ]
 )

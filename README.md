@@ -22,7 +22,7 @@ If you want to reproduce the steps, this should be enough:
 ```bash
 rm grammar.js && make grammar.js
 ```
-You will need a C++ compiler, wget, patch, unzip, and Lua 5.
+You will need a C++ compiler, wget, patch, unzip, and Lua 5.4 (5.4 is important for reproducibility!).
 
 [from BoogiePL.atg]: https://github.com/boogie-org/boogie/blob/master/Source/Core/BoogiePL.atg
 [mingodad/CocoR-CPP]: https://github.com/mingodata/CocoR-CPP
