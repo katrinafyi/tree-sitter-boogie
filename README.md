@@ -6,24 +6,28 @@ This is a Tree-sitter grammar for
 The source code is available [on Github](https://github.com/katrinafyi/tree-sitter-boogie).
 
 The Tree-sitter grammar is derived [from BoogiePL.atg][] in the Boogie source code. This is a
-Coco/R parser generator grammar which is used in the real Boogie parser. The ATG file
+Coco/R parser generator grammar which is used in the actual Boogie parser. The ATG file
 is passed through [mingodad/CocoR-CPP][] which produces an EBNF grammar
 ([forked](https://github.com/rina-forks/CocoR-CPP) to emit EBNF for non-literal terminals).
-The EBNF is run through
+The EBNF is [pre-processed](https://github.com/katrinafyi/tree-sitter-boogie/blob/main/fix-ebnf.sh)
+to adjust some syntax and [a manually-created patch](https://github.com/katrinafyi/tree-sitter-boogie/blob/main/fix-ebnf.diff)
+is applied to fix some things which are difficult for Tree-sitter.
+Then, the patched EBNF is run through
 [tree-sitter-ebnf-generator](https://github.com/eatkins/tree-sitter-ebnf-generator)
-(with some [scripted](https://github.com/katrinafyi/tree-sitter-boogie/blob/main/fix-ebnf.sh) pre-processing)
-to produce an initial Tree-sitter grammar.
-The Tree-sitter grammar is transformed with [fix-grammar.sh](https://github.com/katrinafyi/tree-sitter-boogie/blob/main/fix-grammar.sh) to overload some functions with regex-aware smart constructors,
-then a manually-created [patch](https://github.com/katrinafyi/tree-sitter-boogie/blob/main/fix-grammar.diff)
-is applied to fix some last remaining problems.
+to produce an initial Tree-sitter grammar, and
+the Tree-sitter grammar is transformed with [fix-grammar.sh](https://github.com/katrinafyi/tree-sitter-boogie/blob/main/fix-grammar.sh) to overload some functions with regex-aware smart constructors.
 
 The whole pipeline is defined in the Makefile and meson.build.
-If you want to reproduce the steps, this should be enough:
+If you want to reproduce the steps, you will need a C++ compiler,
+Meson 1.3.0+, Ninja, Lua 5.4 (5.4 is important for reproducibility!), and patch.
+
+With the dependencies available, this should be enough:
 ```bash
 make force
 ```
-The Makefile automatically configures and invokes meson+ninja.
-You will need a C++ compiler, Meson 1.3.0+, Ninja, Lua 5.4 (5.4 is important for reproducibility!), and patch.
+The Makefile automatically configures and invokes meson+ninja. `make force` should
+produce a grammar.js which is identical to the one in this repository. If not,
+then that is a bug :)
 
 [from BoogiePL.atg]: https://github.com/boogie-org/boogie/blob/master/Source/Core/BoogiePL.atg
 [mingodad/CocoR-CPP]: https://github.com/mingodad/CocoR-CPP
@@ -33,7 +37,7 @@ You will need a C++ compiler, Meson 1.3.0+, Ninja, Lua 5.4 (5.4 is important for
 You can view [a railroad diagram for Boogie's EBNF grammar](https://katrinafyi.github.io/tree-sitter-boogie/rr/).
 
 The railroad diagram is generated from the initial EBNF, so it is an accurate
-representation of the official BoogiePL.atg. However, Tree-sitter grammar may
+representation of the official BoogiePL.atg. However, the Tree-sitter grammar may
 differ slightly because of the applied patches.
 
 <a href="https://katrinafyi.github.io/tree-sitter-boogie/rr/">
@@ -42,7 +46,7 @@ differ slightly because of the applied patches.
 
 To generate the railroad diagram locally, you can use:
 ```bash
-make rr/index.html
+make rr
 ```
 This needs Java and it uses [Gunther Rademacher's Railroad Diagram Generator](https://www.bottlecaps.de/rr/ui).
 
