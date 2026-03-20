@@ -8,6 +8,8 @@ clean: clean-treesitter
 	rm -rf boogie.ebnf unpatched.js unpatched.ebnf rr.ebnf rr build
 
 distclean: clean
+	rm -rf subprojects/packagecache
+	meson subprojects purge --confirm
 
 build/build.ninja:
 	meson setup build
