@@ -3,7 +3,7 @@
 This is a Tree-sitter grammar for
 [the Boogie intermediate verification language](https://boogie-docs.readthedocs.io/en/latest/)
 ([Github](https://github.com/boogie-org/boogie)).
-The source code is available [on Github](https://github.com/katrinafyi/tree-sitter-boogie).
+The repository for this grammar is available [on Github](https://github.com/katrinafyi/tree-sitter-boogie).
 
 The Tree-sitter grammar is derived [from BoogiePL.atg][] in the Boogie source code. This is a
 Coco/R parser generator grammar which is used in the actual Boogie parser. The ATG file
