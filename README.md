@@ -17,15 +17,16 @@ The Tree-sitter grammar is transformed with [fix-grammar.sh](https://github.com/
 then a manually-created [patch](https://github.com/katrinafyi/tree-sitter-boogie/blob/main/fix-grammar.diff)
 is applied to fix some last remaining problems.
 
-The whole pipeline is defined in the Makefile.
+The whole pipeline is defined in the Makefile and meson.build.
 If you want to reproduce the steps, this should be enough:
 ```bash
-rm grammar.js && make grammar.js
+make force
 ```
-You will need a C++ compiler, wget, patch, unzip, and Lua 5.4 (5.4 is important for reproducibility!).
+The Makefile automatically configures and invokes meson+ninja.
+You will need a C++ compiler, Meson 1.3.0+, Ninja, Lua 5.4 (5.4 is important for reproducibility!), and patch.
 
 [from BoogiePL.atg]: https://github.com/boogie-org/boogie/blob/master/Source/Core/BoogiePL.atg
-[mingodad/CocoR-CPP]: https://github.com/mingodata/CocoR-CPP
+[mingodad/CocoR-CPP]: https://github.com/mingodad/CocoR-CPP
 
 ## railroad diagram
 

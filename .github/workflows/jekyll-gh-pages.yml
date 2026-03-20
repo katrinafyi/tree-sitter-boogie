@@ -36,7 +36,7 @@ jobs:
       - run: sudo apt-get install --no-install-recommends lua5.4 meson ninja-build
 
       - run: make rr
-      - name: rm -rf !(README.md|rr)
+      - name: rm -rf !(*.md|rr|LICENSE|*.ebnf|*.js)
         run: |
           shopt -s extglob
           rm -rf !(README.md|rr)

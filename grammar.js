@@ -46,7 +46,7 @@ module.exports = grammar({
   rules: {
     /*
      * boogie.ebnf:14
-     * BoogiePL ::=  ( Consts | Function | Axiom | UserDefinedTypes | Datatype | GlobalVars | InvariantDecl | "yield" ( InvariantDecl | YieldProcedureDecl ) | Pure ( Procedure | ActionDecl ) | Implementation )*
+     * BoogiePL ::=  ( Consts | Function | Axiom | UserDefinedTypes | Datatype | GlobalVars | InvariantDecl | "yield" ( InvariantDecl | YieldProcedureDecl ) | ( Pure )? ( Procedure | ActionDecl ) | Implementation )*
      */
     BoogiePL: $ =>
       repeat(
@@ -166,10 +166,10 @@ module.exports = grammar({
       ),
     /*
      * boogie.ebnf:23
-     * Pure ::=  ( "pure" )?
+     * Pure ::=  ( "pure" )
      */
     Pure: $ =>
-      ("pure"),
+      "pure",
     /*
      * boogie.ebnf:24
      * Procedure ::=  "procedure" ProcSignature ( ";" Spec* | Spec* ImplBody )
@@ -647,20 +647,20 @@ module.exports = grammar({
       choice("<==>", "\u21d4"),
     /*
      * boogie.ebnf:83
-     * LogicalExpression ::=  RelationalExpression ( AndOp RelationalExpression ( AndOp RelationalExpression )* | OrOp RelationalExpression ( OrOp RelationalExpression )* )?
+     * LogicalExpression ::=  IfThenElseExpression | RelationalExpression ( AndOp RelationalExpression ( AndOp RelationalExpression )* | OrOp RelationalExpression ( OrOp RelationalExpression )* )?
      */
     LogicalExpression: $ =>
       choice(
-      $.IfThenElseExpression,
-      seq(
-        $.RelationalExpression,
-        optional(
-          choice(
-            seq($.AndOp, $.RelationalExpression, repeat(seq($.AndOp, $.RelationalExpression))),
-            seq($.OrOp, $.RelationalExpression, repeat(seq($.OrOp, $.RelationalExpression)))
+        $.IfThenElseExpression,
+        seq(
+          $.RelationalExpression,
+          optional(
+            choice(
+              seq($.AndOp, $.RelationalExpression, repeat(seq($.AndOp, $.RelationalExpression))),
+              seq($.OrOp, $.RelationalExpression, repeat(seq($.OrOp, $.RelationalExpression)))
+            )
           )
         )
-      )
       ),
     /*
      * boogie.ebnf:84
@@ -829,6 +829,7 @@ module.exports = grammar({
           ),
           ")"
         ),
+        $.IfThenElseExpression,
         $.CodeExpression
       ),
     /*
@@ -896,7 +897,7 @@ module.exports = grammar({
       ),
     /*
      * boogie.ebnf:111
-     * IfThenElseExpression ::=  "if" Expression "then" Expression "else" Expression
+     * IfThenElseExpression ::=  "if" Expression "then" Expression "else" LogicalExpression
      */
     IfThenElseExpression: $ =>
       seq("if", $.Expression, "then", $.Expression, "else", $.LogicalExpression),
@@ -940,7 +941,7 @@ module.exports = grammar({
       ),
     /*
      * boogie.ebnf:115
-     * AttributeParameter ::=  ( string | Expression )
+     * AttributeParameter ::=  ( Expression )
      */
     AttributeParameter: $ =>
       $.Expression,

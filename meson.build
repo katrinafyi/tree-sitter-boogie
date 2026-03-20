@@ -25,37 +25,41 @@ fs = import('fs')
 frames = files('frames/Parser.frame', 'frames/Scanner.frame')
 frames_dir = run_command('dirname', frames[0], capture : true, check : true).stdout().strip()
 
-unpatched_ebnf = custom_target(
-  'unpatched-ebnf',
+original_ebnf = custom_target(
+  'Parser.ebnf',
   output: ['Parser.ebnf'],
   command: [
-    cocor, boogie_atg, '-genRREBNF',
+    cocor, boogie_atg,
+    '-genRREBNF',
     '-frames', frames_dir,
     '-o', '@OUTDIR@'
-  ]
+  ],
+  # install: true,
+  # install_dir: get_option('datadir'),
+  # install_tag: 'grammar'
 )
 
 fix_ebnf = files('fix-ebnf.sh')
+fix_ebnf_diff = files('fix-ebnf.diff')
 fix_grammar = files('fix-grammar.sh')
 
-boogie_ebnf = custom_target(
-  'boogie-ebnf',
-  output: ['boogie.ebnf'],
+boogie_ebnf_task = custom_target(
+  'boogie.ebnf',
+  output: ['boogie.ebnf', 'boogie.ebnf.orig'],
   command: [
-    'bash', '-c', '$1 < $2 > $3',
+    'bash', '-c', '$1 < $2 > $3.orig && cp $3.orig $3 && patch $3 --merge -i $4',
     'boogie-ebnf-task',
     fix_ebnf,
-    unpatched_ebnf,
-    '@OUTPUT@'
+    original_ebnf,
+    '@OUTPUT0@',
+    fix_ebnf_diff
   ],
-  install: true,
-  install_dir: get_option('datadir'),
-  install_tag: 'grammar'
 )
+boogie_ebnf = boogie_ebnf_task[0]
 
-unpatched_js = custom_target(
-  'unpatched-js',
-  output: 'unpatched.js',
+grammar_js = custom_target(
+  'grammar.js',
+  output: 'grammar.js',
   command: [
     'bash', '-c', '$1 $2 | $3 > $4',
     'unpatched-js-task',
@@ -63,19 +67,6 @@ unpatched_js = custom_target(
     boogie_ebnf,
     fix_grammar,
     '@OUTPUT@'
-  ]
-)
-
-fix_grammar_diff = files('fix-grammar.diff')
-grammar_js = custom_target(
-  'grammar-js',
-  output: 'grammar.js',
-  command: [
-    'bash', '-c', 'cp -v $1 $2 && patch $2 --merge -i $3',
-    'grammar-js-task',
-    unpatched_js,
-    '@OUTPUT@',
-    fix_grammar_diff
   ],
   install: true,
   install_dir: get_option('datadir'),
@@ -87,8 +78,11 @@ rr_ebnf = custom_target(
   output: 'rr.ebnf',
   command: [
     'sh', '-c', '$0 < $1 > $2',
-    files('./to-hash-x.sh'), unpatched_ebnf, '@OUTPUT@'
-  ]
+    files('./to-hash-x.sh'), original_ebnf, '@OUTPUT@'
+  ],
+  install: true,
+  install_dir: get_option('datadir'),
+  install_tag: 'grammar'
 )
 
 java = find_program('java')

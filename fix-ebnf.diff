@@ -1,0 +1,52 @@
+--- build/boogie.ebnf.orig	2026-03-20 22:07:08.109935377 +1000
++++ build/boogie.ebnf	2026-03-20 22:07:34.826863415 +1000
+@@ -11,7 +11,7 @@
+   ;
+   ; productions
+   ;
+-  BoogiePL ::=  ( Consts | Function | Axiom | UserDefinedTypes | Datatype | GlobalVars | InvariantDecl | "yield" ( InvariantDecl | YieldProcedureDecl ) | Pure ( Procedure | ActionDecl ) | Implementation )*
++  BoogiePL ::=  ( Consts | Function | Axiom | UserDefinedTypes | Datatype | GlobalVars | InvariantDecl | "yield" ( InvariantDecl | YieldProcedureDecl ) | ( Pure )? ( Procedure | ActionDecl ) | Implementation )*
+   Consts ::=  "const" Attribute* ( "unique" )? IdsType ( ";" | "uses" "{" ( Axiom )* "}" )
+   Function ::=  ( "revealed" )? "function" Attribute* Ident TypeParams? "(" ( VarOrType ( "," VarOrType )* )? ")" ( "returns" "(" VarOrType ")" | ":" Type ) ( "{" Expression "}" ( "uses" "{" ( Axiom )* "}" )? | "uses" "{" ( Axiom )* "}" | ";" )
+   Axiom ::=  ( "hideable" )? "axiom" Attribute* Proposition ";"
+@@ -20,7 +20,7 @@
+   GlobalVars ::=  "var" Attribute* IdsTypeWheres ";"
+   InvariantDecl ::=  "invariant" Attribute* Ident ProcFormals ";" Invariant*
+   YieldProcedureDecl ::=  MoverQualifier? "procedure" Attribute* Ident ProcFormals ( "returns" ProcFormals )? ( ";" SpecYieldPrePost* | SpecYieldPrePost* ImplBody )
+-  Pure ::=  ( "pure" )?
++  Pure ::=  ( "pure" )
+   Procedure ::=  "procedure" ProcSignature ( ";" Spec* | Spec* ImplBody )
+   ActionDecl ::=  MoverQualifier? "action" Attribute* Ident ProcFormals ( "returns" ProcFormals )? ( ";" SpecAction* | SpecAction* ImplBody )
+   Implementation ::=  "implementation" ProcSignature ImplBody
+@@ -80,7 +80,7 @@
+   Expressions ::=  Expression ( "," Expression )*
+   ImpliesExpression ::=  LogicalExpression ( ImpliesOp ImpliesExpression | ExpliesOp LogicalExpression ( ExpliesOp LogicalExpression )* )?
+   EquivOp ::=  "<==>" | "\u21d4"
+-  LogicalExpression ::=  RelationalExpression ( AndOp RelationalExpression ( AndOp RelationalExpression )* | OrOp RelationalExpression ( OrOp RelationalExpression )* )?
++  LogicalExpression ::=  IfThenElseExpression | RelationalExpression ( AndOp RelationalExpression ( AndOp RelationalExpression )* | OrOp RelationalExpression ( OrOp RelationalExpression )* )?
+   ImpliesOp ::=  "==>" | "\u21d2"
+   ExpliesOp ::=  "<==" | "\u21d0"
+   RelationalExpression ::=  BvTerm ( RelOp BvTerm )?
+@@ -99,7 +99,7 @@
+   CoercionExpression ::=  ArrayExpression ( ":" ( Type | Nat ) )*
+   ArrayExpression ::=  AtomExpression ( "[" ( Expression ( "," Expression )* ( ":=" Expression )? | ":=" Expression )? "]" | "->" ( Ident | "(" Ident ":=" Expression ")" ) )*
+   Nat ::=  digits
+-  AtomExpression ::=  ( "false" | "true" | ( "roundNearestTiesToEven" | "RNE" ) | ( "roundNearestTiesToAway" | "RNA" ) | ( "roundTowardPositive" | "RTP" ) | ( "roundTowardNegative" | "RTN" ) | ( "roundTowardZero" | "RTZ" ) | Nat | Dec | Float | BvLit | string | Ident ( "(" ( Expressions )? ")" )? | "old" "(" Expression ")" | "int" "(" Expression ")" | "real" "(" Expression ")" | "(" ( Expression | Forall QuantifierBody | Exists QuantifierBody | Lambda QuantifierBody | LetExpr ) ")" | IfThenElseExpression | CodeExpression )
++  AtomExpression ::=  ( "false" | "true" | ( "roundNearestTiesToEven" | "RNE" ) | ( "roundNearestTiesToAway" | "RNA" ) | ( "roundTowardPositive" | "RTP" ) | ( "roundTowardNegative" | "RTN" ) | ( "roundTowardZero" | "RTZ" ) | Nat | Dec | Float | BvLit | string | Ident ( "(" ( Expressions )? ")" )? | "old" "(" Expression ")" | "int" "(" Expression ")" | "real" "(" Expression ")" | "(" ( Expression | Forall QuantifierBody | Exists QuantifierBody | Lambda QuantifierBody | LetExpr ) ")" | CodeExpression )
+   Dec ::=  ( decimal | dec_float )
+   Float ::=  float
+   BvLit ::=  bvlit
+@@ -108,11 +108,11 @@
+   Exists ::=  "exists" | "\u2203"
+   Lambda ::=  "lambda" | "\u03bb"
+   LetExpr ::=  "var" LetVar ( "," LetVar )* ":=" Expression ( "," Expression )* ";" Attribute* Expression
+-  IfThenElseExpression ::=  "if" Expression "then" Expression "else" Expression
++  IfThenElseExpression ::=  "if" Expression "then" Expression "else" LogicalExpression
+   CodeExpression ::=  "|{" LocalVars* SpecBlock ( SpecBlock )* "}|"
+   SpecBlock ::=  Ident ":" ( LabelOrCmd )* ( "goto" Attribute* Idents | "return" Attribute* Expression ) ";"
+   AttributeOrTrigger ::=  "{" ( ":" Ident ( AttributeParameter ( "," AttributeParameter )* )? | Expression ( "," Expression )* ) "}"
+-  AttributeParameter ::=  ( string | Expression )
++  AttributeParameter ::=  ( Expression )
+   QSep ::=  "::" | "\u2022"
+   LetVar ::=  Attribute* Ident
+   ;

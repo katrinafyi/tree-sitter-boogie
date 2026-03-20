@@ -19,4 +19,7 @@ rr: build/build.ninja
 force: build/build.ninja
 	meson install -C build --tags grammar
 
+fix-ebnf.diff: build/boogie.ebnf.orig
+	diff -u build/boogie.ebnf.orig build/boogie.ebnf > $@ ; if [ $$? -gt 1 ]; then false; fi
+
 include Makefile.treesitter
