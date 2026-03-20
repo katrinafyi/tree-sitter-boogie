@@ -5,7 +5,6 @@ project(
   default_options : {
     'warning_level': '3',
     'datadir': meson.project_source_root(),
-    'wrap_mode': 'forcefallback'
   },
 )
 

@@ -1,3 +1,1 @@
-option('subproject_coco', type : 'feature', value : 'enabled', description : 'Use the subproject CocoR-CPP')
-option('subproject_ebnf_gen', type : 'feature', value : 'enabled', description : 'Use the subproject tree-sitter-ebnf-gen')
 option('boogie_atg', type : 'string', description : 'Path to the BoogiePL.atg grammar file. If omitted, will be downloaded from the boogie repo')
