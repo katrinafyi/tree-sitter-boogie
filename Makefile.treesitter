@@ -47,7 +47,10 @@ ifneq ($(filter $(shell uname),FreeBSD NetBSD DragonFly),)
 	PCLIBDIR := $(PREFIX)/libdata/pkgconfig
 endif
 
-treesitter: lib$(LANGUAGE_NAME).a lib$(LANGUAGE_NAME).$(SOEXT) $(LANGUAGE_NAME).pc
+treesitter: lib$(LANGUAGE_NAME).a lib$(LANGUAGE_NAME).$(SOEXT) $(LANGUAGE_NAME).pc $(LANGUAGE_NAME).wasm
+
+$(LANGUAGE_NAME).wasm: $(PARSER)
+	$(TS) build --wasm
 
 lib$(LANGUAGE_NAME).a: $(OBJS)
 	$(AR) $(ARFLAGS) $@ $^
@@ -89,7 +92,7 @@ uninstall:
 	$(RM) -r '$(DESTDIR)$(DATADIR)'/tree-sitter/queries/boogie
 
 clean-treesitter:
-	$(RM) $(OBJS) $(LANGUAGE_NAME).pc lib$(LANGUAGE_NAME).a lib$(LANGUAGE_NAME).$(SOEXT)
+	$(RM) $(OBJS) $(LANGUAGE_NAME).pc lib$(LANGUAGE_NAME).a lib$(LANGUAGE_NAME).$(SOEXT) $(LANGUAGE_NAME).wasm
 	$(RM) -r $(SRC_DIR) build
 
 .PHONY: treesitter install uninstall clean-treesitter test

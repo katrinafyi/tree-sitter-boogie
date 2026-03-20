@@ -5,7 +5,7 @@ test: src/parser.c
 	tree-sitter test
 
 clean: clean-treesitter
-	rm -rf boogie.ebnf unpatched.js unpatched.ebnf rr build
+	rm -rf boogie.ebnf unpatched.js unpatched.ebnf rr build playground
 	meson subprojects purge --confirm
 
 distclean: clean
@@ -23,5 +23,8 @@ force: build/build.ninja
 
 fix-ebnf.diff: build/boogie.ebnf.orig
 	diff -u build/boogie.ebnf.orig build/boogie.ebnf > $@ ; if [ $$? -gt 1 ]; then false; fi
+
+playground: tree-sitter-boogie.wasm
+	tree-sitter playground -q --export playground
 
 include Makefile.treesitter
