@@ -70,5 +70,8 @@ grammar_js = custom_target(
     unpatched_js,
     '@OUTPUT@',
     fix_grammar_diff
-  ]
+  ],
+  install: true,
+  install_dir: get_option('datadir'),
+  install_tag: 'grammar'
 )

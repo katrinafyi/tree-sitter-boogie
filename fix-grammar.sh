@@ -30,5 +30,4 @@ sed '
     s/optional(/regexoptional(/g
   }
 ' \
-  | sed 's/ \+$//g' \
-  | grep .
+  | sed 's/ \+$//g'
