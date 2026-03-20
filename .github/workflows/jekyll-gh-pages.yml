@@ -33,7 +33,9 @@ jobs:
           java-version: '25'
       - uses: actions/configure-pages@v5
 
-      - run: make rr/index.html
+      - run: sudo apt-get install --no-install-recommends lua5.4 meson ninja-build
+
+      - run: make rr
       - name: rm -rf !(README.md|rr)
         run: |
           shopt -s extglob

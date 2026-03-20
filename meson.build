@@ -23,13 +23,14 @@ endif
 fs = import('fs')
 
 frames = files('frames/Parser.frame', 'frames/Scanner.frame')
+frames_dir = run_command('dirname', frames[0], capture : true, check : true).stdout().strip()
 
 unpatched_ebnf = custom_target(
   'unpatched-ebnf',
   output: ['Parser.ebnf'],
   command: [
     cocor, boogie_atg, '-genRREBNF',
-    '-frames', fs.parent(frames[0].full_path()),
+    '-frames', frames_dir,
     '-o', '@OUTDIR@'
   ]
 )
@@ -46,7 +47,10 @@ boogie_ebnf = custom_target(
     fix_ebnf,
     unpatched_ebnf,
     '@OUTPUT@'
-  ]
+  ],
+  install: true,
+  install_dir: get_option('datadir'),
+  install_tag: 'grammar'
 )
 
 unpatched_js = custom_target(

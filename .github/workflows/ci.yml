@@ -13,9 +13,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: sudo apt-get install --no-install-recommends lua5.4
+      - run: sudo apt-get install --no-install-recommends lua5.4 meson ninja-build
       - run: sudo npm i -g tree-sitter-cli
       - run: make force
       - run: make test
-      - run: git diff -- grammar.js
+      - run: git diff
 
