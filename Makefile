@@ -5,11 +5,11 @@ test: src/parser.c
 	tree-sitter test
 
 clean: clean-treesitter
-	rm -rf boogie.ebnf unpatched.js unpatched.ebnf rr.ebnf rr build
+	rm -rf boogie.ebnf unpatched.js unpatched.ebnf rr build
+	meson subprojects purge --confirm
 
 distclean: clean
 	rm -rf subprojects/packagecache
-	meson subprojects purge --confirm
 
 build/build.ninja:
 	meson setup build
