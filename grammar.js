@@ -793,7 +793,7 @@ module.exports = grammar({
       $.digits,
     /*
      * boogie.ebnf:102
-     * AtomExpression ::=  ( "false" | "true" | ( "roundNearestTiesToEven" | "RNE" ) | ( "roundNearestTiesToAway" | "RNA" ) | ( "roundTowardPositive" | "RTP" ) | ( "roundTowardNegative" | "RTN" ) | ( "roundTowardZero" | "RTZ" ) | Nat | Dec | Float | BvLit | string | Ident ( "(" ( Expressions )? ")" )? | "old" "(" Expression ")" | "int" "(" Expression ")" | "real" "(" Expression ")" | "(" ( Expression | Forall QuantifierBody | Exists QuantifierBody | Lambda QuantifierBody | LetExpr ) ")" | IfThenElseExpression | CodeExpression )
+     * AtomExpression ::=  ( "false" | "true" | ( "roundNearestTiesToEven" | "RNE" ) | ( "roundNearestTiesToAway" | "RNA" ) | ( "roundTowardPositive" | "RTP" ) | ( "roundTowardNegative" | "RTN" ) | ( "roundTowardZero" | "RTZ" ) | Nat | Dec | Float | BvLit | string | Ident ( "(" ( Expressions )? ")" )? | "old" "(" Expression ")" | "int" "(" Expression ")" | "real" "(" Expression ")" | "(" ( Expression | Forall QuantifierBody | Exists QuantifierBody | Lambda QuantifierBody | LetExpr ) ")" | CodeExpression )
      */
     AtomExpression: $ =>
       choice(
@@ -829,7 +829,6 @@ module.exports = grammar({
           ),
           ")"
         ),
-        $.IfThenElseExpression,
         $.CodeExpression
       ),
     /*
