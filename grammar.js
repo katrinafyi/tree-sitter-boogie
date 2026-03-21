@@ -955,10 +955,10 @@ module.exports = grammar({
       ),
     /*
      * boogie.ebnf:122
-     * IfThenElseExpression ::=  "if" Expression "then" Expression "else" LogicalExpression
+     * IfThenElseExpression ::=  "if" Expression "then" Expression "else" _LogicalExpression
      */
     IfThenElseExpression: $ =>
-      seq("if", $.Expression, "then", $.Expression, "else", $.LogicalExpression),
+      seq("if", $.Expression, "then", $.Expression, "else", $._LogicalExpression),
     /*
      * boogie.ebnf:123
      * CodeExpression ::=  "|{" LocalVars* SpecBlock ( SpecBlock )* "}|"

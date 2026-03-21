@@ -41,7 +41,7 @@
    Lambda ::=  "lambda" | "\u03bb"
    LetExpr ::=  "var" LetVar ( "," LetVar )* ":=" Expression ( "," Expression )* ";" Attribute* Expression
 -  IfThenElseExpression ::=  "if" Expression "then" Expression "else" Expression
-+  IfThenElseExpression ::=  "if" Expression "then" Expression "else" LogicalExpression
++  IfThenElseExpression ::=  "if" Expression "then" Expression "else" _LogicalExpression
    CodeExpression ::=  "|{" LocalVars* SpecBlock ( SpecBlock )* "}|"
    SpecBlock ::=  Ident ":" ( LabelOrCmd )* ( "goto" Attribute* Idents | "return" Attribute* Expression ) ";"
    AttributeOrTrigger ::=  "{" ( ":" Ident ( AttributeParameter ( "," AttributeParameter )* )? | Expression ( "," Expression )* ) "}"
