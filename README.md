@@ -32,6 +32,25 @@ then that is a bug :)
 [from BoogiePL.atg]: https://github.com/boogie-org/boogie/blob/master/Source/Core/BoogiePL.atg
 [mingodad/CocoR-CPP]: https://github.com/mingodad/CocoR-CPP
 
+## playground
+
+A playground for trying out the grammar [is available here](https://katrinafyi.github.io/tree-sitter-boogie/playground/).
+
+Here's some Boogie syntax to try out:
+```boogie
+var {:extern} stack_5: [bv64]bv8;
+axiom ($_IO_stdin_used_addr == 1944bv64);
+
+function {:extern} L(index: bv64) returns (bool) {
+  false
+}
+
+function {:extern} {:bvbuiltin "bvadd"} bvadd64(bv64, bv64) returns (bv64);
+
+procedure {:extern} guarantee_reflexive();
+  modifies Gamma_mem_1, Gamma_mem_2, Gamma_mem_3, Gamma_mem_4, mem_1, mem_2, mem_3, mem_4;
+```
+
 ## railroad diagram
 
 You can view [a railroad diagram for Boogie's EBNF grammar](https://katrinafyi.github.io/tree-sitter-boogie/rr/).
