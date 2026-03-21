@@ -9,29 +9,24 @@ update: src/parser.c
 
 clean: clean-treesitter
 	rm -rf boogie.ebnf unpatched.js unpatched.ebnf rr build playground
-	meson subprojects purge --confirm
+	-ninja -C out -t clean
 
 distclean: clean
-	rm -rf subprojects/packagecache
+	rm -rf out
 
-subprojects/rr:
-	! meson subprojects download rr
-	rm -rf subprojects/rr
-	mkdir subprojects/rr && cp subprojects/packagecache/rr.jar subprojects/rr
-	meson subprojects packagefiles --apply rr
+out/build.ninja:
+	gn gen out
 
-build/build.ninja: subprojects/rr
-	meson setup build
+rr: out/build.ninja
+	ninja -C out rr.zip
+	rm -rf rr && mkdir rr && unzip out/rr.zip -d rr
 
-rr: build/build.ninja
-	meson compile -C build rr.zip
-	rm -rf rr && mkdir rr && unzip build/rr.zip -d rr
+force: out/build.ninja
+	ninja -C out grammar.js rr.ebnf
+	cp -v out/{grammar.js,rr.ebnf} .
 
-force: build/build.ninja
-	meson install -C build --tags grammar
-
-fix-ebnf.diff: build/boogie.ebnf.orig
-	diff -u build/boogie.ebnf.orig build/boogie.ebnf > $@ ; if [ $$? -gt 1 ]; then false; fi
+fix-ebnf.diff: out/boogie.ebnf.orig out/boogie.ebnf
+	diff -u out/boogie.ebnf.orig out/boogie.ebnf > $@ ; if [ $$? -gt 1 ]; then false; fi
 
 playground: tree-sitter-boogie.wasm
 	tree-sitter playground -q --export playground

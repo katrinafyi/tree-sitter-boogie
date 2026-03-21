@@ -77,3 +77,33 @@ action("grammar.js") {
 
   deps = [ ":grammar.js.orig" ]
 }
+
+
+action("rr.ebnf") {
+  outputs = [ "$root_build_dir/$target_name" ]
+  script = "//build/exec.sh"
+  sources = [ "$target_gen_dir/Parser.ebnf" ]
+  inputs = [ "to-hash-x.sh" ]
+
+  args =
+    [ "bash", "-c", "\$0 < \$1 > \$2" ]
+    + rebase_path(inputs + sources + outputs)
+
+  deps = [ ":Parser.ebnf", "//build/ts-ebnf-gen" ]
+}
+
+action("rr.zip") {
+  outputs = [ "$root_build_dir/$target_name" ]
+  script = "//build/exec.sh"
+  sources = [ "$root_build_dir/rr.ebnf" ]
+  inputs = [ "$root_gen_dir/build/rr/rr-webapp-2.6.war" ]
+
+  rebase_out = rebase_path(outputs[0])
+
+  args =
+    [ "java", "-jar" ] + rebase_path(inputs)
+    + [ "-html", "-noembedded", "-out:$rebase_out" ]
+    + rebase_path(sources)
+
+  deps = [ ":rr.ebnf", "//build/rr" ]
+}
