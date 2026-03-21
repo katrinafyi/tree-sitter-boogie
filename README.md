@@ -73,13 +73,18 @@ This needs Java and it uses [Gunther Rademacher's Railroad Diagram Generator](ht
 
 The upstream grammar is written in a style with left-recursion removed and
 precedence made explicit through rules. This is good for LL recursive-descent parsers,
-but bad for Tree-sitter's AST. It leads to deeply nested structures for simple
-terms because it has to descend through the precedence hierarchy.
+but bad for Tree-sitter's AST.
+
+We have done some work, in [fix-ll.py](https://github.com/katrinafyi/tree-sitter-boogie/blob/main/fix-ll.py),
+to omit these precedence hierarchies from the parsed Tree-sitter AST.
+
+Originally, it would lead to deeply nested structures for simple
+terms because it descends through the precedence hierarchy.
 For example,
 ```bash
 tree-sitter generate && echo 'function f() returns (bool) { true }' | tree-sitter parse  --cst
 ```
-leads to
+would have returned
 ```js
 0:0  - 1:0    BoogiePL
 0:0  - 0:36     Function
@@ -112,7 +117,30 @@ leads to
 0:30 - 0:34                                 "true"
 0:35 - 0:36       "}"
 ```
-This may or may not be a problem for practical uses of the grammar.
+
+After applying the fix-ll.py script, the parsed AST is much simpler:
+```js
+0:0  - 1:0    BoogiePL
+0:0  - 0:36     Function
+0:0  - 0:8        "function"
+0:9  - 0:10       Ident
+0:9  - 0:10         ident `f`
+0:10 - 0:11       "("
+0:11 - 0:12       ")"
+0:13 - 0:20       "returns"
+0:21 - 0:22       "("
+0:22 - 0:26       VarOrType
+0:22 - 0:26         Type
+0:22 - 0:26           TypeAtom
+0:22 - 0:26             "bool"
+0:26 - 0:27       ")"
+0:28 - 0:29       "{"
+0:30 - 0:34       Expression
+0:30 - 0:34         AtomExpression
+0:30 - 0:34           "true"
+0:35 - 0:36       "}"
+```
+This makes it easier to work with the AST for queries and highlighting.
 
 This project is not to be confused with
 [tree-sitter-groovy](https://github.com/murtaza64/tree-sitter-groovy).

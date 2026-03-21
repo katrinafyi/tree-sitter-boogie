@@ -124,31 +124,29 @@ procedure fork();
         (Ident
           (ident))))
     (IdsTypeWheres
-      (IdsTypeWhere
-        (Idents
-          (Ident
-            (ident)))
-        (Type
-          (TypeAtom)))))
+      (Idents
+        (Ident
+          (ident)))
+      (Type
+        (TypeAtom))))
   (GlobalVars
     (Attribute
       (AttributeOrTrigger
         (Ident
           (ident))))
     (IdsTypeWheres
-      (IdsTypeWhere
-        (Idents
-          (Ident
-            (ident)))
-        (Type
-          (MapType
-            (Types
-              (Type
-                (Ident
-                  (ident))))
+      (Idents
+        (Ident
+          (ident)))
+      (Type
+        (MapType
+          (Types
             (Type
               (Ident
-                (ident))))))))
+                (ident))))
+          (Type
+            (Ident
+              (ident)))))))
   (Consts
     (Attribute
       (AttributeOrTrigger

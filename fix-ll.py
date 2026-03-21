@@ -17,6 +17,7 @@ ll_rules = [
     'CoercionExpression',
     'ArrayExpression',
     # 'AtomExpression',
+    'IdsTypeWhere'
 ]
 
 inp = sys.stdin.read()
