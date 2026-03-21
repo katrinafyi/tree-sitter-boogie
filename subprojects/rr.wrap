@@ -1,0 +1,14 @@
+[wrap-file]
+directory = rr
+lead_directory_missing = true
+
+; use `make subprojects/rr` to initialise the `rr` subproject! it needs special handling
+; because it is not an unpackable archive.
+source_url = https://repo1.maven.org/maven2/de/bottlecaps/rr/rr-webapp/2.6/rr-webapp-2.6.war
+source_filename = rr.jar
+source_hash = b71b47f1c8e711cef6093a021d3a5b9386b1fed5e8767e2d50da5011e3bedded
+
+patch_directory = rr
+
+[provide]
+program_names = rr.jar

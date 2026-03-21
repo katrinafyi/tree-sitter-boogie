@@ -46,7 +46,7 @@ boogie_ebnf_task = custom_target(
   'boogie.ebnf',
   output: ['boogie.ebnf', 'boogie.ebnf.orig'],
   command: [
-    'bash', '-c', '$1 < $2 > $3.orig && cp $3.orig $3 && patch $3 --merge -i $4',
+    'bash', '-c', 'set -x; $1 < $2 > $3.orig && cp $3.orig $3 && patch --verbose $3 --merge -i $4',
     'boogie-ebnf-task',
     fix_ebnf,
     original_ebnf,
@@ -86,10 +86,7 @@ rr_ebnf = custom_target(
 
 java = find_program('java')
 
-rr_jar = find_program('rr.jar', required: false)
-if not rr_jar.found()
-  rr_jar = subproject('rr').get_variable('rr_jar')
-endif
+rr_jar = find_program('rr.jar')
 
 rr_zip = custom_target(
   'rr.zip',

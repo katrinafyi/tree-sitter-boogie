@@ -11,7 +11,13 @@ clean: clean-treesitter
 distclean: clean
 	rm -rf subprojects/packagecache
 
-build/build.ninja:
+subprojects/rr:
+	! meson subprojects download rr
+	rm -rf subprojects/rr
+	mkdir subprojects/rr && cp subprojects/packagecache/rr.jar subprojects/rr
+	meson subprojects packagefiles --apply rr
+
+build/build.ninja: subprojects/rr
 	meson setup build
 
 rr: build/build.ninja

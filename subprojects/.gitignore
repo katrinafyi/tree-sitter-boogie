@@ -3,5 +3,3 @@
 !/packagefiles
 !/packagefiles/**/*
 !*.wrap
-!/rr
-!/rr/**/*
