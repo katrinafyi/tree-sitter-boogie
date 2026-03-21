@@ -1,6 +1,8 @@
 #!/bin/bash -eu
 set -o pipefail
 
+exec <$1 >$2
+
 cat <<EOF
 /**
 	* @file Tree-sitter grammar for the Boogie IVL

@@ -1,6 +1,6 @@
 template("fetch") {
 
-  forward_variables_from(invoker, ["strip_leading_directory", "unpack"])
+  forward_variables_from(invoker, ["strip_leading_directory", "unpack", "prefix"])
 
   if (!defined(strip_leading_directory)) {
     strip_leading_directory = false
@@ -10,14 +10,18 @@ template("fetch") {
     unpack = true
   }
 
+  if (!defined(prefix)) {
+    prefix = target_gen_dir
+  }
+
   outputs = []
   foreach(out, invoker.outputs) {
-    outputs += [ "$target_gen_dir/${out}" ]
+    outputs += [ "$prefix/${out}" ]
   }
 
   out_args = []
   foreach(out, outputs) {
-    out_args += [ rebase_path(out, target_gen_dir) ]
+    out_args += [ rebase_path(out, prefix) ]
   }
 
   action(target_name) {
@@ -26,7 +30,7 @@ template("fetch") {
       invoker.url,
       "$unpack",
       "$strip_leading_directory",
-      rebase_path(target_gen_dir),
+      rebase_path(prefix),
     ] + out_args
   }
 

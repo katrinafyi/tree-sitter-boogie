@@ -1,45 +1,79 @@
 import("//build/lib.gni")
 
-fetch("boogie-atg") {
-  url = "https://github.com/boogie-org/boogie/archive/refs/heads/master.zip"
-  outputs = ["Source/Core/BoogiePL.atg"]
-  strip_leading_directory = true
+copy("fix-ll.py") {
+  sources = ["fix-ll.py"]
+  outputs = ["$root_build_dir/${sources[0]}"]
 }
 
-fetch("cocor-cpp-src") {
-  url = "https://github.com/rina-forks/CocoR-CPP/archive/7ecc82e26ee6c8930a387de1fb8e8c45d9b64c7b.tar.gz"
-  outputs = [
-    "src/Action.cpp",
-    "src/BitArray.cpp",
-    "src/CharClass.cpp",
-    "src/CharSet.cpp",
-    "src/Coco.cpp",
-    "src/Comment.cpp",
-    "src/DFA.cpp",
-    "src/Generator.cpp",
-    "src/HashTable.cpp",
-    "src/Melted.cpp",
-    "src/Node.cpp",
-    "src/Parser.cpp",
-    "src/ParserGen.cpp",
-    "src/Position.cpp",
-    "src/Scanner.cpp",
-    "src/SortedList.cpp",
-    "src/State.cpp",
-    "src/StringBuilder.cpp",
-    "src/Symbol.cpp",
-    "src/Tab.cpp",
-    "src/Target.cpp",
+copy("fix-ebnf.sh") {
+  sources = ["fix-ebnf.sh"]
+  outputs = ["$root_build_dir/${sources[0]}"]
+  deps = [":fix-ll.py"]
+}
+
+action("Parser.ebnf") {
+  outputs = [ "$target_gen_dir/$target_name" ]
+  script = "//build/exec.sh"
+  sources = [ "$root_build_dir/cocor-cpp", "$target_gen_dir/boogie/Source/Core/BoogiePL.atg" ]
+  inputs = [ "./frames" ]
+
+  args = rebase_path(sources) + [
+    "-genRREBNF",
+    "-frames",
+  ] + rebase_path(inputs) + [
+    "-o",
+    rebase_path(target_gen_dir)
   ]
-  strip_leading_directory = true
+
+  deps = ["//build/boogie", "//build/cocor-cpp"]
 }
 
-executable("cocor-cpp") {
-  sources = get_target_outputs(":cocor-cpp-src")
-  deps = [ ":cocor-cpp-src" ]
+action("boogie.ebnf.orig") {
+  outputs = [ "$root_build_dir/$target_name" ]
+  script = "//build/exec.sh"
+  sources = [ "$target_gen_dir/Parser.ebnf" ]
+  inputs = [ "$root_build_dir/fix-ebnf.sh" ]
+
+  args = rebase_path(inputs + sources + outputs)
+
+  deps = [":Parser.ebnf", ":fix-ebnf.sh"]
 }
 
-action("boop") {
-  outputs = ["$target_gen_dir/a"]
-  script = rebase_path("$root_out_dir/cocor-cpp")
+action("boogie.ebnf") {
+  outputs = [ "$root_build_dir/$target_name" ]
+  script = "//build/exec.sh"
+  sources = [ "$root_build_dir/boogie.ebnf.orig" ]
+  inputs = [ "fix-ebnf.diff" ]
+
+  args =
+    [ "patch", "--verbose", "--merge" ]
+    + [ "--output" ] + rebase_path(outputs)
+    + [ "-i" ] + rebase_path(inputs)
+    + rebase_path(sources)
+
+  deps = [ ":boogie.ebnf.orig" ]
+}
+
+action("grammar.js.orig") {
+  outputs = [ "$root_build_dir/$target_name" ]
+  script = "//build/exec.sh"
+  sources = [ "$root_build_dir/boogie.ebnf" ]
+  inputs = [ "$root_gen_dir/ts-ebnf-gen/src/lua/parse_grammar.lua" ]
+
+  args =
+    [ "bash", "-c", "\$0 \$1 > \$2" ]
+    + rebase_path(inputs + sources + outputs)
+
+  deps = [ ":boogie.ebnf", "//build/ts-ebnf-gen" ]
+}
+
+action("grammar.js") {
+  outputs = [ "$root_build_dir/$target_name" ]
+  script = "//build/exec.sh"
+  sources = [ "$root_build_dir/grammar.js.orig" ]
+  inputs = [ "fix-grammar.sh" ]
+
+  args = rebase_path(inputs + sources + outputs)
+
+  deps = [ ":grammar.js.orig" ]
 }
