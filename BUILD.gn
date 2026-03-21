@@ -14,7 +14,7 @@ copy("fix-ebnf.sh") {
 action("Parser.ebnf") {
   outputs = [ "$target_gen_dir/$target_name" ]
   script = "//build/exec.sh"
-  sources = [ "$root_build_dir/cocor-cpp", "$target_gen_dir/boogie/Source/Core/BoogiePL.atg" ]
+  sources = [ "$root_build_dir/cocor-cpp", "$root_gen_dir/build/boogie/Source/Core/BoogiePL.atg" ]
   inputs = [ "./frames" ]
 
   args = rebase_path(sources) + [
@@ -58,7 +58,7 @@ action("grammar.js.orig") {
   outputs = [ "$root_build_dir/$target_name" ]
   script = "//build/exec.sh"
   sources = [ "$root_build_dir/boogie.ebnf" ]
-  inputs = [ "$root_gen_dir/ts-ebnf-gen/src/lua/parse_grammar.lua" ]
+  inputs = [ "$root_gen_dir/build/ts-ebnf-gen/src/lua/parse_grammar.lua" ]
 
   args =
     [ "bash", "-c", "\$0 \$1 > \$2" ]

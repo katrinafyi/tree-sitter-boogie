@@ -3,7 +3,6 @@ import("//build/lib.gni")
 fetch("boogie") {
   url = "https://github.com/boogie-org/boogie/archive/refs/heads/master.zip"
   strip_leading_directory = true
-  prefix = "$root_gen_dir/boogie"
   outputs = ["Source/Core/BoogiePL.atg"]
 }
 

@@ -3,7 +3,6 @@ import("//build/lib.gni")
 fetch("cocor-cpp-src") {
   url = "https://github.com/rina-forks/CocoR-CPP/archive/7ecc82e26ee6c8930a387de1fb8e8c45d9b64c7b.tar.gz"
   strip_leading_directory = true
-  prefix = "$target_gen_dir/cocor-cpp"
   outputs = [
     "src/Action.cpp",
     "src/BitArray.cpp",
