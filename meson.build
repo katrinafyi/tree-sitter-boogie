@@ -39,6 +39,7 @@ original_ebnf = custom_target(
 )
 
 fix_ebnf = files('fix-ebnf.sh')
+fix_ll = files('fix-ll.py')
 fix_ebnf_diff = files('fix-ebnf.diff')
 fix_grammar = files('fix-grammar.sh')
 
@@ -46,10 +47,12 @@ boogie_ebnf_task = custom_target(
   'boogie.ebnf',
   output: ['boogie.ebnf', 'boogie.ebnf.orig'],
   command: [
-    'bash', '-c', 'set -x; $1 < $2 > $3.orig && cp $3.orig $3 && patch --verbose $3 --merge -i $4',
+    'bash', '-c',
+    'set -x; $1 < $2 | $3 > $4.orig && cp $4.orig $4 && patch --verbose $4 --merge -i $5',
     'boogie-ebnf-task',
     fix_ebnf,
     original_ebnf,
+    fix_ll,
     '@OUTPUT0@',
     fix_ebnf_diff
   ],
