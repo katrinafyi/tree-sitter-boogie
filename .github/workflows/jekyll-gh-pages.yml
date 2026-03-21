@@ -36,13 +36,13 @@ jobs:
       - run: sudo apt-get install --no-install-recommends lua5.4 meson ninja-build
       - run: sudo npm i -g tree-sitter-cli
 
+      - run: make
       - run: make rr
       - run: make playground
-      - run: sed -i 's|LANGUAGE_BASE_URL = ""|LANGUAGE_BASE_URL = "."|' playground/index.html
-      - name: rm -rf !(*.md|rr|playground|LICENSE|*.ebnf|*.js)
+      - name: Clean files for docs upload
         run: |
           shopt -s extglob
-          rm -rf !(*.md|rr|playground|LICENSE|*.ebnf|*.js)
+          rm -rf !(*.md|rr|playground|LICENSE|*.ebnf|*.js|src)
 
       - uses: actions/jekyll-build-pages@v1
         with:

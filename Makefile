@@ -32,5 +32,6 @@ fix-ebnf.diff: build/boogie.ebnf.orig
 
 playground: tree-sitter-boogie.wasm
 	tree-sitter playground -q --export playground
+	sed -i 's|LANGUAGE_BASE_URL = ""|LANGUAGE_BASE_URL = "."|' playground/index.html
 
 include Makefile.treesitter
