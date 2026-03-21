@@ -1,0 +1,34 @@
+template("fetch") {
+
+  forward_variables_from(invoker, ["strip_leading_directory", "unpack"])
+
+  if (!defined(strip_leading_directory)) {
+    strip_leading_directory = false
+  }
+
+  if (!defined(unpack)) {
+    unpack = true
+  }
+
+  outputs = []
+  foreach(out, invoker.outputs) {
+    outputs += [ "$target_gen_dir/${out}" ]
+  }
+
+  out_args = []
+  foreach(out, outputs) {
+    out_args += [ rebase_path(out, target_gen_dir) ]
+  }
+
+  action(target_name) {
+    script = "//build/fetch.sh"
+    args = [
+      invoker.url,
+      "$unpack",
+      "$strip_leading_directory",
+      rebase_path(target_gen_dir),
+    ] + out_args
+  }
+
+}
+
