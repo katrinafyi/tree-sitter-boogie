@@ -16,24 +16,21 @@ function f() returns (int) {
     (VarOrType
       (Type
         (TypeAtom)))
-    (Expression
-      (IfThenElseExpression
-        (Expression
-          (AtomExpression
-            (Ident
-              (ident))))
-        (Expression
-          (AtomExpression
-            (Ident
-              (ident))))
-        (LogicalExpression
-          (AtomExpression
-            (Ident
-              (ident)))
-          (AndOp)
-          (AtomExpression
-            (Ident
-              (ident))))))))
+    (IfThenElseExpression
+      (AtomExpression
+        (Ident
+          (ident)))
+      (AtomExpression
+        (Ident
+          (ident)))
+      (LogicalExpression
+        (AtomExpression
+          (Ident
+            (ident)))
+        (AndOp)
+        (AtomExpression
+          (Ident
+            (ident)))))))
 
 ==================
 ite - has lower precedence than >
@@ -53,21 +50,139 @@ function f() returns (int) {
     (VarOrType
       (Type
         (TypeAtom)))
-    (Expression
+    (IfThenElseExpression
+      (AtomExpression
+        (Ident
+          (ident)))
+      (AtomExpression
+        (Ident
+          (ident)))
+      (RelationalExpression
+        (AtomExpression
+          (Ident
+            (ident)))
+        (RelOp)
+        (AtomExpression
+          (Ident
+            (ident)))))))
+
+==================
+ite - has lower precedence than <==>
+==================
+
+function f() returns (int) {
+  if x then y else z <==> a
+}
+
+
+---
+
+(BoogiePL
+  (Function
+    (Ident
+      (ident))
+    (VarOrType
+      (Type
+        (TypeAtom)))
+    (IfThenElseExpression
+      (AtomExpression
+        (Ident
+          (ident)))
+      (AtomExpression
+        (Ident
+          (ident)))
+      (EquivExpression
+        (AtomExpression
+          (Ident
+            (ident)))
+        (EquivOp)
+        (AtomExpression
+          (Ident
+            (ident)))))))
+
+==================
+ite - can be nested
+==================
+
+function f() returns (int) {
+  if x then y else if x then y else z <==> a
+}
+
+---
+
+(BoogiePL
+  (Function
+    (Ident
+      (ident))
+    (VarOrType
+      (Type
+        (TypeAtom)))
+    (IfThenElseExpression
+      (AtomExpression
+        (Ident
+          (ident)))
+      (AtomExpression
+        (Ident
+          (ident)))
       (IfThenElseExpression
-        (Expression
-          (AtomExpression
-            (Ident
-              (ident))))
-        (Expression
-          (AtomExpression
-            (Ident
-              (ident))))
-        (RelationalExpression
+        (AtomExpression
+          (Ident
+            (ident)))
+        (AtomExpression
+          (Ident
+            (ident)))
+        (EquivExpression
           (AtomExpression
             (Ident
               (ident)))
-          (RelOp)
+          (EquivOp)
+          (AtomExpression
+            (Ident
+              (ident))))))))
+
+==================
+ite - can be nested 2
+==================
+
+function f() returns (int) {
+  if if x then y else z  then y else if x then y else z <==> a
+}
+
+---
+
+(BoogiePL
+  (Function
+    (Ident
+      (ident))
+    (VarOrType
+      (Type
+        (TypeAtom)))
+    (IfThenElseExpression
+      (IfThenElseExpression
+        (AtomExpression
+          (Ident
+            (ident)))
+        (AtomExpression
+          (Ident
+            (ident)))
+        (AtomExpression
+          (Ident
+            (ident))))
+      (AtomExpression
+        (Ident
+          (ident)))
+      (IfThenElseExpression
+        (AtomExpression
+          (Ident
+            (ident)))
+        (AtomExpression
+          (Ident
+            (ident)))
+        (EquivExpression
+          (AtomExpression
+            (Ident
+              (ident)))
+          (EquivOp)
           (AtomExpression
             (Ident
               (ident))))))))

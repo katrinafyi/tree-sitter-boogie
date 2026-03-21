@@ -1,8 +1,11 @@
-.PHONY: all force test clean distclean rr
+.PHONY: all force test clean distclean rr update
 all: src/parser.c
 
 test: src/parser.c
 	tree-sitter test
+
+update: src/parser.c
+	tree-sitter test -u
 
 clean: clean-treesitter
 	rm -rf boogie.ebnf unpatched.js unpatched.ebnf rr build playground

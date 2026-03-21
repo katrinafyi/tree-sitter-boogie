@@ -13,5 +13,4 @@ function f() returns (bool) { true }
     (VarOrType
       (Type
         (TypeAtom)))
-    (Expression
-      (AtomExpression))))
+    (AtomExpression)))

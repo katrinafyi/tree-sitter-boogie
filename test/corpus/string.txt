@@ -15,9 +15,8 @@ function f() returns (int) {
     (VarOrType
       (Type
         (TypeAtom)))
-    (Expression
-      (AtomExpression
-        (string)))))
+    (AtomExpression
+      (string))))
 
 ===
 string escaped quote
@@ -36,16 +35,15 @@ function f() returns (int) {
     (VarOrType
       (Type
         (TypeAtom)))
-    (Expression
-      (AtomExpression
-        (string)))))
+    (AtomExpression
+      (string))))
 
 ===
-string non-escaped quote - backslash - hmmmmmmm
+string non-escaped quote - backslash - hmmmmmmm suspicious
 ===
 
 function f() returns (int) {
-  "a!!!!!!!!\\"aaa"
+  "afjd \\"aaa"
 }
 ---
 
@@ -56,18 +54,21 @@ function f() returns (int) {
     (VarOrType
       (Type
         (TypeAtom)))
-    (Expression
-      (AtomExpression
-        (string)))))
+    (AtomExpression
+      (string))))
 
 ===
-string non-escaped quote - no backslash
+string non-escaped quote - no backslash - should error
 :error
 ===
 
 function f() returns (int) {
-  "a!!!!!!!!"aa"
+  "aaaaaa"aaaaaa"
+  "aaaaaa"aaaaaa"
+  "aaaaaa"aaaaaa"
+  "aaaaaa"aaaaaa"
 }
+
 ---
 
 
@@ -79,6 +80,7 @@ string with space
 function f() returns (int) {
   "     ! -_aa"
 }
+
 ---
 
 (BoogiePL
@@ -88,6 +90,5 @@ function f() returns (int) {
     (VarOrType
       (Type
         (TypeAtom)))
-    (Expression
-      (AtomExpression
-        (string)))))
+    (AtomExpression
+      (string))))

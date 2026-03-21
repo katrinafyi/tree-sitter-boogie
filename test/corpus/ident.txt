@@ -14,10 +14,9 @@ function f() returns (int) {
     (VarOrType
       (Type
         (TypeAtom)))
-    (Expression
-      (AtomExpression
-        (Ident
-          (ident))))))
+    (AtomExpression
+      (Ident
+        (ident)))))
 
 ===
 ident with leading \
@@ -35,7 +34,6 @@ function f() returns (int) {
     (VarOrType
       (Type
         (TypeAtom)))
-    (Expression
-      (AtomExpression
-        (Ident
-          (ident))))))
+    (AtomExpression
+      (Ident
+        (ident)))))

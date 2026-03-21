@@ -15,25 +15,24 @@ function f() returns (int) {
     (VarOrType
       (Type
         (TypeAtom)))
-    (Expression
-      (CoercionExpression
-        (AtomExpression
-          (Ident
-            (ident)))
-        (Type
-          (Ident
-            (ident))
-          (TypeArgs
-            (MapType
-              (TypeParams
-                (Idents
-                  (Ident
-                    (ident))))
-              (Types
-                (Type
-                  (TypeAtom)))
+    (CoercionExpression
+      (AtomExpression
+        (Ident
+          (ident)))
+      (Type
+        (Ident
+          (ident))
+        (TypeArgs
+          (MapType
+            (TypeParams
+              (Idents
+                (Ident
+                  (ident))))
+            (Types
               (Type
-                (TypeAtom)))))))))
+                (TypeAtom)))
+            (Type
+              (TypeAtom))))))))
 
 ==================
 less than - potential ambiguity with type params
@@ -53,16 +52,15 @@ function f() returns (int) {
     (VarOrType
       (Type
         (TypeAtom)))
-    (Expression
-      (RelationalExpression
-        (CoercionExpression
-          (AtomExpression
-            (Ident
-              (ident)))
-          (Type
-            (Ident
-              (ident))))
-        (RelOp)
+    (RelationalExpression
+      (CoercionExpression
         (AtomExpression
           (Ident
-            (ident)))))))
+            (ident)))
+        (Type
+          (Ident
+            (ident))))
+      (RelOp)
+      (AtomExpression
+        (Ident
+          (ident))))))

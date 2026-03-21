@@ -4,7 +4,7 @@ import sys
 import re
 
 ll_rules = [
-    # 'Expression',
+    'Expression',
     'ImpliesExpression',
     'LogicalExpression',
     'RelationalExpression',
