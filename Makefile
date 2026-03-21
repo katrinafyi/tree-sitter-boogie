@@ -23,7 +23,7 @@ rr: out/build.ninja
 
 force: out/build.ninja
 	ninja -C out grammar.js rr.ebnf
-	cp -v out/{grammar.js,rr.ebnf} .
+	cp -v out/grammar.js out/rr.ebnf .
 
 fix-ebnf.diff: out/boogie.ebnf.orig out/boogie.ebnf
 	diff -u out/boogie.ebnf.orig out/boogie.ebnf > $@ ; if [ $$? -gt 1 ]; then false; fi

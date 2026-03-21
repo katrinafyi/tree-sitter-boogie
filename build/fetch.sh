@@ -16,10 +16,10 @@ wget -nv -N "$url"
 d="$(mktemp -d)"
 
 if "$unpack"; then
-  python3 -c '
-  import sys, os, shutil
-  shutil.unpack_archive(sys.argv[1], sys.argv[2])
-  ' * "$d"
+  python3 - * "$d" <<EOF
+import sys, os, shutil
+shutil.unpack_archive(sys.argv[1], sys.argv[2])
+EOF
 else
   cp -v * "$d"
 fi
