@@ -6,12 +6,13 @@
 /unpatched.ebnf
 /rr.war
 /rr
+/out
 
 # Rust artifacts
 target/
 
 # Node artifacts
-build/
+# build/
 prebuilds/
 node_modules/
 

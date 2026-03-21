@@ -8,7 +8,7 @@ update: src/parser.c
 	tree-sitter test -u
 
 clean: clean-treesitter
-	rm -rf boogie.ebnf unpatched.js unpatched.ebnf rr build playground
+	rm -rf rr playground
 	-ninja -C out -t clean
 
 distclean: clean

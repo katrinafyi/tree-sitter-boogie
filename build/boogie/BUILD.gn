@@ -1,7 +1,7 @@
 import("//build/lib.gni")
 
 fetch("boogie") {
-  url = "https://github.com/boogie-org/boogie/archive/refs/heads/master.zip"
+  url = "https://github.com/boogie-org/boogie/archive/bc7292d41e938338e27f0771bd195ca9dace16dd.tar.gz"
   strip_leading_directory = true
   outputs = ["Source/Core/BoogiePL.atg"]
 }

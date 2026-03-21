@@ -62,7 +62,7 @@ action("grammar.js.orig") {
 
   args =
     [ "bash", "-c", "\$0 \$1 > \$2" ]
-    + rebase_path(inputs + sources + outputs)
+    + rebase_path(inputs + sources + outputs, root_build_dir)
 
   deps = [ ":boogie.ebnf", "//build/ts-ebnf-gen" ]
 }

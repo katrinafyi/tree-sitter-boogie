@@ -93,6 +93,6 @@ uninstall:
 
 clean-treesitter:
 	$(RM) $(OBJS) $(LANGUAGE_NAME).pc lib$(LANGUAGE_NAME).a lib$(LANGUAGE_NAME).$(SOEXT) $(LANGUAGE_NAME).wasm
-	$(RM) -r $(SRC_DIR) build
+	$(RM) -r $(SRC_DIR)
 
 .PHONY: treesitter install uninstall clean-treesitter test
