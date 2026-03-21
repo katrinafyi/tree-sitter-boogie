@@ -16,6 +16,7 @@ cat \
 	| sed 's_ | )_ )?_g' \
 	| sed 's/ EOF//g' \
 	| grep . \
-	| sed 's/^/  /g'
+	| sed 's/^/  /g' \
+	| ./fix-ll.py
 
 echo '  comment ::= /\/\/.*\n/'

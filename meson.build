@@ -38,8 +38,14 @@ original_ebnf = custom_target(
   # install_tag: 'grammar'
 )
 
+fix_ll = configure_file(
+  output: 'fix-ll.py',
+  input: 'fix-ll.py',
+  copy: true,
+)
+
 fix_ebnf = files('fix-ebnf.sh')
-fix_ll = files('fix-ll.py')
+
 fix_ebnf_diff = files('fix-ebnf.diff')
 fix_grammar = files('fix-grammar.sh')
 
@@ -48,14 +54,14 @@ boogie_ebnf_task = custom_target(
   output: ['boogie.ebnf', 'boogie.ebnf.orig'],
   command: [
     'bash', '-c',
-    'set -x; $1 < $2 | $3 > $4.orig && cp $4.orig $4 && patch --verbose $4 --merge -i $5',
+    'set -x; ./$1 < $2 > $3.orig && cp $3.orig $3 && patch --verbose $3 --merge -i $4',
     'boogie-ebnf-task',
     fix_ebnf,
     original_ebnf,
-    fix_ll,
     '@OUTPUT0@',
     fix_ebnf_diff
   ],
+  depend_files: [fix_ll]
 )
 boogie_ebnf = boogie_ebnf_task[0]
 
