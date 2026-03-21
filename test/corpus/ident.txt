@@ -15,20 +15,9 @@ function f() returns (int) {
       (Type
         (TypeAtom)))
     (Expression
-      (ImpliesExpression
-        (LogicalExpression
-          (RelationalExpression
-            (BvTerm
-              (Term
-                (Factor
-                  (Power
-                    (IsConstructor
-                      (UnaryExpression
-                        (CoercionExpression
-                          (ArrayExpression
-                            (AtomExpression
-                              (Ident
-                                (ident)))))))))))))))))
+      (AtomExpression
+        (Ident
+          (ident))))))
 
 ===
 ident with leading \
@@ -47,17 +36,6 @@ function f() returns (int) {
       (Type
         (TypeAtom)))
     (Expression
-      (ImpliesExpression
-        (LogicalExpression
-          (RelationalExpression
-            (BvTerm
-              (Term
-                (Factor
-                  (Power
-                    (IsConstructor
-                      (UnaryExpression
-                        (CoercionExpression
-                          (ArrayExpression
-                            (AtomExpression
-                              (Ident
-                                (ident)))))))))))))))))
+      (AtomExpression
+        (Ident
+          (ident))))))

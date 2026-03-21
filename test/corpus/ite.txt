@@ -17,65 +17,23 @@ function f() returns (int) {
       (Type
         (TypeAtom)))
     (Expression
-      (ImpliesExpression
+      (IfThenElseExpression
+        (Expression
+          (AtomExpression
+            (Ident
+              (ident))))
+        (Expression
+          (AtomExpression
+            (Ident
+              (ident))))
         (LogicalExpression
-          (IfThenElseExpression
-            (Expression
-              (ImpliesExpression
-                (LogicalExpression
-                  (RelationalExpression
-                    (BvTerm
-                      (Term
-                        (Factor
-                          (Power
-                            (IsConstructor
-                              (UnaryExpression
-                                (CoercionExpression
-                                  (ArrayExpression
-                                    (AtomExpression
-                                      (Ident
-                                        (ident)))))))))))))))
-            (Expression
-              (ImpliesExpression
-                (LogicalExpression
-                  (RelationalExpression
-                    (BvTerm
-                      (Term
-                        (Factor
-                          (Power
-                            (IsConstructor
-                              (UnaryExpression
-                                (CoercionExpression
-                                  (ArrayExpression
-                                    (AtomExpression
-                                      (Ident
-                                        (ident)))))))))))))))
-            (LogicalExpression
-              (RelationalExpression
-                (BvTerm
-                  (Term
-                    (Factor
-                      (Power
-                        (IsConstructor
-                          (UnaryExpression
-                            (CoercionExpression
-                              (ArrayExpression
-                                (AtomExpression
-                                  (Ident
-                                    (ident))))))))))))
-              (AndOp)
-              (RelationalExpression
-                (BvTerm
-                  (Term
-                    (Factor
-                      (Power
-                        (IsConstructor
-                          (UnaryExpression
-                            (CoercionExpression
-                              (ArrayExpression
-                                (AtomExpression
-                                  (Ident
-                                    (ident)))))))))))))))))))
+          (AtomExpression
+            (Ident
+              (ident)))
+          (AndOp)
+          (AtomExpression
+            (Ident
+              (ident))))))))
 
 ==================
 ite - has lower precedence than >

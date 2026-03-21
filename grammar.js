@@ -268,10 +268,10 @@ module.exports = grammar({
       seq($.Idents, ":", $.Type, optional(seq("where", $.Expression))),
     /*
      * boogie.ebnf:38
-     * Expression ::=  ImpliesExpression ( EquivOp ImpliesExpression )*
+     * Expression ::=  _ImpliesExpression ( EquivOp _ImpliesExpression )*
      */
     Expression: $ =>
-      seq($.ImpliesExpression, repeat(seq($.EquivOp, $.ImpliesExpression))),
+      seq($._ImpliesExpression, repeat(seq($.EquivOp, $._ImpliesExpression))),
     /*
      * boogie.ebnf:39
      * TypeAtom ::=  ( "int" | "real" | "bool" | "(" Type ")" )
@@ -627,149 +627,208 @@ module.exports = grammar({
       seq($.Expression, repeat(seq(",", $.Expression))),
     /*
      * boogie.ebnf:81
-     * ImpliesExpression ::=  LogicalExpression ( ImpliesOp ImpliesExpression | ExpliesOp LogicalExpression ( ExpliesOp LogicalExpression )* )?
+     * _ImpliesExpression ::=  _LogicalExpression  | ImpliesExpression
+     */
+    _ImpliesExpression: $ =>
+      choice($._LogicalExpression, $.ImpliesExpression),
+    /*
+     * boogie.ebnf:82
+     * ImpliesExpression ::=   _LogicalExpression  (  ImpliesOp _ImpliesExpression | ExpliesOp _LogicalExpression ( ExpliesOp _LogicalExpression )* )
      */
     ImpliesExpression: $ =>
       seq(
-        $.LogicalExpression,
-        optional(
-          choice(
-            seq($.ImpliesOp, $.ImpliesExpression),
-            seq($.ExpliesOp, $.LogicalExpression, repeat(seq($.ExpliesOp, $.LogicalExpression)))
+        $._LogicalExpression,
+        choice(
+          seq($.ImpliesOp, $._ImpliesExpression),
+          seq(
+            $.ExpliesOp,
+            $._LogicalExpression,
+            repeat(seq($.ExpliesOp, $._LogicalExpression))
           )
         )
       ),
     /*
-     * boogie.ebnf:82
+     * boogie.ebnf:83
      * EquivOp ::=  "<==>" | "\u21d4"
      */
     EquivOp: $ =>
       choice("<==>", "\u21d4"),
     /*
-     * boogie.ebnf:83
-     * LogicalExpression ::=  IfThenElseExpression | RelationalExpression ( AndOp RelationalExpression ( AndOp RelationalExpression )* | OrOp RelationalExpression ( OrOp RelationalExpression )* )?
+     * boogie.ebnf:84
+     * _LogicalExpression ::=  _RelationalExpression  | LogicalExpression | IfThenElseExpression
+     */
+    _LogicalExpression: $ =>
+      choice($._RelationalExpression, $.LogicalExpression, $.IfThenElseExpression),
+    /*
+     * boogie.ebnf:85
+     * LogicalExpression ::=   _RelationalExpression  (  AndOp _RelationalExpression ( AndOp _RelationalExpression )* | OrOp _RelationalExpression ( OrOp _RelationalExpression )* )
      */
     LogicalExpression: $ =>
-      choice(
-        $.IfThenElseExpression,
-        seq(
-          $.RelationalExpression,
-          optional(
-            choice(
-              seq($.AndOp, $.RelationalExpression, repeat(seq($.AndOp, $.RelationalExpression))),
-              seq($.OrOp, $.RelationalExpression, repeat(seq($.OrOp, $.RelationalExpression)))
-            )
-          )
+      seq(
+        $._RelationalExpression,
+        choice(
+          seq($.AndOp, $._RelationalExpression, repeat(seq($.AndOp, $._RelationalExpression))),
+          seq($.OrOp, $._RelationalExpression, repeat(seq($.OrOp, $._RelationalExpression)))
         )
       ),
     /*
-     * boogie.ebnf:84
+     * boogie.ebnf:86
      * ImpliesOp ::=  "==>" | "\u21d2"
      */
     ImpliesOp: $ =>
       choice("==>", "\u21d2"),
     /*
-     * boogie.ebnf:85
+     * boogie.ebnf:87
      * ExpliesOp ::=  "<==" | "\u21d0"
      */
     ExpliesOp: $ =>
       choice("<==", "\u21d0"),
     /*
-     * boogie.ebnf:86
-     * RelationalExpression ::=  BvTerm ( RelOp BvTerm )?
+     * boogie.ebnf:88
+     * _RelationalExpression ::=  _BvTerm  | RelationalExpression
+     */
+    _RelationalExpression: $ =>
+      choice($._BvTerm, $.RelationalExpression),
+    /*
+     * boogie.ebnf:89
+     * RelationalExpression ::=   _BvTerm  (  RelOp _BvTerm )
      */
     RelationalExpression: $ =>
-      seq($.BvTerm, optional(seq($.RelOp, $.BvTerm))),
+      seq($._BvTerm, seq($.RelOp, $._BvTerm)),
     /*
-     * boogie.ebnf:87
+     * boogie.ebnf:90
      * AndOp ::=  "&&" | "\u2227"
      */
     AndOp: $ =>
       choice("&&", "\u2227"),
     /*
-     * boogie.ebnf:88
+     * boogie.ebnf:91
      * OrOp ::=  "||" | "\u2228"
      */
     OrOp: $ =>
       choice("||", "\u2228"),
     /*
-     * boogie.ebnf:89
-     * BvTerm ::=  Term ( "++" Term )*
+     * boogie.ebnf:92
+     * _BvTerm ::=  _Term  | BvTerm
+     */
+    _BvTerm: $ =>
+      choice($._Term, $.BvTerm),
+    /*
+     * boogie.ebnf:93
+     * BvTerm ::=   _Term  (  "++" _Term )+
      */
     BvTerm: $ =>
-      seq($.Term, repeat(seq("++", $.Term))),
+      seq($._Term, repeat1(seq("++", $._Term))),
     /*
-     * boogie.ebnf:90
+     * boogie.ebnf:94
      * RelOp ::=  ( "==" | "<" | ">" | "<=" | ">=" | "!=" | "\u2260" | "\u2264" | "\u2265" )
      */
     RelOp: $ =>
       choice("==", "<", ">", "<=", ">=", "!=", "\u2260", "\u2264", "\u2265"),
     /*
-     * boogie.ebnf:91
-     * Term ::=  Factor ( AddOp Factor )*
+     * boogie.ebnf:95
+     * _Term ::=  _Factor  | Term
+     */
+    _Term: $ =>
+      choice($._Factor, $.Term),
+    /*
+     * boogie.ebnf:96
+     * Term ::=   _Factor  (  AddOp _Factor )+
      */
     Term: $ =>
-      seq($.Factor, repeat(seq($.AddOp, $.Factor))),
+      seq($._Factor, repeat1(seq($.AddOp, $._Factor))),
     /*
-     * boogie.ebnf:92
-     * Factor ::=  Power ( MulOp Power )*
+     * boogie.ebnf:97
+     * _Factor ::=  _Power  | Factor
+     */
+    _Factor: $ =>
+      choice($._Power, $.Factor),
+    /*
+     * boogie.ebnf:98
+     * Factor ::=   _Power  (  MulOp _Power )+
      */
     Factor: $ =>
-      seq($.Power, repeat(seq($.MulOp, $.Power))),
+      seq($._Power, repeat1(seq($.MulOp, $._Power))),
     /*
-     * boogie.ebnf:93
+     * boogie.ebnf:99
      * AddOp ::=  ( "+" | "-" )
      */
     AddOp: $ =>
       choice("+", "-"),
     /*
-     * boogie.ebnf:94
-     * Power ::=  IsConstructor ( "**" Power )?
+     * boogie.ebnf:100
+     * _Power ::=  _IsConstructor  | Power
+     */
+    _Power: $ =>
+      choice($._IsConstructor, $.Power),
+    /*
+     * boogie.ebnf:101
+     * Power ::=   _IsConstructor  (  "**" _Power )
      */
     Power: $ =>
-      seq($.IsConstructor, optional(seq("**", $.Power))),
+      seq($._IsConstructor, seq("**", $._Power)),
     /*
-     * boogie.ebnf:95
+     * boogie.ebnf:102
      * MulOp ::=  ( "*" | "div" | "mod" | "/" )
      */
     MulOp: $ =>
       choice("*", "div", "mod", "/"),
     /*
-     * boogie.ebnf:96
-     * IsConstructor ::=  UnaryExpression ( "is" Ident )?
+     * boogie.ebnf:103
+     * _IsConstructor ::=  _UnaryExpression  | IsConstructor
+     */
+    _IsConstructor: $ =>
+      choice($._UnaryExpression, $.IsConstructor),
+    /*
+     * boogie.ebnf:104
+     * IsConstructor ::=   _UnaryExpression  (  "is" Ident )
      */
     IsConstructor: $ =>
-      seq($.UnaryExpression, optional(seq("is", $.Ident))),
+      seq($._UnaryExpression, seq("is", $.Ident)),
     /*
-     * boogie.ebnf:97
-     * UnaryExpression ::=  ( "-" UnaryExpression | NegOp UnaryExpression | CoercionExpression )
+     * boogie.ebnf:105
+     * _UnaryExpression ::= UnaryExpression | _CoercionExpression
+     */
+    _UnaryExpression: $ =>
+      choice($.UnaryExpression, $._CoercionExpression),
+    /*
+     * boogie.ebnf:106
+     * UnaryExpression ::=  ( "-" _UnaryExpression | NegOp _UnaryExpression  )
      */
     UnaryExpression: $ =>
-      choice(
-        seq("-", $.UnaryExpression),
-        seq($.NegOp, $.UnaryExpression),
-        $.CoercionExpression
-      ),
+      choice(seq("-", $._UnaryExpression), seq($.NegOp, $._UnaryExpression)),
     /*
-     * boogie.ebnf:98
+     * boogie.ebnf:107
      * NegOp ::=  "!" | "\u00ac"
      */
     NegOp: $ =>
       choice("!", "\u00ac"),
     /*
-     * boogie.ebnf:99
-     * CoercionExpression ::=  ArrayExpression ( ":" ( Type | Nat ) )*
+     * boogie.ebnf:108
+     * _CoercionExpression ::=  _ArrayExpression  | CoercionExpression
+     */
+    _CoercionExpression: $ =>
+      choice($._ArrayExpression, $.CoercionExpression),
+    /*
+     * boogie.ebnf:109
+     * CoercionExpression ::=   _ArrayExpression  (  ":" ( Type | Nat ) )+
      */
     CoercionExpression: $ =>
-      seq($.ArrayExpression, repeat(seq(":", choice($.Type, $.Nat)))),
+      seq($._ArrayExpression, repeat1(seq(":", choice($.Type, $.Nat)))),
     /*
-     * boogie.ebnf:100
-     * ArrayExpression ::=  AtomExpression ( "[" ( Expression ( "," Expression )* ( ":=" Expression )? | ":=" Expression )? "]" | "->" ( Ident | "(" Ident ":=" Expression ")" ) )*
+     * boogie.ebnf:110
+     * _ArrayExpression ::=  AtomExpression  | ArrayExpression
+     */
+    _ArrayExpression: $ =>
+      choice($.AtomExpression, $.ArrayExpression),
+    /*
+     * boogie.ebnf:111
+     * ArrayExpression ::=   AtomExpression  (  "[" ( Expression ( "," Expression )* ( ":=" Expression )? | ":=" Expression )? "]" | "->" ( Ident | "(" Ident ":=" Expression ")" ) )+
      */
     ArrayExpression: $ =>
       seq(
         $.AtomExpression,
-        repeat(
+        repeat1(
           choice(
             seq(
               "[",
@@ -786,13 +845,13 @@ module.exports = grammar({
         )
       ),
     /*
-     * boogie.ebnf:101
+     * boogie.ebnf:112
      * Nat ::=  digits
      */
     Nat: $ =>
       $.digits,
     /*
-     * boogie.ebnf:102
+     * boogie.ebnf:113
      * AtomExpression ::=  ( "false" | "true" | ( "roundNearestTiesToEven" | "RNE" ) | ( "roundNearestTiesToAway" | "RNA" ) | ( "roundTowardPositive" | "RTP" ) | ( "roundTowardNegative" | "RTN" ) | ( "roundTowardZero" | "RTZ" ) | Nat | Dec | Float | BvLit | string | Ident ( "(" ( Expressions )? ")" )? | "old" "(" Expression ")" | "int" "(" Expression ")" | "real" "(" Expression ")" | "(" ( Expression | Forall QuantifierBody | Exists QuantifierBody | Lambda QuantifierBody | LetExpr ) ")" | CodeExpression )
      */
     AtomExpression: $ =>
@@ -832,31 +891,31 @@ module.exports = grammar({
         $.CodeExpression
       ),
     /*
-     * boogie.ebnf:103
+     * boogie.ebnf:114
      * Dec ::=  ( decimal | dec_float )
      */
     Dec: $ =>
       choice($.decimal, $.dec_float),
     /*
-     * boogie.ebnf:104
+     * boogie.ebnf:115
      * Float ::=  float
      */
     Float: $ =>
       $.float,
     /*
-     * boogie.ebnf:105
+     * boogie.ebnf:116
      * BvLit ::=  bvlit
      */
     BvLit: $ =>
       $.bvlit,
     /*
-     * boogie.ebnf:106
+     * boogie.ebnf:117
      * Forall ::=  "forall" | "\u2200"
      */
     Forall: $ =>
       choice("forall", "\u2200"),
     /*
-     * boogie.ebnf:107
+     * boogie.ebnf:118
      * QuantifierBody ::=  ( TypeParams BoundVars? | BoundVars ) QSep AttributeOrTrigger* Expression
      */
     QuantifierBody: $ =>
@@ -867,19 +926,19 @@ module.exports = grammar({
         $.Expression
       ),
     /*
-     * boogie.ebnf:108
+     * boogie.ebnf:119
      * Exists ::=  "exists" | "\u2203"
      */
     Exists: $ =>
       choice("exists", "\u2203"),
     /*
-     * boogie.ebnf:109
+     * boogie.ebnf:120
      * Lambda ::=  "lambda" | "\u03bb"
      */
     Lambda: $ =>
       choice("lambda", "\u03bb"),
     /*
-     * boogie.ebnf:110
+     * boogie.ebnf:121
      * LetExpr ::=  "var" LetVar ( "," LetVar )* ":=" Expression ( "," Expression )* ";" Attribute* Expression
      */
     LetExpr: $ =>
@@ -895,19 +954,19 @@ module.exports = grammar({
         $.Expression
       ),
     /*
-     * boogie.ebnf:111
+     * boogie.ebnf:122
      * IfThenElseExpression ::=  "if" Expression "then" Expression "else" LogicalExpression
      */
     IfThenElseExpression: $ =>
       seq("if", $.Expression, "then", $.Expression, "else", $.LogicalExpression),
     /*
-     * boogie.ebnf:112
+     * boogie.ebnf:123
      * CodeExpression ::=  "|{" LocalVars* SpecBlock ( SpecBlock )* "}|"
      */
     CodeExpression: $ =>
       seq("|{", repeat($.LocalVars), $.SpecBlock, repeat($.SpecBlock), "}|"),
     /*
-     * boogie.ebnf:113
+     * boogie.ebnf:124
      * SpecBlock ::=  Ident ":" ( LabelOrCmd )* ( "goto" Attribute* Idents | "return" Attribute* Expression ) ";"
      */
     SpecBlock: $ =>
@@ -922,7 +981,7 @@ module.exports = grammar({
         ";"
       ),
     /*
-     * boogie.ebnf:114
+     * boogie.ebnf:125
      * AttributeOrTrigger ::=  "{" ( ":" Ident ( AttributeParameter ( "," AttributeParameter )* )? | Expression ( "," Expression )* ) "}"
      */
     AttributeOrTrigger: $ =>
@@ -939,19 +998,19 @@ module.exports = grammar({
         "}"
       ),
     /*
-     * boogie.ebnf:115
+     * boogie.ebnf:126
      * AttributeParameter ::=  ( Expression )
      */
     AttributeParameter: $ =>
       $.Expression,
     /*
-     * boogie.ebnf:116
+     * boogie.ebnf:127
      * QSep ::=  "::" | "\u2022"
      */
     QSep: $ =>
       choice("::", "\u2022"),
     /*
-     * boogie.ebnf:117-120
+     * boogie.ebnf:128-131
      * LetVar ::=  Attribute* Ident
      * ;
      * ; tokens
@@ -960,7 +1019,7 @@ module.exports = grammar({
     LetVar: $ =>
       seq(repeat($.Attribute), $.Ident),
     /*
-     * boogie.ebnf:121
+     * boogie.ebnf:132
      * ident ::=  [\\]? [\u0023-$'.?A-Z^-z~] ( [\u0023-$'.?A-Z^-z~] | [0-9] )*
      */
     ident: $ =>
@@ -970,19 +1029,19 @@ module.exports = grammar({
         regexrepeat(regexchoice(/[\u0023-$'.?A-Z^-z~]/, /[0-9]/))
       ),
     /*
-     * boogie.ebnf:122
+     * boogie.ebnf:133
      * bvlit ::=  [0-9] [0-9]* [b] [v] [0-9] [0-9]*
      */
     bvlit: $ =>
       regexseq(/[0-9]/, regexrepeat(/[0-9]/), /[b]/, /[v]/, /[0-9]/, regexrepeat(/[0-9]/)),
     /*
-     * boogie.ebnf:123
+     * boogie.ebnf:134
      * digits ::=  [0-9] [0-9]*
      */
     digits: $ =>
       regexseq(/[0-9]/, regexrepeat(/[0-9]/)),
     /*
-     * boogie.ebnf:124
+     * boogie.ebnf:135
      * string ::=  ["] ( [\u0000-\u0009\u000b-\u000c\u000e-!\u0023-\uffff] | [\\] ["] )* ["]
      */
     string: $ =>
@@ -992,13 +1051,13 @@ module.exports = grammar({
         /["]/
       ),
     /*
-     * boogie.ebnf:125
+     * boogie.ebnf:136
      * decimal ::=  [0-9] [0-9]* [e] [-]? [0-9] [0-9]*
      */
     decimal: $ =>
       regexseq(/[0-9]/, regexrepeat(/[0-9]/), /[e]/, regexoptional(/[-]/), /[0-9]/, regexrepeat(/[0-9]/)),
     /*
-     * boogie.ebnf:126
+     * boogie.ebnf:137
      * dec_float ::=  [0-9] [0-9]* [.] [0-9] [0-9]* ( [e] [-]? [0-9] [0-9]* )?
      */
     dec_float: $ =>
@@ -1011,7 +1070,7 @@ module.exports = grammar({
         regexoptional(regexseq(/[e]/, regexoptional(/[-]/), /[0-9]/, regexrepeat(/[0-9]/)))
       ),
     /*
-     * boogie.ebnf:127
+     * boogie.ebnf:138
      * float ::=  [-]? [0] [x] [0-9A-Fa-f] [0-9A-Fa-f]* [.] [0-9A-Fa-f] [0-9A-Fa-f]* [e] [-]? [0-9] [0-9]* [f] [0-9] [0-9]* [e] [0-9] [0-9]* | [0] [N] [a] [N] [0-9] [0-9]* [e] [0-9] [0-9]* | [0] [n] [a] [n] [0-9] [0-9]* [e] [0-9] [0-9]* | [0] [+] [o] [o] [0-9] [0-9]* [e] [0-9] [0-9]* | [0] [-] [o] [o] [0-9] [0-9]* [e] [0-9] [0-9]*
      */
     float: $ =>
@@ -1082,7 +1141,7 @@ module.exports = grammar({
         )
       ),
     /*
-     * boogie.ebnf:128
+     * boogie.ebnf:139
      * comment ::= /\/\/.*\n/
      */
     comment: $ =>

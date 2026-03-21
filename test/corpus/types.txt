@@ -16,34 +16,24 @@ function f() returns (int) {
       (Type
         (TypeAtom)))
     (Expression
-      (ImpliesExpression
-        (LogicalExpression
-          (RelationalExpression
-            (BvTerm
-              (Term
-                (Factor
-                  (Power
-                    (IsConstructor
-                      (UnaryExpression
-                        (CoercionExpression
-                          (ArrayExpression
-                            (AtomExpression
-                              (Ident
-                                (ident))))
-                          (Type
-                            (Ident
-                              (ident))
-                            (TypeArgs
-                              (MapType
-                                (TypeParams
-                                  (Idents
-                                    (Ident
-                                      (ident))))
-                                (Types
-                                  (Type
-                                    (TypeAtom)))
-                                (Type
-                                  (TypeAtom))))))))))))))))))
+      (CoercionExpression
+        (AtomExpression
+          (Ident
+            (ident)))
+        (Type
+          (Ident
+            (ident))
+          (TypeArgs
+            (MapType
+              (TypeParams
+                (Idents
+                  (Ident
+                    (ident))))
+              (Types
+                (Type
+                  (TypeAtom)))
+              (Type
+                (TypeAtom)))))))))
 
 ==================
 less than - potential ambiguity with type params
@@ -64,32 +54,15 @@ function f() returns (int) {
       (Type
         (TypeAtom)))
     (Expression
-      (ImpliesExpression
-        (LogicalExpression
-          (RelationalExpression
-            (BvTerm
-              (Term
-                (Factor
-                  (Power
-                    (IsConstructor
-                      (UnaryExpression
-                        (CoercionExpression
-                          (ArrayExpression
-                            (AtomExpression
-                              (Ident
-                                (ident))))
-                          (Type
-                            (Ident
-                              (ident))))))))))
-            (RelOp)
-            (BvTerm
-              (Term
-                (Factor
-                  (Power
-                    (IsConstructor
-                      (UnaryExpression
-                        (CoercionExpression
-                          (ArrayExpression
-                            (AtomExpression
-                              (Ident
-                                (ident)))))))))))))))))
+      (RelationalExpression
+        (CoercionExpression
+          (AtomExpression
+            (Ident
+              (ident)))
+          (Type
+            (Ident
+              (ident))))
+        (RelOp)
+        (AtomExpression
+          (Ident
+            (ident)))))))
