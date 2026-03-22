@@ -20,8 +20,8 @@ playground: tree-sitter-boogie.wasm
 # ===== DEPENDENCY URLS =====
 
 BOOGIE_TAR ?= https://github.com/boogie-org/boogie/archive/bc7292d41e938338e27f0771bd195ca9dace16dd.tar.gz
-COCOR_CPP_TAR ?= https://github.com/rina-forks/CocoR-CPP/archive/master.tar.gz
-EBNF_GEN ?= https://github.com/rina-forks/tree-sitter-ebnf-generator/archive/master.tar.gz
+COCOR_CPP_TAR ?= https://github.com/rina-forks/CocoR-CPP/archive/e968eb7da7295125dcc1ba45c6616d94bbfd6ddd.tar.gz
+EBNF_GEN ?= https://github.com/rina-forks/tree-sitter-ebnf-generator/archive/89fde0613e62a3cad0ae66504ea3f31b9a9d6976.tar.gz
 RR_ZIP ?= https://repo1.maven.org/maven2/de/bottlecaps/rr/rr-webapp/2.6/rr-webapp-2.6.war
 
 # ===== BUILD DIRECTORY AND TOOLS =====
@@ -46,7 +46,7 @@ $(boogie_atg): $(bdep) $(fetch)
 coco = $(b)/Coco
 $(coco): $(bdep) $(fetch)
 	url=$(COCOR_CPP_TAR) unpack=true strip_leading=true out=$(b)/cocor-cpp $(fetch)
-	make -j6 -C $(b)/cocor-cpp/src
+	$(MAKE) -C $(b)/cocor-cpp/src
 	mv $(b)/cocor-cpp/src/Coco $@
 
 parse_grammar = $(b)/parse_grammar.lua
