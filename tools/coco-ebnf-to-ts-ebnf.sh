@@ -15,8 +15,7 @@ EOF
 
 cat \
 	| sed 's_^//_;_g' \
-	| sed 's_ | )_ )?_g' \
-	| sed 's/ EOF//g' \
+	| sed 's/ EOF$//g' \
 	| grep . \
 	| sed 's/^/  /g' \
 	| "$(dirname $0)/ts-ebnf-fix-ll.py"

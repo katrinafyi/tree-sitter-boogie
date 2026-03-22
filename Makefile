@@ -75,7 +75,7 @@ $(boogie_ts_ebnf): tools/coco-ebnf-to-ts-ebnf.sh $(boogie_patched_ebnf)
 
 grammar_js = $(b)/grammar.js
 $(grammar_js): tools/postprocess-grammar-js.sh $(parse_grammar) $(boogie_ts_ebnf)
-	$(parse_grammar) $(boogie_ts_ebnf) > $(b)/grammar.js.orig
+	$(parse_grammar) -o $(b)/grammar.js.orig $(boogie_ts_ebnf)
 	./$< $(b)/grammar.js.orig $@
 
 # ===== RAILROAD DIAGRAM FILES =====
