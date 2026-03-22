@@ -1,8 +1,0 @@
-import("//build/lib.gni")
-
-fetch("ts-ebnf-gen") {
-  url = "https://github.com/rina-forks/tree-sitter-ebnf-generator/archive/89fde0613e62a3cad0ae66504ea3f31b9a9d6976.tar.gz"
-  strip_leading_directory = true
-  outputs = ["src/lua/parse_grammar.lua"]
-}
-

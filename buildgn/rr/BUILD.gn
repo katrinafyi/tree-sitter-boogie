@@ -1,8 +1,0 @@
-import("//build/lib.gni")
-
-fetch("rr") {
-  url = "https://repo1.maven.org/maven2/de/bottlecaps/rr/rr-webapp/2.6/rr-webapp-2.6.war"
-  unpack = false
-  outputs = [ "rr-webapp-2.6.war" ]
-}
-
