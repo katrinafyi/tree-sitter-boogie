@@ -33,7 +33,7 @@ jobs:
           java-version: '25'
       - uses: actions/configure-pages@v5
 
-      - run: sudo apt-get install --no-install-recommends lua5.4 generate-ninja ninja-build
+      - run: sudo apt-get install --no-install-recommends lua5.4
       - run: sudo npm i -g tree-sitter-cli
 
       - run: make
