@@ -37,8 +37,8 @@ jobs:
       - run: sudo npm i -g tree-sitter-cli
 
       - run: make
-      - run: make -j6 rr
       - run: make playground
+      - run: make rr
       - name: Clean files for docs upload
         run: |
           shopt -s extglob

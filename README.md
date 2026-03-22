@@ -9,25 +9,31 @@ The Tree-sitter grammar is derived [from BoogiePL.atg][] in the Boogie source co
 Coco/R parser generator grammar which is used in the actual Boogie parser. The ATG file
 is passed through [mingodad/CocoR-CPP][] which produces an EBNF grammar
 ([forked](https://github.com/rina-forks/CocoR-CPP) to emit EBNF for non-literal terminals).
-The EBNF is [pre-processed](https://github.com/katrinafyi/tree-sitter-boogie/blob/main/fix-ebnf.sh)
-to adjust some syntax and [a manually-created patch](https://github.com/katrinafyi/tree-sitter-boogie/blob/main/fix-ebnf.diff)
+The EBNF is [pre-processed](https://github.com/katrinafyi/tree-sitter-boogie/blob/main/tools/coco-ebnf-to-ts-ebnf.sh)
+to adjust some syntax and [a manually-created patch](https://github.com/katrinafyi/tree-sitter-boogie/blob/main/boogie.ebnf.diff)
 is applied to fix some things which are difficult for Tree-sitter.
 Then, the patched EBNF is run through
 [tree-sitter-ebnf-generator](https://github.com/eatkins/tree-sitter-ebnf-generator)
 to produce an initial Tree-sitter grammar, and
-the Tree-sitter grammar is transformed with [fix-grammar.sh](https://github.com/katrinafyi/tree-sitter-boogie/blob/main/fix-grammar.sh) to overload some functions with regex-aware smart constructors.
+the Tree-sitter grammar is transformed with
+[postprocess-grammar-js.sh](https://github.com/katrinafyi/tree-sitter-boogie/blob/main/tools/postprocess-grammar-js.sh)
+to overload some functions with regex-aware smart constructors.
 
-The whole pipeline is defined in the Makefile and meson.build.
-If you want to reproduce the steps, you will need a C++ compiler,
-Meson 1.3.0+, Ninja, Lua 5.4 (5.4 is important for reproducibility!), and patch.
+The grammar.js is committed and ready for use. For other generated Tree-sitter files,
+you should generate them locally using the tree-sitter CLI. If that is not possible,
+they are also available on Github Pages - for instance, [parser.c][] and [grammar.json][].
 
+[parser.c]: https://katrinafyi.github.io/tree-sitter-boogie/src/parser.c
+[grammar.json]: https://katrinafyi.github.io/tree-sitter-boogie/src/grammar.json
+
+The generation pipeline is defined in the Makefile. If you want to reproduce the
+steps, you will need a C++ compiler, wget, patch, and Lua 5.4 (5.4 is important for reproducibility!).
 With the dependencies available, this should be enough:
 ```bash
 make force
 ```
-The Makefile automatically configures and invokes meson+ninja. `make force` should
-produce a grammar.js which is identical to the one in this repository. If not,
-then that is a bug :)
+`make force` will rebuild the grammar.js and it should be identical to the one
+already in this repository. If not, then that is a bug :)
 
 [from BoogiePL.atg]: https://github.com/boogie-org/boogie/blob/master/Source/Core/BoogiePL.atg
 [mingodad/CocoR-CPP]: https://github.com/mingodad/CocoR-CPP
@@ -75,7 +81,7 @@ The upstream grammar is written in a style with left-recursion removed and
 precedence made explicit through rules. This is good for LL recursive-descent parsers,
 but bad for Tree-sitter's AST.
 
-We have done some work, in [fix-ll.py](https://github.com/katrinafyi/tree-sitter-boogie/blob/main/fix-ll.py),
+We have done some work, in [ts-ebnf-fix-ll.py](https://github.com/katrinafyi/tree-sitter-boogie/blob/main/tools/ts-ebnf-fix-ll.py),
 to omit these precedence hierarchies from the parsed Tree-sitter AST.
 
 Originally, it would lead to deeply nested structures for simple
