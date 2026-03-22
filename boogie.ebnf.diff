@@ -1,9 +1,9 @@
---- build/boogie.ebnf.orig	2026-03-22 13:39:53.194918299 +1000
-+++ build/boogie.ebnf.patched	2026-03-22 13:39:53.224918722 +1000
+--- build/coco.ebnf.orig	2026-03-22 14:27:53.045707992 +1000
++++ build/coco.ebnf	2026-03-22 14:28:02.469133498 +1000
 @@ -6,7 +6,7 @@
  // productions
  //
-
+ 
 -BoogiePL ::=  ( Consts | Function | Axiom | UserDefinedTypes | Datatype | GlobalVars | InvariantDecl | "yield" ( InvariantDecl | YieldProcedureDecl ) | Pure ( Procedure | ActionDecl ) | Implementation )* EOF
 +BoogiePL ::=  ( Consts | Function | Axiom | UserDefinedTypes | Datatype | GlobalVars | InvariantDecl | "yield" ( InvariantDecl | YieldProcedureDecl ) | Pure? ( Procedure | ActionDecl ) | Implementation )* EOF
  Consts ::=  "const" Attribute* ( "unique" )? IdsType ( ";" | "uses" "{" ( Axiom )* "}" )
@@ -45,4 +45,4 @@
 +AttributeParameter ::=  ( Expression )
  QSep ::=  "::" | "\u2022"
  LetVar ::=  Attribute* Ident
-
+ 
