@@ -4,7 +4,7 @@ import sys
 import re
 
 ll_rules = [
-    'Expression',
+    'EquivExpression',
     'ImpliesExpression',
     'LogicalExpression',
     'RelationalExpression',
@@ -20,18 +20,22 @@ ll_rules = [
     'IdsTypeWhere'
 ]
 
+make_underscore = [
+    'Expression'
+]
+
 inp = sys.stdin.read()
 
-for ll in ll_rules:
+for ll in ll_rules + make_underscore:
     inp = re.sub(rf'\b{ll}\b', f'_{ll}', inp)
 
 def transform_line(line: str):
-    if not line.startswith('  _'):
+    rule_name = line.split('::=')[0].strip().lstrip('_')
+    if rule_name in make_underscore or not line.startswith('  _'):
         yield line
         return
     init, rest = line.split('(', 1)
     init_rule = init.split('::=')[-1]
-    rule_name = init.split()[0].lstrip('_')
 
     if rule_name == 'UnaryExpression':
         yield '  _UnaryExpression ::= UnaryExpression | _CoercionExpression'

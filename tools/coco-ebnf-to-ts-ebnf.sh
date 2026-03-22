@@ -19,6 +19,6 @@ cat \
 	| sed 's/ EOF//g' \
 	| grep . \
 	| sed 's/^/  /g' \
-	| ./fix-ll.py
+	| "$(dirname $0)/ts-ebnf-fix-ll.py"
 
 echo '  comment ::= /\/\/.*\n/'

@@ -1,18 +1,13 @@
 /src
-/Boogie
-/CocoR-CPP
-/tree-sitter-ebnf-generator
-/unpatched.js
-/unpatched.ebnf
-/rr.war
 /rr
-/out
+/playground
+/.fetchcache
 
 # Rust artifacts
 target/
 
 # Node artifacts
-# build/
+build/
 prebuilds/
 node_modules/
 

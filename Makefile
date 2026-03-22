@@ -17,20 +17,23 @@ playground: tree-sitter-boogie.wasm
 	tree-sitter playground -q --export playground
 	sed -i 's|LANGUAGE_BASE_URL = ""|LANGUAGE_BASE_URL = "."|' playground/index.html
 
-# ===== FETCHED URLS =====
+# ===== DEPENDENCY URLS =====
 
 BOOGIE_TAR ?= https://github.com/boogie-org/boogie/archive/bc7292d41e938338e27f0771bd195ca9dace16dd.tar.gz
 COCOR_CPP_TAR ?= https://github.com/rina-forks/CocoR-CPP/archive/master.tar.gz
 EBNF_GEN ?= https://github.com/rina-forks/tree-sitter-ebnf-generator/archive/master.tar.gz
 RR_ZIP ?= https://repo1.maven.org/maven2/de/bottlecaps/rr/rr-webapp/2.6/rr-webapp-2.6.war
 
-# ===== BUILD DIRECTORY SETUP =====
+# ===== BUILD DIRECTORY AND TOOLS =====
 
 b ?= build
 bdep = $(b)/.stamp
 
 $(bdep):
 	mkdir -p $(b) && touch $@
+
+tools/coco-ebnf-to-ts-ebnf.sh: tools/ts-ebnf-fix-ll.py
+	touch $@  # $^ is a runtime dependency of $<
 
 # ===== FETCHED DEPENDENCIES =====
 
@@ -57,29 +60,29 @@ $(rr_jar): $(bdep) $(fetch)
 
 # ===== GRAMMAR FILES =====
 
-boogie_coco_ebnf = $(b)/coco.ebnf
+boogie_coco_ebnf = $(b)/boogie.ebnf.orig
 $(boogie_coco_ebnf): $(coco) $(boogie_atg) frames/Parser.frame frames/Scanner.frame
 	$(coco) $(boogie_atg) -genRREBNF -frames frames -o $(b)
 	mv $(b)/Parser.ebnf $@
 
-boogie_ts_ebnf = $(b)/boogie.ebnf.orig
-$(boogie_ts_ebnf): fix-ebnf.sh $(boogie_coco_ebnf)
-	./$< $(boogie_coco_ebnf) $@
+boogie_patched_ebnf = $(b)/boogie.ebnf.patched
+$(boogie_patched_ebnf): boogie.ebnf.diff $(boogie_coco_ebnf)
+	patch --reverse --verbose --merge --output $@ -i $< $(boogie_coco_ebnf)
 
-boogie_patched_ebnf = $(b)/boogie.ebnf
-$(boogie_patched_ebnf): fix-ebnf.diff $(boogie_ts_ebnf)
-	patch --verbose --merge --output $@ -i $< $(boogie_ts_ebnf)
+boogie_ts_ebnf = $(b)/boogie.ebnf
+$(boogie_ts_ebnf): tools/coco-ebnf-to-ts-ebnf.sh $(boogie_patched_ebnf)
+	./$< $(boogie_patched_ebnf) $@
 
 grammar_js = $(b)/grammar.js
-$(grammar_js): $(parse_grammar) $(boogie_patched_ebnf) fix-grammar.sh
-	$(parse_grammar) $(boogie_patched_ebnf) > $(b)/grammar.js.orig
-	./fix-grammar.sh $(b)/grammar.js.orig $@
+$(grammar_js): tools/postprocess-grammar-js.sh $(parse_grammar) $(boogie_ts_ebnf)
+	$(parse_grammar) $(boogie_ts_ebnf) > $(b)/grammar.js.orig
+	./$< $(b)/grammar.js.orig $@
 
 # ===== RAILROAD DIAGRAM FILES =====
 
 rr_ebnf = $(b)/rr.ebnf
-$(rr_ebnf): $(boogie_coco_ebnf) to-hash-x.sh
-	./to-hash-x.sh < $(boogie_coco_ebnf) > $@
+$(rr_ebnf): tools/coco-ebnf-to-rr-ebnf.sh $(boogie_coco_ebnf)
+	./$< < $(boogie_coco_ebnf) > $@
 
 rr_zip = $(b)/rr.zip
 $(rr_zip): $(rr_jar) $(rr_ebnf)
@@ -93,8 +96,8 @@ force: $(grammar_js) $(rr_ebnf)
 rr: $(rr_zip)
 	rm -rf $@ && mkdir $@ && unzip $< -d $@
 
-fix-ebnf.diff:  # should be used with -B / --always-make
-	diff -u $(boogie_ts_ebnf) $(boogie_patched_ebnf) > $@ ; if [ $$? -gt 1 ]; then false; fi
+boogie.ebnf.diff:  # should be used with -B / --always-make
+	diff -u $(boogie_patched_ebnf) $(boogie_coco_ebnf) > $@ ; if [ $$? -gt 1 ]; then false; fi
 
 
 
