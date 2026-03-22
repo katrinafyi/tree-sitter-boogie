@@ -46,7 +46,7 @@ $(boogie_atg): $(bdep) $(fetch)
 coco = $(b)/Coco
 $(coco): $(bdep) $(fetch)
 	url=$(COCOR_CPP_TAR) unpack=true strip_leading=true out=$(b)/cocor-cpp $(fetch)
-	cd $(b)/cocor-cpp/src && $(CXX) -g -Wall -fno-rtti -fno-exceptions *.cpp -o Coco -fsanitize=address $(CFLAGS) $(CXXFLAGS)
+	make -j6 -C $(b)/cocor-cpp/src
 	mv $(b)/cocor-cpp/src/Coco $@
 
 parse_grammar = $(b)/parse_grammar.lua
@@ -60,14 +60,14 @@ $(rr_jar): $(bdep) $(fetch)
 
 # ===== GRAMMAR FILES =====
 
-boogie_coco_ebnf = $(b)/boogie.ebnf.orig
+boogie_coco_ebnf = $(b)/coco.ebnf.orig
 $(boogie_coco_ebnf): $(coco) $(boogie_atg) frames/Parser.frame frames/Scanner.frame
 	$(coco) $(boogie_atg) -genRREBNF -frames frames -o $(b)
 	mv $(b)/Parser.ebnf $@
 
-boogie_patched_ebnf = $(b)/boogie.ebnf.patched
+boogie_patched_ebnf = $(b)/coco.ebnf
 $(boogie_patched_ebnf): boogie.ebnf.diff $(boogie_coco_ebnf)
-	patch --reverse --verbose --merge --output $@ -i $< $(boogie_coco_ebnf)
+	patch --verbose --merge --output $@ -i $< $(boogie_coco_ebnf)
 
 boogie_ts_ebnf = $(b)/boogie.ebnf
 $(boogie_ts_ebnf): tools/coco-ebnf-to-ts-ebnf.sh $(boogie_patched_ebnf)
@@ -97,7 +97,7 @@ rr: $(rr_zip)
 	rm -rf $@ && mkdir $@ && unzip $< -d $@
 
 boogie.ebnf.diff:  # should be used with -B / --always-make
-	diff -u $(boogie_patched_ebnf) $(boogie_coco_ebnf) > $@ ; if [ $$? -gt 1 ]; then false; fi
+	diff -u $(boogie_coco_ebnf) $(boogie_patched_ebnf) > $@ ; if [ $$? -gt 1 ]; then false; fi
 
 
 

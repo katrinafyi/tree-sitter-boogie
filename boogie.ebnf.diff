@@ -1,11 +1,11 @@
---- build/boogie.ebnf	2026-03-22 13:34:21.619483776 +1000
-+++ build/boogie.ebnf.orig	2026-03-22 13:32:24.180407703 +1000
+--- build/boogie.ebnf.orig	2026-03-22 13:39:53.194918299 +1000
++++ build/boogie.ebnf.patched	2026-03-22 13:39:53.224918722 +1000
 @@ -6,7 +6,7 @@
  // productions
  //
  
--BoogiePL ::=  ( Consts | Function | Axiom | UserDefinedTypes | Datatype | GlobalVars | InvariantDecl | "yield" ( InvariantDecl | YieldProcedureDecl ) | Pure? ( Procedure | ActionDecl ) | Implementation )* EOF
-+BoogiePL ::=  ( Consts | Function | Axiom | UserDefinedTypes | Datatype | GlobalVars | InvariantDecl | "yield" ( InvariantDecl | YieldProcedureDecl ) | Pure ( Procedure | ActionDecl ) | Implementation )* EOF
+-BoogiePL ::=  ( Consts | Function | Axiom | UserDefinedTypes | Datatype | GlobalVars | InvariantDecl | "yield" ( InvariantDecl | YieldProcedureDecl ) | Pure ( Procedure | ActionDecl ) | Implementation )* EOF
++BoogiePL ::=  ( Consts | Function | Axiom | UserDefinedTypes | Datatype | GlobalVars | InvariantDecl | "yield" ( InvariantDecl | YieldProcedureDecl ) | Pure? ( Procedure | ActionDecl ) | Implementation )* EOF
  Consts ::=  "const" Attribute* ( "unique" )? IdsType ( ";" | "uses" "{" ( Axiom )* "}" )
  Function ::=  ( "revealed" )? "function" Attribute* Ident TypeParams? "(" ( VarOrType ( "," VarOrType )* )? ")" ( "returns" "(" VarOrType ")" | ":" Type ) ( "{" Expression "}" ( "uses" "{" ( Axiom )* "}" )? | "uses" "{" ( Axiom )* "}" | ";" )
  Axiom ::=  ( "hideable" )? "axiom" Attribute* Proposition ";"
@@ -13,36 +13,36 @@
  GlobalVars ::=  "var" Attribute* IdsTypeWheres ";"
  InvariantDecl ::=  "invariant" Attribute* Ident ProcFormals ";" Invariant*
  YieldProcedureDecl ::=  MoverQualifier? "procedure" Attribute* Ident ProcFormals ( "returns" ProcFormals )? ( ";" SpecYieldPrePost* | SpecYieldPrePost* ImplBody )
--Pure ::=  ( "pure" )
-+Pure ::=  ( "pure" )?
+-Pure ::=  ( "pure" )?
++Pure ::=  ( "pure" )
  Procedure ::=  "procedure" ProcSignature ( ";" Spec* | Spec* ImplBody )
  ActionDecl ::=  MoverQualifier? "action" Attribute* Ident ProcFormals ( "returns" ProcFormals )? ( ";" SpecAction* | SpecAction* ImplBody )
  Implementation ::=  "implementation" ProcSignature ImplBody
-@@ -30,8 +30,7 @@
+@@ -30,7 +30,8 @@
  Type ::=  ( TypeAtom | Ident TypeArgs? | MapType )
  AttributesIdsTypeWhere ::=  Attribute* IdsTypeWhere
  IdsTypeWhere ::=  Idents ":" Type ( "where" Expression )?
--Expression ::=  IfThenElseExpression | EquivExpression
--EquivExpression ::= ImpliesExpression ( EquivOp ImpliesExpression )*
-+Expression ::=  ImpliesExpression ( EquivOp ImpliesExpression )*
+-Expression ::=  ImpliesExpression ( EquivOp ImpliesExpression )*
++Expression ::=  IfThenElseExpression | EquivExpression
++EquivExpression ::= ImpliesExpression ( EquivOp ImpliesExpression )*
  TypeAtom ::=  ( "int" | "real" | "bool" | "(" Type ")" )
  Ident ::=  ( ident | "atomic" | "both" | "left" | "right" | "reveal" | "hide" | "push" | "pop" )
  TypeArgs ::=  ( TypeAtom TypeArgs? | Ident TypeArgs? | MapType )
-@@ -95,7 +94,7 @@
+@@ -94,7 +95,7 @@
  CoercionExpression ::=  ArrayExpression ( ":" ( Type | Nat ) )*
  ArrayExpression ::=  AtomExpression ( "[" ( Expression ( "," Expression )* ( ":=" Expression )? | ":=" Expression )? "]" | "->" ( Ident | "(" Ident ":=" Expression ")" ) )*
  Nat ::=  digits
--AtomExpression ::=  ( "false" | "true" | ( "roundNearestTiesToEven" | "RNE" ) | ( "roundNearestTiesToAway" | "RNA" ) | ( "roundTowardPositive" | "RTP" ) | ( "roundTowardNegative" | "RTN" ) | ( "roundTowardZero" | "RTZ" ) | Nat | Dec | Float | BvLit | string | Ident ( "(" ( Expressions | ) ")" )? | "old" "(" Expression ")" | "int" "(" Expression ")" | "real" "(" Expression ")" | "(" ( Expression | Forall QuantifierBody | Exists QuantifierBody | Lambda QuantifierBody | LetExpr ) ")" | CodeExpression )
-+AtomExpression ::=  ( "false" | "true" | ( "roundNearestTiesToEven" | "RNE" ) | ( "roundNearestTiesToAway" | "RNA" ) | ( "roundTowardPositive" | "RTP" ) | ( "roundTowardNegative" | "RTN" ) | ( "roundTowardZero" | "RTZ" ) | Nat | Dec | Float | BvLit | string | Ident ( "(" ( Expressions | ) ")" )? | "old" "(" Expression ")" | "int" "(" Expression ")" | "real" "(" Expression ")" | "(" ( Expression | Forall QuantifierBody | Exists QuantifierBody | Lambda QuantifierBody | LetExpr ) ")" | IfThenElseExpression | CodeExpression )
+-AtomExpression ::=  ( "false" | "true" | ( "roundNearestTiesToEven" | "RNE" ) | ( "roundNearestTiesToAway" | "RNA" ) | ( "roundTowardPositive" | "RTP" ) | ( "roundTowardNegative" | "RTN" ) | ( "roundTowardZero" | "RTZ" ) | Nat | Dec | Float | BvLit | string | Ident ( "(" ( Expressions | ) ")" )? | "old" "(" Expression ")" | "int" "(" Expression ")" | "real" "(" Expression ")" | "(" ( Expression | Forall QuantifierBody | Exists QuantifierBody | Lambda QuantifierBody | LetExpr ) ")" | IfThenElseExpression | CodeExpression )
++AtomExpression ::=  ( "false" | "true" | ( "roundNearestTiesToEven" | "RNE" ) | ( "roundNearestTiesToAway" | "RNA" ) | ( "roundTowardPositive" | "RTP" ) | ( "roundTowardNegative" | "RTN" ) | ( "roundTowardZero" | "RTZ" ) | Nat | Dec | Float | BvLit | string | Ident ( "(" ( Expressions | ) ")" )? | "old" "(" Expression ")" | "int" "(" Expression ")" | "real" "(" Expression ")" | "(" ( Expression | Forall QuantifierBody | Exists QuantifierBody | Lambda QuantifierBody | LetExpr ) ")" | CodeExpression )
  Dec ::=  ( decimal | dec_float )
  Float ::=  float
  BvLit ::=  bvlit
-@@ -108,7 +107,7 @@
+@@ -107,7 +108,7 @@
  CodeExpression ::=  "|{" LocalVars* SpecBlock ( SpecBlock )* "}|"
  SpecBlock ::=  Ident ":" ( LabelOrCmd )* ( "goto" Attribute* Idents | "return" Attribute* Expression ) ";"
  AttributeOrTrigger ::=  "{" ( ":" Ident ( AttributeParameter ( "," AttributeParameter )* )? | Expression ( "," Expression )* ) "}"
--AttributeParameter ::=  ( Expression )
-+AttributeParameter ::=  ( string | Expression )
+-AttributeParameter ::=  ( string | Expression )
++AttributeParameter ::=  ( Expression )
  QSep ::=  "::" | "\u2022"
  LetVar ::=  Attribute* Ident
  

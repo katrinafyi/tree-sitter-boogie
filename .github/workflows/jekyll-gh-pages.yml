@@ -37,7 +37,7 @@ jobs:
       - run: sudo npm i -g tree-sitter-cli
 
       - run: make
-      - run: make rr
+      - run: make -j6 rr
       - run: make playground
       - name: Clean files for docs upload
         run: |
