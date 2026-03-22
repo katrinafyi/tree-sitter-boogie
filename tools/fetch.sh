@@ -1,17 +1,14 @@
 #!/bin/bash -eu
 
-url="$1"
-unpack="$2"
-strip_leading="$3"
-out="$4"
+: $url $unpack $strip_leading $out
 shift 4
 
-cache="cache/$(echo "$url" | sha256sum | cut -d' ' -f1)"
+cache=".fetchcache/$(echo "$url" | sha256sum | cut -d' ' -f1)"
 
 mkdir -p "$cache"
 cd "$cache"
 
-wget -nv -N "$url"
+wget -nc -N "$url"
 
 d="$(mktemp -d)"
 
