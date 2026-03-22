@@ -9,7 +9,6 @@ update: src/parser.c
 
 clean: clean-treesitter
 	rm -rf rr playground build
-	-ninja -C out -t clean
 
 distclean: clean
 	rm -rf out .fetchcache
@@ -17,6 +16,8 @@ distclean: clean
 playground: tree-sitter-boogie.wasm
 	tree-sitter playground -q --export playground
 	sed -i 's|LANGUAGE_BASE_URL = ""|LANGUAGE_BASE_URL = "."|' playground/index.html
+
+# ===== FETCHED URLS =====
 
 BOOGIE_TAR ?= https://github.com/boogie-org/boogie/archive/bc7292d41e938338e27f0771bd195ca9dace16dd.tar.gz
 COCOR_CPP_TAR ?= https://github.com/rina-forks/CocoR-CPP/archive/master.tar.gz
@@ -92,8 +93,9 @@ force: $(grammar_js) $(rr_ebnf)
 rr: $(rr_zip)
 	rm -rf $@ && mkdir $@ && unzip $< -d $@
 
-fix-ebnf.diff:
+fix-ebnf.diff:  # should be used with -B / --always-make
 	diff -u $(boogie_ts_ebnf) $(boogie_patched_ebnf) > $@ ; if [ $$? -gt 1 ]; then false; fi
+
 
 
 include Makefile.treesitter
