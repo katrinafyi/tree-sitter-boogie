@@ -1,1 +1,0 @@
-option('boogie_atg', type : 'string', description : 'Path to the BoogiePL.atg grammar file. If omitted, will be downloaded from the boogie repo')
