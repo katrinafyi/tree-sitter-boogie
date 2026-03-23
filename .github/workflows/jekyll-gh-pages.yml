@@ -39,14 +39,12 @@ jobs:
       - run: make
       - run: make playground
       - run: make rr
-      - name: Clean files for docs upload
-        run: |
-          shopt -s extglob
-          rm -rf !(*.md|rr|playground|LICENSE|*.ebnf|*.js|src)
+      - run: make docs
+      - run: make tree-sitter-boogie.tar.gz && cp -v tree-sitter-boogie.tar.gz docs
 
       - uses: actions/jekyll-build-pages@v1
         with:
-          source: ./
+          source: ./docs
           destination: ./_site
 
       - uses: actions/upload-pages-artifact@v3

@@ -22,9 +22,11 @@ to overload some functions with regex-aware smart constructors.
 The grammar.js is committed and ready for use. For other generated Tree-sitter files,
 you should generate them locally using the tree-sitter CLI. If that is not possible,
 they are also available on Github Pages - for instance, [parser.c][] and [grammar.json][].
+A combined tarball is also available: [tree-sitter-boogie.tar.gz][].
 
 [parser.c]: https://katrinafyi.github.io/tree-sitter-boogie/src/parser.c
 [grammar.json]: https://katrinafyi.github.io/tree-sitter-boogie/src/grammar.json
+[tree-sitter-boogie.tar.gz]: https://katrinafyi.github.io/tree-sitter-boogie/tree-sitter-boogie.tar.gz
 
 The generation pipeline is defined in the Makefile. If you want to reproduce the
 steps, you will need a C++ compiler, wget, patch, and Lua 5.4 (5.4 is important for reproducibility!).
