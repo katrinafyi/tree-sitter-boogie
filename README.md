@@ -40,6 +40,10 @@ already in this repository. If not, then that is a bug :)
 [from BoogiePL.atg]: https://github.com/boogie-org/boogie/blob/master/Source/Core/BoogiePL.atg
 [mingodad/CocoR-CPP]: https://github.com/mingodad/CocoR-CPP
 
+## highlighting example
+
+<img width="622" height="476" alt="image" src="https://github.com/user-attachments/assets/1f648ac8-0e47-472e-b135-954cc3b583bd" />
+
 ## playground
 
 A playground for trying out the grammar [is available here](https://katrinafyi.github.io/tree-sitter-boogie/playground/).
