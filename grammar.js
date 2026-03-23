@@ -25,6 +25,21 @@ const regexoptional = arg => new RegExp("(?:" + arg.source + ")?");
 module.exports = grammar({
   name: 'boogie',
 
+  precedences: $ => [
+    // [$.EquivExpression, $._EquivExpression,
+    // $.ImpliesExpression, $._ImpliesExpression,
+    // $.LogicalExpression, $._LogicalExpression,
+    // $.RelationalExpression, $._RelationalExpression,
+    // $.BvTerm, $._BvTerm,
+    // $.Term, $._Term,
+    // $.Factor, $._Factor,
+    // $.Power, $._Power,
+    // $.IsConstructor, $._IsConstructor,
+    // $.UnaryExpression, $._UnaryExpression,
+    // $.CoercionExpression, $._CoercionExpression,
+    // $.ArrayExpression, $._ArrayExpression],
+  ],
+
   /*
    * build/boogie.ebnf:1
    * extras ::= { comment /\s+/ }
@@ -274,10 +289,10 @@ module.exports = grammar({
       seq($.Idents, ":", $.Type, seq("where", $._Expression)),
     /*
      * build/boogie.ebnf:39
-     * _Expression ::=  IfThenElseExpression | _EquivExpression
+     * _Expression ::=  _EquivExpression
      */
     _Expression: $ =>
-      choice($.IfThenElseExpression, $._EquivExpression),
+      $._EquivExpression,
     /*
      * build/boogie.ebnf:40
      * _EquivExpression ::= _ImpliesExpression  | EquivExpression
@@ -874,7 +889,7 @@ module.exports = grammar({
       $.digits,
     /*
      * build/boogie.ebnf:116
-     * AtomExpression ::=  ( "false" | "true" | ( "roundNearestTiesToEven" | "RNE" ) | ( "roundNearestTiesToAway" | "RNA" ) | ( "roundTowardPositive" | "RTP" ) | ( "roundTowardNegative" | "RTN" ) | ( "roundTowardZero" | "RTZ" ) | Nat | Dec | Float | BvLit | string | Ident ( "(" ( Expressions )? ")" )? | "old" "(" _Expression ")" | "int" "(" _Expression ")" | "real" "(" _Expression ")" | "(" ( _Expression | Forall QuantifierBody | Exists QuantifierBody | Lambda QuantifierBody | LetExpr ) ")" | CodeExpression )
+     * AtomExpression ::=  ( "false" | "true" | ( "roundNearestTiesToEven" | "RNE" ) | ( "roundNearestTiesToAway" | "RNA" ) | ( "roundTowardPositive" | "RTP" ) | ( "roundTowardNegative" | "RTN" ) | ( "roundTowardZero" | "RTZ" ) | Nat | Dec | Float | BvLit | string | Ident ( "(" ( Expressions )? ")" )? | "old" "(" _Expression ")" | "int" "(" _Expression ")" | "real" "(" _Expression ")" | "(" ( _Expression | Forall QuantifierBody | Exists QuantifierBody | Lambda QuantifierBody | LetExpr ) ")" | IfThenElseExpression | CodeExpression )
      */
     AtomExpression: $ =>
       choice(
@@ -910,6 +925,7 @@ module.exports = grammar({
           ),
           ")"
         ),
+        $.IfThenElseExpression,
         $.CodeExpression
       ),
     /*

@@ -106,4 +106,8 @@ docs: src/parser.c rr playground
 	rm -rf $@ && mkdir $@ && mkdir -p queries
 	cp -rv *.md rr playground LICENSE *.ebnf *.js *.wasm src queries $@
 
+test-boogie: src/parser.c $(boogie_atg)
+	find $(b)/boogie -name '*.bpl' > $(b)/bpls
+	tree-sitter parse --paths $(b)/bpls --quiet --stat
+
 include Makefile.treesitter
