@@ -2,7 +2,7 @@
   "name": "tree-sitter-boogie",
   "version": "0.1.0",
   "description": "Tree-sitter grammar for the Boogie IVL",
-  "repository": "https://github.com/tree-sitter/tree-sitter-boogie",
+  "repository": "https://github.com/katrinafyi/tree-sitter-boogie",
   "license": "MPL-2.0",
   "author": {
     "name": "Kait Lam"
