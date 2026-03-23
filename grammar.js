@@ -1,8 +1,8 @@
 /**
-	* @file Tree-sitter grammar for the Boogie IVL
-	* @author Kait Lam
-	* @license MPL-2.0
-	*/
+  * @file Tree-sitter grammar for the Boogie IVL
+  * @author Kait Lam
+  * @license MPL-2.0
+  */
 
 /*
 * This Source Code Form is subject to the terms of the Mozilla Public
@@ -26,18 +26,18 @@ module.exports = grammar({
   name: 'boogie',
 
   precedences: $ => [
-    [$.EquivExpression, $._EquivExpression,
-    $.ImpliesExpression, $._ImpliesExpression,
-    $.LogicalExpression, $._LogicalExpression,
-    $.RelationalExpression, $._RelationalExpression,
-    $.BvTerm, $._BvTerm,
-    $.Term, $._Term,
-    $.Factor, $._Factor,
-    $.Power, $._Power,
-    $.IsConstructor, $._IsConstructor,
-    $.UnaryExpression, $._UnaryExpression,
-    $.CoercionExpression, $._CoercionExpression,
-    $.ArrayExpression, $._ArrayExpression],
+    [$.EquivExpression, $._EquivExpression],
+    [$.ImpliesExpression, $._ImpliesExpression],
+    [$.LogicalExpression, $._LogicalExpression],
+    [$.RelationalExpression, $._RelationalExpression],
+    [$.BvTerm, $._BvTerm],
+    [$.Term, $._Term],
+    [$.Factor, $._Factor],
+    [$.Power, $._Power],
+    [$.IsConstructor, $._IsConstructor],
+    [$.UnaryExpression, $._UnaryExpression],
+    [$.CoercionExpression, $._CoercionExpression],
+    [$.ArrayExpression, $._ArrayExpression],
   ],
 
   /*
