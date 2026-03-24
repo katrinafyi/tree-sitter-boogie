@@ -8,7 +8,7 @@ update: src/parser.c
 	tree-sitter test -u
 
 clean: clean-treesitter
-	rm -rf rr playground build docs tree-sitter-boogie.tar.gz
+	rm -rf rr playground build docs tree-sitter-boogie.tar.gz src
 
 distclean: clean
 	rm -rf out .fetchcache
@@ -103,9 +103,9 @@ boogie.ebnf.diff:  # should be used with -B / --always-make
 tree-sitter-boogie.tar.gz: docs
 	set -x; d=`mktemp -d`/tree-sitter-boogie && cp -r docs "$$d" && tar -C "$$d"/.. -caf $@ tree-sitter-boogie
 
-docs: src/parser.c rr playground
-	rm -rf $@ && mkdir $@ && mkdir -p queries
-	cp -rv *.md rr playground LICENSE *.ebnf *.js *.wasm src queries $@
+docs: rr
+	rm -rf $@ && mkdir $@
+	-cp -rv *.md rr playground LICENSE *.ebnf *.js *.wasm src queries $@
 
 test-boogie: src/parser.c $(boogie_atg)
 	find $(b)/boogie -name '*.bpl' | sort > $(b)/bpls
