@@ -47,7 +47,27 @@ make_prec_right = [
     # "ArrayExpression"
 ]
 
+hoist_nullable = [
+  'AtAttributes',
+  'OldSemi',
+  'WitnessClause',
+  'ParameterDefaultValue',
+  'IteratorSpec',
+  'MethodSpec',
+  'OptGenericInstantiation',
+  'FunctionSpec',
+  'LoopSpec',
+  'ForallStatementEnsuresAndBody',
+  'LambdaSpec',
+  'DecreasesToExpressionList',
+]
+
 inp = sys.stdin.read()
+
+for nullable in hoist_nullable:
+    inp = re.sub(rf'\b{nullable}\b', f'({nullable})?', inp)
+for nullable in hoist_nullable:
+    inp = inp.replace(f'({nullable})? ::=', f'{nullable} ::=')
 
 for ll in ll_rules + make_underscore:
     inp = re.sub(rf'\b{ll}\b', f'_{ll}', inp)
@@ -55,6 +75,15 @@ for ll in ll_rules + make_underscore:
 # this runs after underscores have already been inserted
 def transform_line(line: str):
     rule_name = line.split('::=')[0].strip().lstrip('_')
+
+    if rule_name in hoist_nullable:
+        if line[-1] == '?':
+            line = line[:-1]
+        elif line[-1] == '*':
+            line = line[:-1] + '+'
+        else:
+            assert False, "unhandled nullable rule ending: " + repr(line)
+
     if rule_name in make_underscore or not line.startswith('  _'):
         yield line
         return

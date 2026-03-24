@@ -88,6 +88,6 @@ sed -e '
     s/optional(/regexoptional(/g
   }
 ' -e '
-  /name:/a\\n  \/\/ See comments above.\n  precedences: precedences_for_ite,
+  /name:/a\\n  \/\/ See comments above.\n  precedences: _ => [],
 ' \
   | sed 's/ \+$//g'

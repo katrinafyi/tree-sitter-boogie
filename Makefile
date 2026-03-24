@@ -20,8 +20,8 @@ playground: tree-sitter-boogie.wasm
 # ===== DEPENDENCY URLS =====
 
 BOOGIE_TAR ?= https://github.com/dafny-lang/dafny/archive/9c1b58e01477ca819237dc8088d2dcab2ba4e87f.tar.gz
-COCOR_CPP_TAR ?= https://github.com/rina-forks/CocoR-CPP/archive/e968eb7da7295125dcc1ba45c6616d94bbfd6ddd.tar.gz
-EBNF_GEN ?= https://github.com/rina-forks/tree-sitter-ebnf-generator/archive/89fde0613e62a3cad0ae66504ea3f31b9a9d6976.tar.gz
+COCOR_CPP_TAR ?= https://github.com/rina-forks/CocoR-CPP/archive/a67a3cec77997d5962c01889c997ca4df3507703.tar.gz
+EBNF_GEN ?= https://github.com/rina-forks/tree-sitter-ebnf-generator/archive/c42c73a6ad1ee0b735db180320cda1f3ba98cb97.tar.gz
 RR_ZIP ?= https://repo1.maven.org/maven2/de/bottlecaps/rr/rr-webapp/2.6/rr-webapp-2.6.war
 
 # ===== BUILD DIRECTORY AND TOOLS =====
