@@ -1,0 +1,218 @@
+====
+basic comment
+====
+
+// aaaaaaaaaaa
+
+----
+
+(BoogiePL
+  (comment))
+
+====
+multi-line comment
+====
+
+/* */
+
+---
+
+(BoogiePL
+  (comment_multiline))
+
+====
+multi-line comment multiple lines
+====
+
+/* a
+*/
+
+---
+
+(BoogiePL
+  (comment_multiline))
+
+====
+multi stars
+====
+
+/****** Layer 0  ******/
+
+----
+
+(BoogiePL
+  (comment_multiline))
+
+====
+multi comments
+====
+
+function {:identity false} {:identity}/*the last attribute rules*/ MyPolyId<T>(x: T): T;
+function {:identity /*this is a lie*/} MyBogusId(x: int): int { -x }
+function {:identity /*ignored, since the function takes more than one argument*/} MultipleArgs(x: int, y: int): int;
+function {:identity /*ignored, since the return type is not equal to the argument type*/} BoolToInt(b: bool): int;
+function {:identity true/*in some contexts, the type of this function makes sense as an identity*/} SometimesId0<T>(x: T): int;
+function {:identity true/*in some contexts, the type of this function makes sense as an identity*/} SometimesId1<T>(x: int): T;
+function {:identity true/*in some contexts, the type of this function makes sense as an identity*/} SometimesId2<T,U>(x: T): U;
+
+---
+
+(BoogiePL
+  (Function
+    (Attribute
+      (AttributeOrTrigger
+        (Ident
+          (ident))
+        (AttributeParameter
+          (AtomExpression))))
+    (Attribute
+      (AttributeOrTrigger
+        (Ident
+          (ident))))
+    (comment_multiline)
+    (Ident
+      (ident))
+    (TypeParams
+      (Idents
+        (Ident
+          (ident))))
+    (VarOrType
+      (Type
+        (Ident
+          (ident)))
+      (Type
+        (Ident
+          (ident))))
+    (Type
+      (Ident
+        (ident))))
+  (Function
+    (Attribute
+      (AttributeOrTrigger
+        (Ident
+          (ident))
+        (comment_multiline)))
+    (Ident
+      (ident))
+    (VarOrType
+      (Type
+        (Ident
+          (ident)))
+      (Type
+        (TypeAtom)))
+    (Type
+      (TypeAtom))
+    (UnaryExpression
+      (AtomExpression
+        (Ident
+          (ident)))))
+  (Function
+    (Attribute
+      (AttributeOrTrigger
+        (Ident
+          (ident))
+        (comment_multiline)))
+    (Ident
+      (ident))
+    (VarOrType
+      (Type
+        (Ident
+          (ident)))
+      (Type
+        (TypeAtom)))
+    (VarOrType
+      (Type
+        (Ident
+          (ident)))
+      (Type
+        (TypeAtom)))
+    (Type
+      (TypeAtom)))
+  (Function
+    (Attribute
+      (AttributeOrTrigger
+        (Ident
+          (ident))
+        (comment_multiline)))
+    (Ident
+      (ident))
+    (VarOrType
+      (Type
+        (Ident
+          (ident)))
+      (Type
+        (TypeAtom)))
+    (Type
+      (TypeAtom)))
+  (Function
+    (Attribute
+      (AttributeOrTrigger
+        (Ident
+          (ident))
+        (AttributeParameter
+          (AtomExpression))
+        (comment_multiline)))
+    (Ident
+      (ident))
+    (TypeParams
+      (Idents
+        (Ident
+          (ident))))
+    (VarOrType
+      (Type
+        (Ident
+          (ident)))
+      (Type
+        (Ident
+          (ident))))
+    (Type
+      (TypeAtom)))
+  (Function
+    (Attribute
+      (AttributeOrTrigger
+        (Ident
+          (ident))
+        (AttributeParameter
+          (AtomExpression))
+        (comment_multiline)))
+    (Ident
+      (ident))
+    (TypeParams
+      (Idents
+        (Ident
+          (ident))))
+    (VarOrType
+      (Type
+        (Ident
+          (ident)))
+      (Type
+        (TypeAtom)))
+    (Type
+      (Ident
+        (ident))))
+  (Function
+    (Attribute
+      (AttributeOrTrigger
+        (Ident
+          (ident))
+        (AttributeParameter
+          (AtomExpression))
+        (comment_multiline)))
+    (Ident
+      (ident))
+    (TypeParams
+      (Idents
+        (Ident
+          (ident))
+        (Ident
+          (ident))))
+    (VarOrType
+      (Type
+        (Ident
+          (ident)))
+      (Type
+        (Ident
+          (ident))))
+    (Type
+      (Ident
+        (ident)))))

@@ -16,7 +16,11 @@
   "where"
   "havoc"
   "datatype"
+  "preserves"
   "invariant"
+  "refines"
+  "atomic"
+  "action"
   ] @keyword
 (Pure) @keyword
 
@@ -35,7 +39,7 @@
 
 [ "unique" "revealed" "async" ] @keyword.modifier
 
-[ "return" ] @keyword.return
+[ "return" "yield" ] @keyword.return
 [ "goto" ] @keyword
 (TransferCmd "goto" (Idents (Ident) @function.method.call))
 
@@ -43,7 +47,8 @@
 [ "=" ":=" "|{" "}|" ] @punctuation
 [ "{" "}" "[" "]" ] @punctuation.bracket
 
-(comment) @comment
+[ (comment)
+ (comment_multiline) ]@comment
 [
  (float)
  (dec_float)
