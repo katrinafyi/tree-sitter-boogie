@@ -173,6 +173,12 @@ After applying the fix-ll.py script, the parsed AST is much simpler:
 ```
 This makes it easier to work with the AST for queries and highlighting.
 
+## related work
+
+[boogie-vscode](https://github.com/boogie-org/boogie-vscode) is the official VSCode extension for Boogie
+with a Textmate grammar for syntax highlighting, but the highlighting is fairly minimal.
+This is used by [linguist](https://github.com/github-linguist/linguist/tree/main/vendor) for syntax
+highlighting on Github.
+
 This project is not to be confused with
 [tree-sitter-groovy](https://github.com/murtaza64/tree-sitter-groovy).
-
