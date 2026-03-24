@@ -7,10 +7,12 @@
       "title": "Boogie",
       "scope": "source.boogie",
       "file-types": [
-        "boogie"
+        "boogie",
+        "bpl"
       ],
       "injection-regex": "^boogie$",
-      "class-name": "TreeSitterBoogie"
+      "class-name": "TreeSitterBoogie",
+      "highlights": "queries/highlights.scm"
     }
   ],
   "metadata": {
@@ -23,7 +25,7 @@
       }
     ],
     "links": {
-      "repository": "https://github.com/tree-sitter/tree-sitter-boogie"
+      "repository": "https://github.com/katrinafyi/tree-sitter-boogie"
     }
   },
   "bindings": {

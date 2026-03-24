@@ -20,8 +20,8 @@
   ] @keyword
 (Pure) @keyword
 
-((ident) @variable.builtin (#eq? @variable.builtin "this"))
-((ident) @constant.builtin (#eq? @constant.builtin "null"))
+(AtomExpression (Ident) @variable.builtin (#eq? @variable.builtin "this"))
+(AtomExpression (Ident) @constant.builtin (#eq? @constant.builtin "null"))
 
 [ "is" ] @keyword.operator
 

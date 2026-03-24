@@ -1,8 +1,8 @@
 /**
-	* @file Tree-sitter grammar for the Boogie IVL
-	* @author Kait Lam
-	* @license MPL-2.0
-	*/
+  * @file Tree-sitter grammar for the Boogie IVL
+  * @author Kait Lam
+  * @license MPL-2.0
+  */
 
 /*
 * This Source Code Form is subject to the terms of the Mozilla Public
@@ -24,6 +24,21 @@ const regexoptional = arg => new RegExp("(?:" + arg.source + ")?");
 
 module.exports = grammar({
   name: 'boogie',
+
+  precedences: $ => [
+    [$.EquivExpression, $._EquivExpression],
+    [$.ImpliesExpression, $._ImpliesExpression],
+    [$.LogicalExpression, $._LogicalExpression],
+    [$.RelationalExpression, $._RelationalExpression],
+    [$.BvTerm, $._BvTerm],
+    [$.Term, $._Term],
+    [$.Factor, $._Factor],
+    [$.Power, $._Power],
+    [$.IsConstructor, $._IsConstructor],
+    [$.UnaryExpression, $._UnaryExpression],
+    [$.CoercionExpression, $._CoercionExpression],
+    [$.ArrayExpression, $._ArrayExpression],
+  ],
 
   /*
    * build/boogie.ebnf:1
@@ -274,10 +289,10 @@ module.exports = grammar({
       seq($.Idents, ":", $.Type, seq("where", $._Expression)),
     /*
      * build/boogie.ebnf:39
-     * _Expression ::=  IfThenElseExpression | _EquivExpression
+     * _Expression ::=  _EquivExpression
      */
     _Expression: $ =>
-      choice($.IfThenElseExpression, $._EquivExpression),
+      $._EquivExpression,
     /*
      * build/boogie.ebnf:40
      * _EquivExpression ::= _ImpliesExpression  | EquivExpression
@@ -289,7 +304,7 @@ module.exports = grammar({
      * EquivExpression ::=  _ImpliesExpression  (  EquivOp _ImpliesExpression )+
      */
     EquivExpression: $ =>
-      seq($._ImpliesExpression, repeat1(seq($.EquivOp, $._ImpliesExpression))),
+      prec.right(seq($._ImpliesExpression, repeat1(seq($.EquivOp, $._ImpliesExpression)))),
     /*
      * build/boogie.ebnf:42
      * TypeAtom ::=  ( "int" | "real" | "bool" | "(" Type ")" )
@@ -654,7 +669,7 @@ module.exports = grammar({
      * ImpliesExpression ::=   _LogicalExpression  (  ImpliesOp _ImpliesExpression | ExpliesOp _LogicalExpression ( ExpliesOp _LogicalExpression )* )
      */
     ImpliesExpression: $ =>
-      seq(
+      prec.right(seq(
         $._LogicalExpression,
         choice(
           seq($.ImpliesOp, $._ImpliesExpression),
@@ -664,7 +679,7 @@ module.exports = grammar({
             repeat(seq($.ExpliesOp, $._LogicalExpression))
           )
         )
-      ),
+      )),
     /*
      * build/boogie.ebnf:86
      * EquivOp ::=  "<==>" | "\u21d4"
@@ -682,13 +697,13 @@ module.exports = grammar({
      * LogicalExpression ::=   _RelationalExpression  (  AndOp _RelationalExpression ( AndOp _RelationalExpression )* | OrOp _RelationalExpression ( OrOp _RelationalExpression )* )
      */
     LogicalExpression: $ =>
-      seq(
+      prec.right(seq(
         $._RelationalExpression,
         choice(
           seq($.AndOp, $._RelationalExpression, repeat(seq($.AndOp, $._RelationalExpression))),
           seq($.OrOp, $._RelationalExpression, repeat(seq($.OrOp, $._RelationalExpression)))
         )
-      ),
+      )),
     /*
      * build/boogie.ebnf:89
      * ImpliesOp ::=  "==>" | "\u21d2"
@@ -736,7 +751,7 @@ module.exports = grammar({
      * BvTerm ::=   _Term  (  "++" _Term )+
      */
     BvTerm: $ =>
-      seq($._Term, repeat1(seq("++", $._Term))),
+      prec.right(seq($._Term, repeat1(seq("++", $._Term)))),
     /*
      * build/boogie.ebnf:97
      * RelOp ::=  ( "==" | "<" | ">" | "<=" | ">=" | "!=" | "\u2260" | "\u2264" | "\u2265" )
@@ -754,7 +769,7 @@ module.exports = grammar({
      * Term ::=   _Factor  (  AddOp _Factor )+
      */
     Term: $ =>
-      seq($._Factor, repeat1(seq($.AddOp, $._Factor))),
+      prec.right(seq($._Factor, repeat1(seq($.AddOp, $._Factor)))),
     /*
      * build/boogie.ebnf:100
      * _Factor ::=  _Power  | Factor
@@ -766,7 +781,7 @@ module.exports = grammar({
      * Factor ::=   _Power  (  MulOp _Power )+
      */
     Factor: $ =>
-      seq($._Power, repeat1(seq($.MulOp, $._Power))),
+      prec.right(seq($._Power, repeat1(seq($.MulOp, $._Power)))),
     /*
      * build/boogie.ebnf:102
      * AddOp ::=  ( "+" | "-" )
@@ -832,7 +847,7 @@ module.exports = grammar({
      * CoercionExpression ::=   _ArrayExpression  (  ":" ( Type | Nat ) )+
      */
     CoercionExpression: $ =>
-      seq($._ArrayExpression, repeat1(seq(":", choice($.Type, $.Nat)))),
+      prec.right(seq($._ArrayExpression, repeat1(seq(":", choice($.Type, $.Nat))))),
     /*
      * build/boogie.ebnf:113
      * _ArrayExpression ::=  AtomExpression  | ArrayExpression
@@ -844,7 +859,7 @@ module.exports = grammar({
      * ArrayExpression ::=   AtomExpression  (  "[" ( _Expression ( "," _Expression )* ( ":=" _Expression )? | ":=" _Expression )? "]" | "->" ( Ident | "(" Ident ":=" _Expression ")" ) )+
      */
     ArrayExpression: $ =>
-      seq(
+      prec.right(seq(
         $.AtomExpression,
         repeat1(
           choice(
@@ -865,7 +880,7 @@ module.exports = grammar({
             seq("->", choice($.Ident, seq("(", $.Ident, ":=", $._Expression, ")")))
           )
         )
-      ),
+      )),
     /*
      * build/boogie.ebnf:115
      * Nat ::=  digits
@@ -874,7 +889,7 @@ module.exports = grammar({
       $.digits,
     /*
      * build/boogie.ebnf:116
-     * AtomExpression ::=  ( "false" | "true" | ( "roundNearestTiesToEven" | "RNE" ) | ( "roundNearestTiesToAway" | "RNA" ) | ( "roundTowardPositive" | "RTP" ) | ( "roundTowardNegative" | "RTN" ) | ( "roundTowardZero" | "RTZ" ) | Nat | Dec | Float | BvLit | string | Ident ( "(" ( Expressions )? ")" )? | "old" "(" _Expression ")" | "int" "(" _Expression ")" | "real" "(" _Expression ")" | "(" ( _Expression | Forall QuantifierBody | Exists QuantifierBody | Lambda QuantifierBody | LetExpr ) ")" | CodeExpression )
+     * AtomExpression ::=  ( "false" | "true" | ( "roundNearestTiesToEven" | "RNE" ) | ( "roundNearestTiesToAway" | "RNA" ) | ( "roundTowardPositive" | "RTP" ) | ( "roundTowardNegative" | "RTN" ) | ( "roundTowardZero" | "RTZ" ) | Nat | Dec | Float | BvLit | string | Ident ( "(" ( Expressions )? ")" )? | "old" "(" _Expression ")" | "int" "(" _Expression ")" | "real" "(" _Expression ")" | "(" ( _Expression | Forall QuantifierBody | Exists QuantifierBody | Lambda QuantifierBody | LetExpr ) ")" | IfThenElseExpression | CodeExpression )
      */
     AtomExpression: $ =>
       choice(
@@ -910,6 +925,7 @@ module.exports = grammar({
           ),
           ")"
         ),
+        $.IfThenElseExpression,
         $.CodeExpression
       ),
     /*

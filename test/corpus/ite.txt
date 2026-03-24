@@ -16,21 +16,22 @@ function f() returns (int) {
     (VarOrType
       (Type
         (TypeAtom)))
-    (IfThenElseExpression
-      (AtomExpression
-        (Ident
-          (ident)))
-      (AtomExpression
-        (Ident
-          (ident)))
-      (LogicalExpression
+    (AtomExpression
+      (IfThenElseExpression
         (AtomExpression
           (Ident
             (ident)))
-        (AndOp)
         (AtomExpression
           (Ident
-            (ident)))))))
+            (ident)))
+        (LogicalExpression
+          (AtomExpression
+            (Ident
+              (ident)))
+          (AndOp)
+          (AtomExpression
+            (Ident
+              (ident))))))))
 
 ==================
 ite - has lower precedence than >
@@ -50,21 +51,22 @@ function f() returns (int) {
     (VarOrType
       (Type
         (TypeAtom)))
-    (IfThenElseExpression
-      (AtomExpression
-        (Ident
-          (ident)))
-      (AtomExpression
-        (Ident
-          (ident)))
-      (RelationalExpression
+    (AtomExpression
+      (IfThenElseExpression
         (AtomExpression
           (Ident
             (ident)))
-        (RelOp)
         (AtomExpression
           (Ident
-            (ident)))))))
+            (ident)))
+        (RelationalExpression
+          (AtomExpression
+            (Ident
+              (ident)))
+          (RelOp)
+          (AtomExpression
+            (Ident
+              (ident))))))))
 
 ==================
 ite - has lower precedence than <==>
@@ -84,21 +86,22 @@ function f() returns (int) {
     (VarOrType
       (Type
         (TypeAtom)))
-    (IfThenElseExpression
-      (AtomExpression
-        (Ident
-          (ident)))
-      (AtomExpression
-        (Ident
-          (ident)))
-      (EquivExpression
+    (AtomExpression
+      (IfThenElseExpression
         (AtomExpression
           (Ident
             (ident)))
-        (EquivOp)
         (AtomExpression
           (Ident
-            (ident)))))))
+            (ident)))
+        (EquivExpression
+          (AtomExpression
+            (Ident
+              (ident)))
+          (EquivOp)
+          (AtomExpression
+            (Ident
+              (ident))))))))
 
 ==================
 ite - can be nested
@@ -117,13 +120,7 @@ function f() returns (int) {
     (VarOrType
       (Type
         (TypeAtom)))
-    (IfThenElseExpression
-      (AtomExpression
-        (Ident
-          (ident)))
-      (AtomExpression
-        (Ident
-          (ident)))
+    (AtomExpression
       (IfThenElseExpression
         (AtomExpression
           (Ident
@@ -131,14 +128,22 @@ function f() returns (int) {
         (AtomExpression
           (Ident
             (ident)))
-        (EquivExpression
-          (AtomExpression
-            (Ident
-              (ident)))
-          (EquivOp)
-          (AtomExpression
-            (Ident
-              (ident))))))))
+        (AtomExpression
+          (IfThenElseExpression
+            (AtomExpression
+              (Ident
+                (ident)))
+            (AtomExpression
+              (Ident
+                (ident)))
+            (EquivExpression
+              (AtomExpression
+                (Ident
+                  (ident)))
+              (EquivOp)
+              (AtomExpression
+                (Ident
+                  (ident))))))))))
 
 ==================
 ite - can be nested 2
@@ -157,39 +162,41 @@ function f() returns (int) {
     (VarOrType
       (Type
         (TypeAtom)))
-    (IfThenElseExpression
+    (AtomExpression
       (IfThenElseExpression
         (AtomExpression
-          (Ident
-            (ident)))
+          (IfThenElseExpression
+            (AtomExpression
+              (Ident
+                (ident)))
+            (AtomExpression
+              (Ident
+                (ident)))
+            (AtomExpression
+              (Ident
+                (ident)))))
         (AtomExpression
           (Ident
             (ident)))
         (AtomExpression
-          (Ident
-            (ident))))
-      (AtomExpression
-        (Ident
-          (ident)))
-      (IfThenElseExpression
-        (AtomExpression
-          (Ident
-            (ident)))
-        (AtomExpression
-          (Ident
-            (ident)))
-        (EquivExpression
-          (AtomExpression
-            (Ident
-              (ident)))
-          (EquivOp)
-          (AtomExpression
-            (Ident
-              (ident))))))))
+          (IfThenElseExpression
+            (AtomExpression
+              (Ident
+                (ident)))
+            (AtomExpression
+              (Ident
+                (ident)))
+            (EquivExpression
+              (AtomExpression
+                (Ident
+                  (ident)))
+              (EquivOp)
+              (AtomExpression
+                (Ident
+                  (ident))))))))))
 
 ==================
-ite - has highest precedence from left - broken
-:error
+ite - has highest precedence from left
 ==================
 
 function f() returns (int) {
@@ -198,4 +205,18 @@ function f() returns (int) {
 
 ---
 
-
+(BoogiePL
+  (Function
+    (Ident
+      (ident))
+    (VarOrType
+      (Type
+        (TypeAtom)))
+    (EquivExpression
+      (AtomExpression)
+      (EquivOp)
+      (AtomExpression
+        (IfThenElseExpression
+          (AtomExpression)
+          (AtomExpression)
+          (AtomExpression))))))
