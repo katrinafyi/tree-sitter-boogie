@@ -5,21 +5,13 @@ This is a Tree-sitter grammar for
 ([Github](https://github.com/boogie-org/boogie)).
 The repository for this grammar is available [on Github](https://github.com/katrinafyi/tree-sitter-boogie).
 
-The Tree-sitter grammar is derived [from BoogiePL.atg][] in the Boogie source code. This is a
-Coco/R parser generator grammar which is used in the actual Boogie parser. The ATG file
-is passed through [mingodad/CocoR-CPP][] which produces an EBNF grammar
-([forked](https://github.com/rina-forks/CocoR-CPP) to emit EBNF for non-literal terminals).
-The EBNF is [pre-processed](https://github.com/katrinafyi/tree-sitter-boogie/blob/main/tools/coco-ebnf-to-ts-ebnf.sh)
-to adjust some syntax and [a manually-created patch](https://github.com/katrinafyi/tree-sitter-boogie/blob/main/boogie.ebnf.diff)
-is applied to fix some things which are difficult for Tree-sitter.
-Then, the patched EBNF is run through
-[tree-sitter-ebnf-generator](https://github.com/eatkins/tree-sitter-ebnf-generator)
-to produce an initial Tree-sitter grammar, and
-the Tree-sitter grammar is transformed with
-[postprocess-grammar-js.sh](https://github.com/katrinafyi/tree-sitter-boogie/blob/main/tools/postprocess-grammar-js.sh)
-to overload some functions with regex-aware smart constructors.
+## usage
 
-The grammar.js is committed and ready for use. For other generated Tree-sitter files,
+(PAC users may refer to [the bincaml guide](https://agle.github.io/bincaml/bincaml/tooling.html), but
+applied to this boogie grammar instead of basilir.)
+
+See your own editor's instructions for installing Tree-sitter grammars. Note that this repository
+has a grammar.js but *doesn't* commit parser.c or grammar.json. If your editor needs those extra files,
 you should generate them locally using the tree-sitter CLI. If that is not possible,
 they are also available on Github Pages - for instance, [parser.c][] and [grammar.json][].
 A combined tarball is also available: [tree-sitter-boogie.tar.gz][].
@@ -28,17 +20,8 @@ A combined tarball is also available: [tree-sitter-boogie.tar.gz][].
 [grammar.json]: https://katrinafyi.github.io/tree-sitter-boogie/src/grammar.json
 [tree-sitter-boogie.tar.gz]: https://katrinafyi.github.io/tree-sitter-boogie/tree-sitter-boogie.tar.gz
 
-The generation pipeline is defined in the Makefile. If you want to reproduce the
-steps, you will need a C++ compiler, wget, patch, and Lua 5.4 (5.4 is important for reproducibility!).
-With the dependencies available, this should be enough:
-```bash
-make force
-```
-`make force` will rebuild the grammar.js and it should be identical to the one
-already in this repository. If not, then that is a bug :)
-
-[from BoogiePL.atg]: https://github.com/boogie-org/boogie/blob/master/Source/Core/BoogiePL.atg
-[mingodad/CocoR-CPP]: https://github.com/mingodad/CocoR-CPP
+For testing the grammar, you can use `tree-sitter parse` or `tree-sitter highlight` while
+in the repository's folder. Also see [the playground](#playground).
 
 ## highlighting example
 
@@ -80,6 +63,42 @@ To generate the railroad diagram locally, you can use:
 make rr
 ```
 This needs Java and it uses [Gunther Rademacher's Railroad Diagram Generator](https://www.bottlecaps.de/rr/ui).
+
+## development
+
+The Tree-sitter grammar is derived [from BoogiePL.atg][] in the Boogie source code. This is a
+Coco/R parser generator grammar which is used in the actual Boogie parser. The ATG file
+is passed through [mingodad/CocoR-CPP][] which produces an EBNF grammar
+([forked](https://github.com/rina-forks/CocoR-CPP) to emit EBNF for non-literal terminals).
+The EBNF is [pre-processed](https://github.com/katrinafyi/tree-sitter-boogie/blob/main/tools/coco-ebnf-to-ts-ebnf.sh)
+to adjust some syntax and [a manually-created patch](https://github.com/katrinafyi/tree-sitter-boogie/blob/main/boogie.ebnf.diff)
+is applied to fix some things which are difficult for Tree-sitter.
+Then, the patched EBNF is run through
+[tree-sitter-ebnf-generator](https://github.com/eatkins/tree-sitter-ebnf-generator)
+to produce an initial Tree-sitter grammar, and
+the Tree-sitter grammar is transformed with
+[postprocess-grammar-js.sh](https://github.com/katrinafyi/tree-sitter-boogie/blob/main/tools/postprocess-grammar-js.sh)
+to overload some functions with regex-aware smart constructors.
+
+The generation pipeline is defined in the Makefile. If you want to reproduce the
+steps, you will need a C++ compiler, wget, patch, and Lua 5.4 (5.4 is important for reproducibility!).
+With the dependencies available, this should be enough:
+```bash
+make force
+```
+`make force` will rebuild the grammar.js and it should be identical to the one
+already in this repository. If not, then that is a bug :)
+
+To run the tests, you can use
+```bash
+make test
+make test-boogie
+```
+The first command uses Tree-sitter corpus tests in test/corpus, and the second runs the parser
+on Boogie's own unit test files and reports the percent successful.
+
+[from BoogiePL.atg]: https://github.com/boogie-org/boogie/blob/master/Source/Core/BoogiePL.atg
+[mingodad/CocoR-CPP]: https://github.com/mingodad/CocoR-CPP
 
 ## notes
 
