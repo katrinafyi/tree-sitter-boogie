@@ -186,3 +186,16 @@ function f() returns (int) {
           (AtomExpression
             (Ident
               (ident))))))))
+
+==================
+ite - has highest precedence from left - broken
+:error
+==================
+
+function f() returns (int) {
+  true <==> if true then false else false
+}
+
+---
+
+
