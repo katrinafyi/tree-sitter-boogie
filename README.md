@@ -100,6 +100,51 @@ on Boogie's own unit test files and reports the percent successful.
 [from BoogiePL.atg]: https://github.com/boogie-org/boogie/blob/master/Source/Core/BoogiePL.atg
 [mingodad/CocoR-CPP]: https://github.com/mingodad/CocoR-CPP
 
+## testing
+
+There are a small number of hand-written tests in the [test/corpus](https://github.com/katrinafyi/tree-sitter-boogie/tree/main/test/corpus)
+directory. These focus on parts of the grammar which we have changed from BoogiePL.atg
+(like if-then-else), or which we needed to manually implement (like comments).
+
+You can also run the parser against the Boogie files in the upstream repository
+with
+```bash
+make test-boogie
+```
+At time of writing, the Tree-sitter grammar successfully parses all the syntactically
+valid test files and even some of the invalid ones:
+```
+=== boogie test files with expected parse errors ===
+tree-sitter parse --paths build/bad-bpls --quiet --stat --time
+build/boogie/Test/bitvectors/bv7.bpl                    Parse:    0.18 ms         1174 bytes/ms
+build/boogie/Test/datatypes/duplicate_constructor.bpl   Parse:    0.05 ms         2332 bytes/ms
+build/boogie/Test/floats/ConstSyntax3.bpl               Parse:    0.36 ms         2403 bytes/ms
+build/boogie/Test/floats/SpecialValues.bpl              Parse:    0.54 ms         1965 bytes/ms
+build/boogie/Test/functiondefine/fundef4.bpl            Parse:    0.22 ms         1428 bytes/ms
+build/boogie/Test/functiondefine/fundef8.bpl            Parse:    0.09 ms         1926 bytes/ms
+build/boogie/Test/roundingmodes/InvalidFuncName.bpl     Parse:    0.04 ms         4352 bytes/ms
+build/boogie/Test/roundingmodes/RMAttributeInvalid.bpl  Parse:    0.63 ms          515 bytes/ms (ERROR [3, 32] - [3, 37])
+build/boogie/Test/test0/AttributeParsingErr.bpl         Parse:    0.46 ms         1427 bytes/ms
+build/boogie/Test/test0/BadLabels1.bpl                  Parse:    0.62 ms         2081 bytes/ms
+build/boogie/Test/test0/BadQuantifier.bpl               Parse:    0.17 ms          889 bytes/ms (ERROR [4, 7] - [4, 24])
+build/boogie/Test/test0/LineParse.bpl                   Parse:    0.04 ms         9120 bytes/ms (ERROR [12, 1] - [12, 9])
+build/boogie/Test/test0/Triggers0.bpl                   Parse:    0.28 ms         1677 bytes/ms
+build/boogie/Test/test0/Types0.bpl                      Parse:    0.16 ms         2154 bytes/ms
+build/boogie/Test/test0/WhereParsing0.bpl               Parse:    0.70 ms         1219 bytes/ms
+build/boogie/Test/test0/WhereParsing1.bpl               Parse:    0.27 ms         1626 bytes/ms (ERROR [15, 26] - [15, 37])
+build/boogie/Test/test0/WhereParsing2.bpl               Parse:    0.07 ms         2244 bytes/ms (ERROR [2, 13] - [2, 24])
+build/boogie/Test/test0/WhereParsing.bpl                Parse:    0.70 ms         1411 bytes/ms
+
+Total parses: 18; successful parses: 13; failed parses: 5; success percentage: 72.22%; average speed: 1609 bytes/ms
+
+make: [Makefile:116: test-boogie] Error 1 (ignored)
+
+=== boogie test files with expected parse success ===
+tree-sitter parse --paths build/good-bpls --quiet --stat
+
+Total parses: 723; successful parses: 723; failed parses: 0; success percentage: 100.00%; average speed: 5865 bytes/ms
+```
+
 ## notes
 
 The upstream grammar is written in a style with left-recursion removed and
