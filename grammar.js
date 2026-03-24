@@ -86,10 +86,10 @@ module.exports = grammar({
 
   /*
    * build/boogie.ebnf:1
-   * extras ::= { comment /\s+/ }
+   * extras ::= { /\s+/ comment comment_multiline }
    */
   extras: $ =>
-    [$.comment, /\s+/],
+    [/\s+/, $.comment, $.comment_multiline],
   /*
    * build/boogie.ebnf:3
    * conflicts ::= { { Type } { TypeArgs } }
@@ -1233,6 +1233,12 @@ module.exports = grammar({
      * comment ::= /\/\/.*\n/
      */
     comment: $ =>
-      /\/\/.*\n/
+      /\/\/.*\n/,
+    /*
+     * build/boogie.ebnf:143
+     * comment_multiline ::= /\/\*(?:[^*]|[*]+[^*])*\*+\//
+     */
+    comment_multiline: $ =>
+      /\/\*(?:[^*]|[*]+[^*])*\*+\//
   }
 });

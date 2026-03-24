@@ -4,7 +4,7 @@ set -o pipefail
 exec <$1 >$2
 
 cat <<EOF
-extras ::= { comment /\s+/ }
+extras ::= { /\s+/ comment comment_multiline }
 
 conflicts ::= { { Type } { TypeArgs } }
 
@@ -21,3 +21,4 @@ cat \
 	| "$(dirname $0)/ts-ebnf-fix-ll.py"
 
 echo '  comment ::= /\/\/.*\n/'
+echo '  comment_multiline ::= /\/\*(?:[^*]|[*]+[^*])*\*+\//'
