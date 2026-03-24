@@ -216,3 +216,16 @@ function {:identity true/*in some contexts, the type of this function makes sens
     (Type
       (Ident
         (ident)))))
+
+====
+NESTED comments
+====
+
+/* /* */ /* */*/
+/* /* *//////* aaaaaaaa*////////// */
+
+----
+
+(BoogiePL
+  (comment_multiline)
+  (comment_multiline))
