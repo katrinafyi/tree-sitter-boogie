@@ -1,4 +1,4 @@
-.PHONY: all force test clean distclean rr update
+.PHONY: all force test clean distclean update
 all: src/parser.c
 
 test: src/parser.c
@@ -103,8 +103,9 @@ tree-sitter-boogie.tar.gz: docs
 	set -x; d=`mktemp -d`/tree-sitter-boogie && cp -r docs "$$d" && tar -C "$$d"/.. -caf $@ tree-sitter-boogie
 
 docs: src/parser.c rr playground
-	rm -rf $@ && mkdir $@ && mkdir -p queries
+	rm -rf $@ && mkdir $@
 	cp -rv *.md rr playground LICENSE *.ebnf *.js *.wasm src queries $@
+	-cp -r dafny $@
 
 test-boogie: src/parser.c $(boogie_atg)
 	find $(b)/boogie -name '*.bpl' | sort > $(b)/bpls
