@@ -218,6 +218,21 @@ After applying the fix-ll.py script, the parsed AST is much simpler:
 ```
 This makes it easier to work with the AST for queries and highlighting.
 
+## limitations
+
+- Directives are not interpreted at all and all code is assumed to exist at the same time.
+  If *excluding* some lines is crucial for syntax correctness, that will cause problems.
+  For example, this will fail:
+  ```
+  axiom (
+  #if true
+    2)
+  #else
+    3)
+  #endif
+  ;
+  ```
+
 ## related work
 
 [boogie-vscode](https://github.com/boogie-org/boogie-vscode) is the official VSCode extension for Boogie

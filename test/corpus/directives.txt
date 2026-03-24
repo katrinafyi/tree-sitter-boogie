@@ -64,4 +64,19 @@ directive must be at line begin
 
 ---
 
+===
+failing due to needing exclusions
+:error
+===
+
+axiom (
+#if true
+  2)
+#else
+  3)
+#endif
+;
+
+---
+
 
