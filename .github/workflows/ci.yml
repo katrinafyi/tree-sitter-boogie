@@ -16,6 +16,7 @@ jobs:
       - run: sudo apt-get install --no-install-recommends lua5.4
       - run: sudo npm i -g tree-sitter-cli
       - run: make test
+      - run: make -j2 test-boogie
       - run: make -j6 force
       - run: git diff --exit-code
 
