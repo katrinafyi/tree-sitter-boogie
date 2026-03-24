@@ -76,7 +76,7 @@ const precedences_for_ite = $ => [
 // and this is a matter of associativity.
 //
 // To get the associativity we want, where ITEs are right associative, we insert
-// `prec.right` around the production for rules which may appear infix.
+// \`prec.right\` around the production for rules which may appear infix.
 
 EOF
 
