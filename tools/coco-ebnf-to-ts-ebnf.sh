@@ -4,7 +4,7 @@ set -o pipefail
 exec <$1 >$2
 
 cat <<EOF
-extras ::= { /\s+/ comment comment_multiline }
+extras ::= { comment comment_multiline _directive_or_space }
 
 conflicts ::= { { Type } { TypeArgs } }
 
@@ -20,5 +20,6 @@ cat \
 	| sed 's/^/  /g' \
 	| "$(dirname $0)/ts-ebnf-fix-ll.py"
 
-echo '  comment ::= /\/\/.*\n/'
+echo '  comment ::= /\/\/[^\n]*/'
 echo '  comment_multiline ::= /[/][*](?:(?:[^*/]|[*]+[^*/]|[/]+[^/*])*|[/]+[*](?:(?:[^*/]|[*]+[^*/]|[/]+[^/*])*|[/]+[*](?:(?:[^*/]|[*]+[^*/]|[/]+[^/*])*|[/]+[*](?:(?:[^*/]|[*]+[^*/]|[/]+[^/*])*|[/]+[*](?:[^*]|[*]+[^*/])*[*]+[/])*[*]+[/])*[*]+[/])*[*]+[/])*[*]+[/]/'
+echo '  _directive_or_space ::= /\s*(?:\n#[^\n]*|\s)/'
