@@ -107,7 +107,15 @@ docs: src/parser.c rr playground
 	cp -rv *.md rr playground LICENSE *.ebnf *.js *.wasm src queries $@
 
 test-boogie: src/parser.c $(boogie_atg)
-	find $(b)/boogie -name '*.bpl' > $(b)/bpls
-	tree-sitter parse --paths $(b)/bpls --quiet --stat
+	find $(b)/boogie -name '*.bpl' | sort > $(b)/bpls
+	find $(b)/boogie -name '*.bpl.expect' | xargs grep 'parse error' | sort > $(b)/bad-bpl-log
+	cut -d: -f1 < $(b)/bad-bpl-log | sed 's/\.expect$$//g' > $(b)/bad-bpls
+	comm -23 $(b)/bpls $(b)/bad-bpls > $(b)/good-bpls
+	@echo
+	@echo === boogie test files with expected parse errors ===
+	-tree-sitter parse --paths $(b)/bad-bpls --quiet --stat --time
+	@echo
+	@echo === boogie test files with expected parse success ===
+	tree-sitter parse --paths $(b)/good-bpls --quiet --stat
 
 include Makefile.treesitter
