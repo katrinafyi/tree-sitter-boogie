@@ -19,7 +19,7 @@ playground: tree-sitter-boogie.wasm
 
 # ===== DEPENDENCY URLS =====
 
-BOOGIE_TAR ?= https://github.com/boogie-org/boogie/archive/bc7292d41e938338e27f0771bd195ca9dace16dd.tar.gz
+BOOGIE_TAR ?= https://github.com/dafny-lang/dafny/archive/9c1b58e01477ca819237dc8088d2dcab2ba4e87f.tar.gz
 COCOR_CPP_TAR ?= https://github.com/rina-forks/CocoR-CPP/archive/e968eb7da7295125dcc1ba45c6616d94bbfd6ddd.tar.gz
 EBNF_GEN ?= https://github.com/rina-forks/tree-sitter-ebnf-generator/archive/89fde0613e62a3cad0ae66504ea3f31b9a9d6976.tar.gz
 RR_ZIP ?= https://repo1.maven.org/maven2/de/bottlecaps/rr/rr-webapp/2.6/rr-webapp-2.6.war
@@ -39,7 +39,7 @@ tools/coco-ebnf-to-ts-ebnf.sh: tools/ts-ebnf-fix-ll.py
 
 fetch ?= tools/fetch.sh
 
-boogie_atg = $(b)/boogie/Source/Core/BoogiePL.atg
+boogie_atg = $(b)/boogie/Source/DafnyCore/Dafny.atg
 $(boogie_atg): $(bdep) $(fetch)
 	url=$(BOOGIE_TAR) unpack=true strip_leading=true out=$(b)/boogie $(fetch)
 
@@ -67,7 +67,8 @@ $(boogie_coco_ebnf): $(coco) $(boogie_atg) frames/Parser.frame frames/Scanner.fr
 
 boogie_patched_ebnf = $(b)/coco.ebnf
 $(boogie_patched_ebnf): boogie.ebnf.diff $(boogie_coco_ebnf)
-	patch --verbose --merge --output $@ -i $< $(boogie_coco_ebnf)
+	cp $(boogie_coco_ebnf) $@
+	# patch --verbose --merge --output $@ -i $< $(boogie_coco_ebnf)
 
 boogie_ts_ebnf = $(b)/boogie.ebnf
 $(boogie_ts_ebnf): tools/coco-ebnf-to-ts-ebnf.sh $(boogie_patched_ebnf)

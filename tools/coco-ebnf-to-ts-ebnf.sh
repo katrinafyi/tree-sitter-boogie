@@ -6,7 +6,6 @@ exec <$1 >$2
 cat <<EOF
 extras ::= { comment comment_multiline /[ \t]+/ directive _newline }
 
-conflicts ::= { { Type } { TypeArgs } }
 
 word ::= ident
 
@@ -18,6 +17,7 @@ cat \
 	| sed 's/ EOF$//g' \
 	| grep . \
 	| sed 's/^/  /g' \
+	| sed 's/\bANY\b/"ANYYYYYYY"/g' \
 	| "$(dirname $0)/ts-ebnf-fix-ll.py"
 
 echo '  comment ::= /\/\/[^\n]*/'

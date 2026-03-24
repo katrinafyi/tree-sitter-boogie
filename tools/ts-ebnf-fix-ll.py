@@ -15,36 +15,36 @@ import re
 # where the "_" indicates an expression of Term or stronger
 # precedence. the Term rule is changed to match exactly Term only.
 ll_rules = [
-    'EquivExpression',
-    'ImpliesExpression',
-    'LogicalExpression',
-    'RelationalExpression',
-    'BvTerm',
-    'Term',
-    'Factor',
-    'Power',
-    'IsConstructor',
-    'UnaryExpression',
-    'CoercionExpression',
-    'ArrayExpression',
-    # 'AtomExpression',
-    'IdsTypeWhere'
+    # 'EquivExpression',
+    # 'ImpliesExpression',
+    # 'LogicalExpression',
+    # 'RelationalExpression',
+    # 'BvTerm',
+    # 'Term',
+    # 'Factor',
+    # 'Power',
+    # 'IsConstructor',
+    # 'UnaryExpression',
+    # 'CoercionExpression',
+    # 'ArrayExpression',
+    # # 'AtomExpression',
+    # 'IdsTypeWhere'
 ]
 
 make_underscore = [
-    'Expression'
+    # 'Expression'
 ]
 
 # make these rules right-precedence for ITE handling
 make_prec_right = [
-    "EquivExpression",
-    "ImpliesExpression",
-    "LogicalExpression",
-    "BvTerm",
-    "Term",
-    "Factor",
-    "CoercionExpression",
-    "ArrayExpression"
+    # "EquivExpression",
+    # "ImpliesExpression",
+    # "LogicalExpression",
+    # "BvTerm",
+    # "Term",
+    # "Factor",
+    # "CoercionExpression",
+    # "ArrayExpression"
 ]
 
 inp = sys.stdin.read()

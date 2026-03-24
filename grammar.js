@@ -35,18 +35,18 @@ const regexoptional = arg => new RegExp("(?:" + arg.source + ")?");
 // at least one <==> operator), and the one with "_" is an EquivExpression or anything
 // with *stronger* precedence.
 const precedences_for_ite = $ => [
-  [$.EquivExpression, $._EquivExpression],
-  [$.ImpliesExpression, $._ImpliesExpression],
-  [$.LogicalExpression, $._LogicalExpression],
-  [$.RelationalExpression, $._RelationalExpression],
-  [$.BvTerm, $._BvTerm],
-  [$.Term, $._Term],
-  [$.Factor, $._Factor],
-  [$.Power, $._Power],
-  [$.IsConstructor, $._IsConstructor],
-  [$.UnaryExpression, $._UnaryExpression],
-  [$.CoercionExpression, $._CoercionExpression],
-  [$.ArrayExpression, $._ArrayExpression],
+  // [$.EquivExpression, $._EquivExpression],
+  // [$.ImpliesExpression, $._ImpliesExpression],
+  // [$.LogicalExpression, $._LogicalExpression],
+  // [$.RelationalExpression, $._RelationalExpression],
+  // [$.BvTerm, $._BvTerm],
+  // [$.Term, $._Term],
+  // [$.Factor, $._Factor],
+  // [$.Power, $._Power],
+  // [$.IsConstructor, $._IsConstructor],
+  // [$.UnaryExpression, $._UnaryExpression],
+  // [$.CoercionExpression, $._CoercionExpression],
+  // [$.ArrayExpression, $._ArrayExpression],
 ];
 
 // In addition to the above rules which disambiguate an expression with an ITE,
@@ -91,1163 +91,2956 @@ module.exports = grammar({
   extras: $ =>
     [$.comment, $.comment_multiline, /[ \t]+/, $.directive, $._newline],
   /*
-   * build/boogie.ebnf:3
-   * conflicts ::= { { Type } { TypeArgs } }
-   */
-  conflicts: $ =>
-    [[$.Type], [$.TypeArgs]],
-  /*
-   * build/boogie.ebnf:5
+   * build/boogie.ebnf:4
    * word ::= ident
    */
   word: $ =>
     $.ident,
   rules: {
     /*
-     * build/boogie.ebnf:14
-     * BoogiePL ::=  ( Consts | Function | Axiom | UserDefinedTypes | Datatype | GlobalVars | InvariantDecl | "yield" ( InvariantDecl | YieldProcedureDecl ) | Pure? ( Procedure | ActionDecl ) | Implementation )*
+     * build/boogie.ebnf:13
+     * Dafny ::=  ( "include" stringToken )* ( AtAttributes TopDecl )*
      */
-    BoogiePL: $ =>
-      repeat(
-        choice(
-          $.Consts,
-          $.Function,
-          $.Axiom,
-          $.UserDefinedTypes,
-          $.Datatype,
-          $.GlobalVars,
-          $.InvariantDecl,
-          seq("yield", choice($.InvariantDecl, $.YieldProcedureDecl)),
-          seq(optional($.Pure), choice($.Procedure, $.ActionDecl)),
-          $.Implementation
-        )
-      ),
+    Dafny: $ =>
+      seq(repeat(seq("include", $.stringToken)), repeat(seq($.AtAttributes, $.TopDecl))),
+    /*
+     * build/boogie.ebnf:14
+     * AtAttributes ::=  AtAttribute*
+     */
+    AtAttributes: $ =>
+      repeat($.AtAttribute),
     /*
      * build/boogie.ebnf:15
-     * Consts ::=  "const" Attribute* ( "unique" )? IdsType ( ";" | "uses" "{" ( Axiom )* "}" )
+     * TopDecl ::=  DeclModifier* ( SubModuleDecl | ClassDecl | DatatypeDecl | NewtypeDecl | SynonymTypeDecl | IteratorDecl | TraitDecl | ClassMemberDecl )
      */
-    Consts: $ =>
+    TopDecl: $ =>
       seq(
-        "const",
-        repeat($.Attribute),
-        optional("unique"),
-        $.IdsType,
-        choice(";", seq("uses", "{", repeat($.Axiom), "}"))
+        repeat($.DeclModifier),
+        choice(
+          $.SubModuleDecl,
+          $.ClassDecl,
+          $.DatatypeDecl,
+          $.NewtypeDecl,
+          $.SynonymTypeDecl,
+          $.IteratorDecl,
+          $.TraitDecl,
+          $.ClassMemberDecl
+        )
       ),
     /*
      * build/boogie.ebnf:16
-     * Function ::=  ( "revealed" )? "function" Attribute* Ident TypeParams? "(" ( VarOrType ( "," VarOrType )* )? ")" ( "returns" "(" VarOrType ")" | ":" Type ) ( "{" _Expression "}" ( "uses" "{" ( Axiom )* "}" )? | "uses" "{" ( Axiom )* "}" | ";" )
+     * DeclModifier ::=  "abstract" | "replaceable" | ghost | static | opaque
      */
-    Function: $ =>
-      seq(
-        optional("revealed"),
-        "function",
-        repeat($.Attribute),
-        $.Ident,
-        optional($.TypeParams),
-        "(",
-        optional(seq($.VarOrType, repeat(seq(",", $.VarOrType)))),
-        ")",
-        choice(seq("returns", "(", $.VarOrType, ")"), seq(":", $.Type)),
-        choice(
-          seq("{", $._Expression, "}", optional(seq("uses", "{", repeat($.Axiom), "}"))),
-          seq("uses", "{", repeat($.Axiom), "}"),
-          ";"
-        )
-      ),
+    DeclModifier: $ =>
+      choice("abstract", "replaceable", $.ghost, $.static, $.opaque),
     /*
      * build/boogie.ebnf:17
-     * Axiom ::=  ( "hideable" )? "axiom" Attribute* Proposition ";"
+     * SubModuleDecl ::=  ( ModuleDefinition | ModuleImport | ModuleExport )
      */
-    Axiom: $ =>
-      seq(optional("hideable"), "axiom", repeat($.Attribute), $.Proposition, ";"),
+    SubModuleDecl: $ =>
+      choice($.ModuleDefinition, $.ModuleImport, $.ModuleExport),
     /*
      * build/boogie.ebnf:18
-     * UserDefinedTypes ::=  "type" Attribute* UserDefinedType ( "," UserDefinedType )* ";"
+     * ClassDecl ::=  class Attribute* ClassName GenericParameters? ( ExtendsClause | ellipsis )? lbrace ( AtAttributes DeclModifier* ClassMemberDecl )* rbrace
      */
-    UserDefinedTypes: $ =>
+    ClassDecl: $ =>
       seq(
-        "type",
+        $.class,
         repeat($.Attribute),
-        $.UserDefinedType,
-        repeat(seq(",", $.UserDefinedType)),
-        ";"
+        $.ClassName,
+        optional($.GenericParameters),
+        optional(choice($.ExtendsClause, $.ellipsis)),
+        $.lbrace,
+        repeat(seq($.AtAttributes, repeat($.DeclModifier), $.ClassMemberDecl)),
+        $.rbrace
       ),
     /*
      * build/boogie.ebnf:19
-     * Datatype ::=  "datatype" Attribute* Ident TypeParams? "{" Constructors "}"
+     * DatatypeDecl ::=  ( datatype | codatatype ) Attribute* DatatypeName GenericParameters? ExtendsClause? ( singleeq ( ellipsis )? verticalbar? DatatypeMemberDecl ( verticalbar DatatypeMemberDecl )* | ellipsis ) TypeMembers?
      */
-    Datatype: $ =>
+    DatatypeDecl: $ =>
       seq(
-        "datatype",
+        choice($.datatype, $.codatatype),
         repeat($.Attribute),
-        $.Ident,
-        optional($.TypeParams),
-        "{",
-        $.Constructors,
-        "}"
+        $.DatatypeName,
+        optional($.GenericParameters),
+        optional($.ExtendsClause),
+        choice(
+          seq(
+            $.singleeq,
+            optional($.ellipsis),
+            optional($.verticalbar),
+            $.DatatypeMemberDecl,
+            repeat(seq($.verticalbar, $.DatatypeMemberDecl))
+          ),
+          $.ellipsis
+        ),
+        optional($.TypeMembers)
       ),
     /*
      * build/boogie.ebnf:20
-     * GlobalVars ::=  "var" Attribute* IdsTypeWheres ";"
+     * NewtypeDecl ::=  newtype Attribute* NewtypeName GenericParameters? ExtendsClause? ( singleeq ( ellipsis )? ( LocalVarName ( colon Type )? verticalbar Expression WitnessClause TypeMembers? | Type WitnessClause TypeMembers? ) | ellipsis TypeMembers? )
      */
-    GlobalVars: $ =>
-      seq("var", repeat($.Attribute), $.IdsTypeWheres, ";"),
-    /*
-     * build/boogie.ebnf:21
-     * InvariantDecl ::=  "invariant" Attribute* Ident ProcFormals ";" Invariant*
-     */
-    InvariantDecl: $ =>
+    NewtypeDecl: $ =>
       seq(
-        "invariant",
+        $.newtype,
         repeat($.Attribute),
-        $.Ident,
-        $.ProcFormals,
-        ";",
-        repeat($.Invariant)
-      ),
-    /*
-     * build/boogie.ebnf:22
-     * YieldProcedureDecl ::=  MoverQualifier? "procedure" Attribute* Ident ProcFormals ( "returns" ProcFormals )? ( ";" SpecYieldPrePost* | SpecYieldPrePost* ImplBody )
-     */
-    YieldProcedureDecl: $ =>
-      seq(
-        optional($.MoverQualifier),
-        "procedure",
-        repeat($.Attribute),
-        $.Ident,
-        $.ProcFormals,
-        optional(seq("returns", $.ProcFormals)),
+        $.NewtypeName,
+        optional($.GenericParameters),
+        optional($.ExtendsClause),
         choice(
-          seq(";", repeat($.SpecYieldPrePost)),
-          seq(repeat($.SpecYieldPrePost), $.ImplBody)
+          seq(
+            $.singleeq,
+            optional($.ellipsis),
+            choice(
+              seq(
+                $.LocalVarName,
+                optional(seq($.colon, $.Type)),
+                $.verticalbar,
+                $.Expression,
+                $.WitnessClause,
+                optional($.TypeMembers)
+              ),
+              seq($.Type, $.WitnessClause, optional($.TypeMembers))
+            )
+          ),
+          seq($.ellipsis, optional($.TypeMembers))
         )
       ),
     /*
-     * build/boogie.ebnf:23
-     * Pure ::=  ( "pure" )
+     * build/boogie.ebnf:21
+     * SynonymTypeDecl ::=  type Attribute* SynonymTypeName TypeParameterCharacteristics* GenericParameters? ( singleeq ( LocalVarName ( colon Type )? verticalbar Expression WitnessClause | Type ) | ellipsis TypeMembers? | ExtendsClause TypeMembers? | TypeMembers )?
      */
-    Pure: $ =>
-      "pure",
-    /*
-     * build/boogie.ebnf:24
-     * Procedure ::=  "procedure" ProcSignature ( ";" Spec* | Spec* ImplBody )
-     */
-    Procedure: $ =>
+    SynonymTypeDecl: $ =>
       seq(
-        "procedure",
-        $.ProcSignature,
-        choice(seq(";", repeat($.Spec)), seq(repeat($.Spec), $.ImplBody))
+        $.type,
+        repeat($.Attribute),
+        $.SynonymTypeName,
+        repeat($.TypeParameterCharacteristics),
+        optional($.GenericParameters),
+        optional(
+          choice(
+            seq(
+              $.singleeq,
+              choice(
+                seq(
+                  $.LocalVarName,
+                  optional(seq($.colon, $.Type)),
+                  $.verticalbar,
+                  $.Expression,
+                  $.WitnessClause
+                ),
+                $.Type
+              )
+            ),
+            seq($.ellipsis, optional($.TypeMembers)),
+            seq($.ExtendsClause, optional($.TypeMembers)),
+            $.TypeMembers
+          )
+        )
       ),
     /*
-     * build/boogie.ebnf:25
-     * ActionDecl ::=  MoverQualifier? "action" Attribute* Ident ProcFormals ( "returns" ProcFormals )? ( ";" SpecAction* | SpecAction* ImplBody )
+     * build/boogie.ebnf:22
+     * IteratorDecl ::=  iterator Attribute* IteratorName ( GenericParameters? Formals ( ( "yields" | "returns" ) Formals )? | ellipsis ) IteratorSpec BlockStmt?
      */
-    ActionDecl: $ =>
+    IteratorDecl: $ =>
       seq(
-        optional($.MoverQualifier),
-        "action",
+        $.iterator,
         repeat($.Attribute),
-        $.Ident,
-        $.ProcFormals,
-        optional(seq("returns", $.ProcFormals)),
-        choice(seq(";", repeat($.SpecAction)), seq(repeat($.SpecAction), $.ImplBody))
+        $.IteratorName,
+        choice(
+          seq(
+            optional($.GenericParameters),
+            $.Formals,
+            optional(seq(choice("yields", "returns"), $.Formals))
+          ),
+          $.ellipsis
+        ),
+        $.IteratorSpec,
+        optional($.BlockStmt)
+      ),
+    /*
+     * build/boogie.ebnf:23
+     * TraitDecl ::=  trait Attribute* ClassName GenericParameters? ( ExtendsClause | ellipsis )? lbrace ( AtAttributes DeclModifier* ClassMemberDecl )* rbrace
+     */
+    TraitDecl: $ =>
+      seq(
+        $.trait,
+        repeat($.Attribute),
+        $.ClassName,
+        optional($.GenericParameters),
+        optional(choice($.ExtendsClause, $.ellipsis)),
+        $.lbrace,
+        repeat(seq($.AtAttributes, repeat($.DeclModifier), $.ClassMemberDecl)),
+        $.rbrace
+      ),
+    /*
+     * build/boogie.ebnf:24
+     * ClassMemberDecl ::=  ( FieldDecl | ConstantFieldDecl | FunctionDecl | MethodDecl )
+     */
+    ClassMemberDecl: $ =>
+      choice($.FieldDecl, $.ConstantFieldDecl, $.FunctionDecl, $.MethodDecl),
+    /*
+     * build/boogie.ebnf:25
+     * ModuleDefinition ::=  "module" Attribute* ModuleQualifiedName ( "refines" ModuleQualifiedName | "replaces" ModuleQualifiedName | Ident )? lbrace ( AtAttributes TopDecl )* rbrace
+     */
+    ModuleDefinition: $ =>
+      seq(
+        "module",
+        repeat($.Attribute),
+        $.ModuleQualifiedName,
+        optional(
+          choice(
+            seq("refines", $.ModuleQualifiedName),
+            seq("replaces", $.ModuleQualifiedName),
+            $.Ident
+          )
+        ),
+        $.lbrace,
+        repeat(seq($.AtAttributes, $.TopDecl)),
+        $.rbrace
       ),
     /*
      * build/boogie.ebnf:26
-     * Implementation ::=  "implementation" ProcSignature ImplBody
+     * ModuleImport ::=  import ( "opened" )? ( ModuleName colon QualifiedModuleExport | ModuleName singleeq QualifiedModuleExport | QualifiedModuleExport )
      */
-    Implementation: $ =>
-      seq("implementation", $.ProcSignature, $.ImplBody),
+    ModuleImport: $ =>
+      seq(
+        $.import,
+        optional("opened"),
+        choice(
+          seq($.ModuleName, $.colon, $.QualifiedModuleExport),
+          seq($.ModuleName, $.singleeq, $.QualifiedModuleExport),
+          $.QualifiedModuleExport
+        )
+      ),
     /*
      * build/boogie.ebnf:27
-     * Attribute ::=  AttributeOrTrigger
+     * ModuleExport ::=  export ( ExportId )? ( ellipsis )? ( ( provides ( ExportSignature ( comma ExportSignature )* | star ) | reveals ( ExportSignature ( comma ExportSignature )* | star ) | extends ExportId ( comma ExportId )* ) ( comma )? )*
      */
-    Attribute: $ =>
-      $.AttributeOrTrigger,
+    ModuleExport: $ =>
+      seq(
+        $.export,
+        optional($.ExportId),
+        optional($.ellipsis),
+        repeat(
+          seq(
+            choice(
+              seq(
+                $.provides,
+                choice(seq($.ExportSignature, repeat(seq($.comma, $.ExportSignature))), $.star)
+              ),
+              seq(
+                $.reveals,
+                choice(seq($.ExportSignature, repeat(seq($.comma, $.ExportSignature))), $.star)
+              ),
+              seq($.extends, $.ExportId, repeat(seq($.comma, $.ExportId)))
+            ),
+            optional($.comma)
+          )
+        )
+      ),
     /*
      * build/boogie.ebnf:28
-     * IdsTypeWheres ::=  _IdsTypeWhere ( "," _IdsTypeWhere )*
+     * Attribute ::=  lbracecolon AttributeName Expressions? rbrace
      */
-    IdsTypeWheres: $ =>
-      seq($._IdsTypeWhere, repeat(seq(",", $._IdsTypeWhere))),
+    Attribute: $ =>
+      seq($.lbracecolon, $.AttributeName, optional($.Expressions), $.rbrace),
     /*
      * build/boogie.ebnf:29
-     * LocalVars ::=  "var" Attribute* IdsTypeWheres ";"
+     * ModuleQualifiedName ::=  ModuleName ( dot ModuleName )*
      */
-    LocalVars: $ =>
-      seq("var", repeat($.Attribute), $.IdsTypeWheres, ";"),
+    ModuleQualifiedName: $ =>
+      seq($.ModuleName, repeat(seq($.dot, $.ModuleName))),
     /*
      * build/boogie.ebnf:30
-     * ProcFormals ::=  "(" AttributesIdsTypeWheres? ")"
-     */
-    ProcFormals: $ =>
-      seq("(", optional($.AttributesIdsTypeWheres), ")"),
-    /*
-     * build/boogie.ebnf:31
-     * AttributesIdsTypeWheres ::=  AttributesIdsTypeWhere ( "," AttributesIdsTypeWhere )*
-     */
-    AttributesIdsTypeWheres: $ =>
-      seq($.AttributesIdsTypeWhere, repeat(seq(",", $.AttributesIdsTypeWhere))),
-    /*
-     * build/boogie.ebnf:32
-     * BoundVars ::=  AttributesIdsTypeWheres
-     */
-    BoundVars: $ =>
-      $.AttributesIdsTypeWheres,
-    /*
-     * build/boogie.ebnf:33
-     * IdsType ::=  Idents ":" Type
-     */
-    IdsType: $ =>
-      seq($.Idents, ":", $.Type),
-    /*
-     * build/boogie.ebnf:34
-     * Idents ::=  Ident ( "," Ident )*
-     */
-    Idents: $ =>
-      seq($.Ident, repeat(seq(",", $.Ident))),
-    /*
-     * build/boogie.ebnf:35
-     * Type ::=  ( TypeAtom | Ident TypeArgs? | MapType )
-     */
-    Type: $ =>
-      choice($.TypeAtom, seq($.Ident, optional($.TypeArgs)), $.MapType),
-    /*
-     * build/boogie.ebnf:36
-     * AttributesIdsTypeWhere ::=  Attribute* _IdsTypeWhere
-     */
-    AttributesIdsTypeWhere: $ =>
-      seq(repeat($.Attribute), $._IdsTypeWhere),
-    /*
-     * build/boogie.ebnf:37
-     * _IdsTypeWhere ::=  Idents ":" Type  | IdsTypeWhere
-     */
-    _IdsTypeWhere: $ =>
-      choice(seq($.Idents, ":", $.Type), $.IdsTypeWhere),
-    /*
-     * build/boogie.ebnf:38
-     * IdsTypeWhere ::=   Idents ":" Type  (  "where" _Expression )
-     */
-    IdsTypeWhere: $ =>
-      seq($.Idents, ":", $.Type, seq("where", $._Expression)),
-    /*
-     * build/boogie.ebnf:39
-     * _Expression ::=  _EquivExpression
-     */
-    _Expression: $ =>
-      $._EquivExpression,
-    /*
-     * build/boogie.ebnf:40
-     * _EquivExpression ::= _ImpliesExpression  | EquivExpression
-     */
-    _EquivExpression: $ =>
-      choice($._ImpliesExpression, $.EquivExpression),
-    /*
-     * build/boogie.ebnf:41
-     * EquivExpression ::= >(  _ImpliesExpression  (  EquivOp _ImpliesExpression )+ )
-     */
-    EquivExpression: $ =>
-      prec.right(seq($._ImpliesExpression, repeat1(seq($.EquivOp, $._ImpliesExpression)))),
-    /*
-     * build/boogie.ebnf:42
-     * TypeAtom ::=  ( "int" | "real" | "bool" | "(" Type ")" )
-     */
-    TypeAtom: $ =>
-      choice("int", "real", "bool", seq("(", $.Type, ")")),
-    /*
-     * build/boogie.ebnf:43
-     * Ident ::=  ( ident | "atomic" | "both" | "left" | "right" | "reveal" | "hide" | "push" | "pop" )
+     * Ident ::=  ( ident | least | greatest | older | opaque | hide | reveal | field | locals | fp32 | fp64 )
      */
     Ident: $ =>
-      choice($.ident, "atomic", "both", "left", "right", "reveal", "hide", "push", "pop"),
+      choice(
+        $.ident,
+        $.least,
+        $.greatest,
+        $.older,
+        $.opaque,
+        $.hide,
+        $.reveal,
+        $.field,
+        $.locals,
+        $.fp32,
+        $.fp64
+      ),
+    /*
+     * build/boogie.ebnf:31
+     * ModuleName ::=  Name
+     */
+    ModuleName: $ =>
+      $.Name,
+    /*
+     * build/boogie.ebnf:32
+     * QualifiedModuleExport ::=  ModuleQualifiedName ( backtick ModuleExportSuffix )?
+     */
+    QualifiedModuleExport: $ =>
+      seq($.ModuleQualifiedName, optional(seq($.backtick, $.ModuleExportSuffix))),
+    /*
+     * build/boogie.ebnf:33
+     * ExportId ::=  NoUSIdentOrDigits
+     */
+    ExportId: $ =>
+      $.NoUSIdentOrDigits,
+    /*
+     * build/boogie.ebnf:34
+     * NoUSIdentOrDigits ::=  ( NoUSIdent | digits )
+     */
+    NoUSIdentOrDigits: $ =>
+      choice($.NoUSIdent, $.digits),
+    /*
+     * build/boogie.ebnf:35
+     * ExportSignature ::=  TypeNameOrCtorSuffix ( dot TypeNameOrCtorSuffix )?
+     */
+    ExportSignature: $ =>
+      seq($.TypeNameOrCtorSuffix, optional(seq($.dot, $.TypeNameOrCtorSuffix))),
+    /*
+     * build/boogie.ebnf:36
+     * TypeNameOrCtorSuffix ::=  IdentOrDigits
+     */
+    TypeNameOrCtorSuffix: $ =>
+      $.IdentOrDigits,
+    /*
+     * build/boogie.ebnf:37
+     * Name ::=  NoUSIdent
+     */
+    Name: $ =>
+      $.NoUSIdent,
+    /*
+     * build/boogie.ebnf:38
+     * ModuleExportSuffix ::=  ( ExportId | lbrace ExportId ( comma ExportId )* rbrace )
+     */
+    ModuleExportSuffix: $ =>
+      choice(
+        $.ExportId,
+        seq($.lbrace, $.ExportId, repeat(seq($.comma, $.ExportId)), $.rbrace)
+      ),
+    /*
+     * build/boogie.ebnf:39
+     * ClassName ::=  Name
+     */
+    ClassName: $ =>
+      $.Name,
+    /*
+     * build/boogie.ebnf:40
+     * GenericParameters ::=  openAngleBracket OneTypeParameter ( comma OneTypeParameter )* closeAngleBracket
+     */
+    GenericParameters: $ =>
+      seq(
+        $.openAngleBracket,
+        $.OneTypeParameter,
+        repeat(seq($.comma, $.OneTypeParameter)),
+        $.closeAngleBracket
+      ),
+    /*
+     * build/boogie.ebnf:41
+     * ExtendsClause ::=  extends Type ( comma Type )*
+     */
+    ExtendsClause: $ =>
+      seq($.extends, $.Type, repeat(seq($.comma, $.Type))),
+    /*
+     * build/boogie.ebnf:42
+     * Type ::=  TypeAndToken
+     */
+    Type: $ =>
+      $.TypeAndToken,
+    /*
+     * build/boogie.ebnf:43
+     * FieldDecl ::=  var Attribute* FIdentType ( comma FIdentType )* OldSemi
+     */
+    FieldDecl: $ =>
+      seq(
+        $.var,
+        repeat($.Attribute),
+        $.FIdentType,
+        repeat(seq($.comma, $.FIdentType)),
+        $.OldSemi
+      ),
     /*
      * build/boogie.ebnf:44
-     * TypeArgs ::=  ( TypeAtom TypeArgs? | Ident TypeArgs? | MapType )
+     * ConstantFieldDecl ::=  const Attribute* ( | CIdentType ellipsis? ( ( gets | singleeq ) Expression )? OldSemi )
      */
-    TypeArgs: $ =>
-      choice(
-        seq($.TypeAtom, optional($.TypeArgs)),
-        seq($.Ident, optional($.TypeArgs)),
-        $.MapType
+    ConstantFieldDecl: $ =>
+      seq(
+        $.const,
+        repeat($.Attribute),
+        choice(
+          seq(),
+          seq(
+            $.CIdentType,
+            optional($.ellipsis),
+            optional(seq(choice($.gets, $.singleeq), $.Expression)),
+            $.OldSemi
+          )
+        )
       ),
     /*
      * build/boogie.ebnf:45
-     * MapType ::=  ( TypeParams )? "[" Types? "]" Type
+     * FunctionDecl ::=  ( twostate )? ( function ( method )? Attribute* MethodFunctionName ( GenericParameters? Formals colon ( openparen GIdentType closeparen | Type ) | ellipsis ) | predicate ( method )? Attribute* MethodFunctionName ( GenericParameters? ( KType )? Formals PredicateResult? | ellipsis ) | ( least | inductive ) predicate Attribute* MethodFunctionName ( GenericParameters? KType? Formals PredicateResult? | ellipsis ) | ( greatest predicate | copredicate ) Attribute* MethodFunctionName ( GenericParameters? KType? Formals PredicateResult? | ellipsis ) ) FunctionSpec FunctionBody?
      */
-    MapType: $ =>
-      seq(optional($.TypeParams), "[", optional($.Types), "]", $.Type),
-    /*
-     * build/boogie.ebnf:46
-     * TypeParams ::=  "<" Idents ">"
-     */
-    TypeParams: $ =>
-      seq("<", $.Idents, ">"),
-    /*
-     * build/boogie.ebnf:47
-     * Types ::=  Type ( "," Type )*
-     */
-    Types: $ =>
-      seq($.Type, repeat(seq(",", $.Type))),
-    /*
-     * build/boogie.ebnf:48
-     * VarOrType ::=  Attribute* Type ( ":" Type )?
-     */
-    VarOrType: $ =>
-      seq(repeat($.Attribute), $.Type, optional(seq(":", $.Type))),
-    /*
-     * build/boogie.ebnf:49
-     * Proposition ::=  _Expression
-     */
-    Proposition: $ =>
-      $._Expression,
-    /*
-     * build/boogie.ebnf:50
-     * UserDefinedType ::=  Ident WhiteSpaceIdents? ( "=" Type )?
-     */
-    UserDefinedType: $ =>
-      seq($.Ident, optional($.WhiteSpaceIdents), optional(seq("=", $.Type))),
-    /*
-     * build/boogie.ebnf:51
-     * WhiteSpaceIdents ::=  Ident ( Ident )*
-     */
-    WhiteSpaceIdents: $ =>
-      seq($.Ident, repeat($.Ident)),
-    /*
-     * build/boogie.ebnf:52
-     * Constructors ::=  Constructor ( "," Constructor )*
-     */
-    Constructors: $ =>
-      seq($.Constructor, repeat(seq(",", $.Constructor))),
-    /*
-     * build/boogie.ebnf:53
-     * Constructor ::=  Ident "(" AttributesIdsTypeWheres? ")"
-     */
-    Constructor: $ =>
-      seq($.Ident, "(", optional($.AttributesIdsTypeWheres), ")"),
-    /*
-     * build/boogie.ebnf:54
-     * Invariant ::=  "preserves" Attribute* Proposition ";"
-     */
-    Invariant: $ =>
-      seq("preserves", repeat($.Attribute), $.Proposition, ";"),
-    /*
-     * build/boogie.ebnf:55
-     * MoverQualifier ::=  "left" | "right" | "both" | "atomic"
-     */
-    MoverQualifier: $ =>
-      choice("left", "right", "both", "atomic"),
-    /*
-     * build/boogie.ebnf:56
-     * SpecAction ::=  SpecRefinedActionForAtomicAction | SpecModifies | SpecYieldRequires | SpecAsserts
-     */
-    SpecAction: $ =>
-      choice(
-        $.SpecRefinedActionForAtomicAction,
-        $.SpecModifies,
-        $.SpecYieldRequires,
-        $.SpecAsserts
+    FunctionDecl: $ =>
+      seq(
+        optional($.twostate),
+        choice(
+          seq(
+            $.function,
+            optional($.method),
+            repeat($.Attribute),
+            $.MethodFunctionName,
+            choice(
+              seq(
+                optional($.GenericParameters),
+                $.Formals,
+                $.colon,
+                choice(seq($.openparen, $.GIdentType, $.closeparen), $.Type)
+              ),
+              $.ellipsis
+            )
+          ),
+          seq(
+            $.predicate,
+            optional($.method),
+            repeat($.Attribute),
+            $.MethodFunctionName,
+            choice(
+              seq(
+                optional($.GenericParameters),
+                optional($.KType),
+                $.Formals,
+                optional($.PredicateResult)
+              ),
+              $.ellipsis
+            )
+          ),
+          seq(
+            choice($.least, $.inductive),
+            $.predicate,
+            repeat($.Attribute),
+            $.MethodFunctionName,
+            choice(
+              seq(
+                optional($.GenericParameters),
+                optional($.KType),
+                $.Formals,
+                optional($.PredicateResult)
+              ),
+              $.ellipsis
+            )
+          ),
+          seq(
+            choice(seq($.greatest, $.predicate), $.copredicate),
+            repeat($.Attribute),
+            $.MethodFunctionName,
+            choice(
+              seq(
+                optional($.GenericParameters),
+                optional($.KType),
+                $.Formals,
+                optional($.PredicateResult)
+              ),
+              $.ellipsis
+            )
+          )
+        ),
+        $.FunctionSpec,
+        optional($.FunctionBody)
       ),
     /*
-     * build/boogie.ebnf:57
-     * ImplBody ::=  "{" LocalVars* StmtList
+     * build/boogie.ebnf:46
+     * MethodDecl ::=  ( method | lemma | ( greatest lemma | colemma ) | ( least | inductive ) lemma | twostate lemma | constructor ) Attribute* ( MethodFunctionName )? ( GenericParameters? ( KType )? Formals ( "returns" Formals )? | ellipsis ) MethodSpec ( DividedBlockStmt | BlockStmt )?
      */
-    ImplBody: $ =>
-      seq("{", repeat($.LocalVars), $.StmtList),
+    MethodDecl: $ =>
+      seq(
+        choice(
+          $.method,
+          $.lemma,
+          seq($.greatest, $.lemma),
+          $.colemma,
+          seq(choice($.least, $.inductive), $.lemma),
+          seq($.twostate, $.lemma),
+          $.constructor
+        ),
+        repeat($.Attribute),
+        optional($.MethodFunctionName),
+        choice(
+          seq(
+            optional($.GenericParameters),
+            optional($.KType),
+            $.Formals,
+            optional(seq("returns", $.Formals))
+          ),
+          $.ellipsis
+        ),
+        $.MethodSpec,
+        optional(choice($.DividedBlockStmt, $.BlockStmt))
+      ),
+    /*
+     * build/boogie.ebnf:47
+     * DatatypeName ::=  Name
+     */
+    DatatypeName: $ =>
+      $.Name,
+    /*
+     * build/boogie.ebnf:48
+     * DatatypeMemberDecl ::=  ( ghost )? Attribute* DatatypeMemberName FormalsOptionalIds?
+     */
+    DatatypeMemberDecl: $ =>
+      seq(
+        optional($.ghost),
+        repeat($.Attribute),
+        $.DatatypeMemberName,
+        optional($.FormalsOptionalIds)
+      ),
+    /*
+     * build/boogie.ebnf:49
+     * TypeMembers ::=  lbrace ( AtAttributes DeclModifier* ClassMemberDecl )* rbrace
+     */
+    TypeMembers: $ =>
+      seq(
+        $.lbrace,
+        repeat(seq($.AtAttributes, repeat($.DeclModifier), $.ClassMemberDecl)),
+        $.rbrace
+      ),
+    /*
+     * build/boogie.ebnf:50
+     * DatatypeMemberName ::=  NoUSIdentOrDigits
+     */
+    DatatypeMemberName: $ =>
+      $.NoUSIdentOrDigits,
+    /*
+     * build/boogie.ebnf:51
+     * FormalsOptionalIds ::=  openparen ( TypeIdentOptional ( comma TypeIdentOptional )* )? closeparen
+     */
+    FormalsOptionalIds: $ =>
+      seq(
+        $.openparen,
+        optional(seq($.TypeIdentOptional, repeat(seq($.comma, $.TypeIdentOptional)))),
+        $.closeparen
+      ),
+    /*
+     * build/boogie.ebnf:52
+     * FIdentType ::=  NoDigitName ( colon Type | ) ( ( gets | singleeq ) Expression )?
+     */
+    FIdentType: $ =>
+      seq(
+        $.NoDigitName,
+        choice(seq($.colon, $.Type), seq()),
+        optional(seq(choice($.gets, $.singleeq), $.Expression))
+      ),
+    /*
+     * build/boogie.ebnf:53
+     * OldSemi ::=  ( semicolon )?
+     */
+    OldSemi: $ =>
+      optional($.semicolon),
+    /*
+     * build/boogie.ebnf:54
+     * CIdentType ::=  NoDigitName ( colon Type )?
+     */
+    CIdentType: $ =>
+      seq($.NoDigitName, optional(seq($.colon, $.Type))),
+    /*
+     * build/boogie.ebnf:55
+     * Expression ::=  ( new )? EquivExpression ( DecreasesTo EquivExpression )? ( semicolon Expression )?
+     */
+    Expression: $ =>
+      seq(
+        optional($.new),
+        $.EquivExpression,
+        optional(seq($.DecreasesTo, $.EquivExpression)),
+        optional(seq($.semicolon, $.Expression))
+      ),
+    /*
+     * build/boogie.ebnf:56
+     * NewtypeName ::=  Name
+     */
+    NewtypeName: $ =>
+      $.Name,
+    /*
+     * build/boogie.ebnf:57
+     * LocalVarName ::=  NoUSIdent
+     */
+    LocalVarName: $ =>
+      $.NoUSIdent,
     /*
      * build/boogie.ebnf:58
-     * SpecRefinedActionForAtomicAction ::=  "refines" Attribute* Ident ";"
+     * NoUSIdent ::=  Ident
      */
-    SpecRefinedActionForAtomicAction: $ =>
-      seq("refines", repeat($.Attribute), $.Ident, ";"),
+    NoUSIdent: $ =>
+      $.Ident,
     /*
      * build/boogie.ebnf:59
-     * SpecRefinedActionForYieldProcedure ::=  "refines" Attribute* ( MoverQualifier? "action" Attribute* Ident ImplBody | Ident ";" )
+     * WitnessClause ::=  ( ( ghost witness Expression | witness ( star | Expression ) ) )?
      */
-    SpecRefinedActionForYieldProcedure: $ =>
-      seq(
-        "refines",
-        repeat($.Attribute),
+    WitnessClause: $ =>
+      optional(
         choice(
-          seq(optional($.MoverQualifier), "action", repeat($.Attribute), $.Ident, $.ImplBody),
-          seq($.Ident, ";")
+          seq($.ghost, $.witness, $.Expression),
+          seq($.witness, choice($.star, $.Expression))
         )
       ),
     /*
      * build/boogie.ebnf:60
-     * SpecModifies ::=  "modifies" ( Idents )? ";"
+     * SynonymTypeName ::=  Name
      */
-    SpecModifies: $ =>
-      seq("modifies", optional($.Idents), ";"),
+    SynonymTypeName: $ =>
+      $.Name,
     /*
      * build/boogie.ebnf:61
-     * SpecYieldRequires ::=  "requires" ( Attribute* Proposition | CallCmd ) ";"
+     * TypeParameterCharacteristics ::=  openparen TPCharOption ( comma TPCharOption )* closeparen
      */
-    SpecYieldRequires: $ =>
-      seq("requires", choice(seq(repeat($.Attribute), $.Proposition), $.CallCmd), ";"),
+    TypeParameterCharacteristics: $ =>
+      seq($.openparen, $.TPCharOption, repeat(seq($.comma, $.TPCharOption)), $.closeparen),
     /*
      * build/boogie.ebnf:62
-     * SpecAsserts ::=  "asserts" Attribute* Proposition ";"
+     * GIdentType ::=  ( ( ghost | new | nameonly | older ) )* IdentType
      */
-    SpecAsserts: $ =>
-      seq("asserts", repeat($.Attribute), $.Proposition, ";"),
+    GIdentType: $ =>
+      seq(repeat(choice($.ghost, $.new, $.nameonly, $.older)), $.IdentType),
     /*
      * build/boogie.ebnf:63
-     * SpecYieldPrePost ::=  SpecRefinedActionForYieldProcedure | SpecYieldRequires | SpecYieldPreserves | SpecYieldEnsures | SpecYieldMeasure | SpecModifies
+     * IdentType ::=  WildIdent colon Type
      */
-    SpecYieldPrePost: $ =>
-      choice(
-        $.SpecRefinedActionForYieldProcedure,
-        $.SpecYieldRequires,
-        $.SpecYieldPreserves,
-        $.SpecYieldEnsures,
-        $.SpecYieldMeasure,
-        $.SpecModifies
-      ),
+    IdentType: $ =>
+      seq($.WildIdent, $.colon, $.Type),
     /*
      * build/boogie.ebnf:64
-     * CallCmd ::=  ( "async" )? ( "free" )? "call" CallParams ( "|" CallParams )*
+     * NoDigitName ::=  NoUSIdentOrDigits
      */
-    CallCmd: $ =>
-      seq(
-        optional("async"),
-        optional("free"),
-        "call",
-        $.CallParams,
-        repeat(seq("|", $.CallParams))
-      ),
+    NoDigitName: $ =>
+      $.NoUSIdentOrDigits,
     /*
      * build/boogie.ebnf:65
-     * SpecYieldPreserves ::=  "preserves" ( Attribute* Proposition | CallCmd ) ";"
+     * WildIdent ::=  Ident
      */
-    SpecYieldPreserves: $ =>
-      seq("preserves", choice(seq(repeat($.Attribute), $.Proposition), $.CallCmd), ";"),
+    WildIdent: $ =>
+      $.Ident,
     /*
      * build/boogie.ebnf:66
-     * SpecYieldEnsures ::=  "ensures" ( Attribute* Proposition | CallCmd ) ";"
+     * LocalIdentTypeOptional ::=  WildIdent ( colon Type )?
      */
-    SpecYieldEnsures: $ =>
-      seq("ensures", choice(seq(repeat($.Attribute), $.Proposition), $.CallCmd), ";"),
+    LocalIdentTypeOptional: $ =>
+      seq($.WildIdent, optional(seq($.colon, $.Type))),
     /*
      * build/boogie.ebnf:67
-     * SpecYieldMeasure ::=  "measure" Attribute* Proposition ";"
+     * IdentTypeOptional ::=  WildIdentN ( colon Type )?
      */
-    SpecYieldMeasure: $ =>
-      seq("measure", repeat($.Attribute), $.Proposition, ";"),
+    IdentTypeOptional: $ =>
+      seq($.WildIdentN, optional(seq($.colon, $.Type))),
     /*
      * build/boogie.ebnf:68
-     * ProcSignature ::=  Attribute* Ident TypeParams? ProcFormals ( "returns" ProcFormals )?
+     * WildIdentN ::=  WildIdent
      */
-    ProcSignature: $ =>
-      seq(
-        repeat($.Attribute),
-        $.Ident,
-        optional($.TypeParams),
-        $.ProcFormals,
-        optional(seq("returns", $.ProcFormals))
-      ),
+    WildIdentN: $ =>
+      $.WildIdent,
     /*
      * build/boogie.ebnf:69
-     * Spec ::=  SpecModifies | "free" SpecPrePost | SpecPrePost
+     * TypeIdentOptional ::=  Attribute* ( ghost | nameonly )* ( TypeAndToken ( colon Type ParameterDefaultValue )? | digits colon Type ParameterDefaultValue )
      */
-    Spec: $ =>
-      choice($.SpecModifies, seq("free", $.SpecPrePost), $.SpecPrePost),
-    /*
-     * build/boogie.ebnf:70
-     * SpecPrePost ::=  ( "requires" Attribute* Proposition ";" | "ensures" Attribute* Proposition ";" | "measure" Attribute* Proposition ";" )
-     */
-    SpecPrePost: $ =>
-      choice(
-        seq("requires", repeat($.Attribute), $.Proposition, ";"),
-        seq("ensures", repeat($.Attribute), $.Proposition, ";"),
-        seq("measure", repeat($.Attribute), $.Proposition, ";")
-      ),
-    /*
-     * build/boogie.ebnf:71
-     * StmtList ::=  ( LabelOrCmd | StructuredCmd | TransferCmd )* "}"
-     */
-    StmtList: $ =>
-      seq(repeat(choice($.LabelOrCmd, $.StructuredCmd, $.TransferCmd)), "}"),
-    /*
-     * build/boogie.ebnf:72
-     * LabelOrCmd ::=  ( ( "reveal" | "hide" ) ( ident | "*" ) ";" | "pop" ";" | "push" ";" | LabelOrAssign | "assert" Attribute* Proposition ";" | "assume" Attribute* Proposition ";" | "havoc" Idents ";" | CallCmd ";" )
-     */
-    LabelOrCmd: $ =>
-      choice(
-        seq(choice("reveal", "hide"), choice($.ident, "*"), ";"),
-        seq("pop", ";"),
-        seq("push", ";"),
-        $.LabelOrAssign,
-        seq("assert", repeat($.Attribute), $.Proposition, ";"),
-        seq("assume", repeat($.Attribute), $.Proposition, ";"),
-        seq("havoc", $.Idents, ";"),
-        seq($.CallCmd, ";")
-      ),
-    /*
-     * build/boogie.ebnf:73
-     * StructuredCmd ::=  ( IfCmd | WhileCmd | BreakCmd )
-     */
-    StructuredCmd: $ =>
-      choice($.IfCmd, $.WhileCmd, $.BreakCmd),
-    /*
-     * build/boogie.ebnf:74
-     * TransferCmd ::=  ( "goto" Attribute* Idents | "return" Attribute* ) ";"
-     */
-    TransferCmd: $ =>
+    TypeIdentOptional: $ =>
       seq(
-        choice(seq("goto", repeat($.Attribute), $.Idents), seq("return", repeat($.Attribute))),
-        ";"
-      ),
-    /*
-     * build/boogie.ebnf:75
-     * IfCmd ::=  "if" Attribute* Guard "{" StmtList ( "else" ( IfCmd | "{" StmtList ) )?
-     */
-    IfCmd: $ =>
-      seq(
-        "if",
         repeat($.Attribute),
-        $.Guard,
-        "{",
-        $.StmtList,
-        optional(seq("else", choice($.IfCmd, seq("{", $.StmtList))))
-      ),
-    /*
-     * build/boogie.ebnf:76
-     * WhileCmd ::=  "while" Guard ( ( "free" )? "invariant" Attribute* ( _Expression | CallCmd ) ";" )* "{" StmtList
-     */
-    WhileCmd: $ =>
-      seq(
-        "while",
-        $.Guard,
-        repeat(
-          seq(
-            optional("free"),
-            "invariant",
-            repeat($.Attribute),
-            choice($._Expression, $.CallCmd),
-            ";"
-          )
-        ),
-        "{",
-        $.StmtList
-      ),
-    /*
-     * build/boogie.ebnf:77
-     * BreakCmd ::=  "break" ( Ident )? ";"
-     */
-    BreakCmd: $ =>
-      seq("break", optional($.Ident), ";"),
-    /*
-     * build/boogie.ebnf:78
-     * Guard ::=  "(" ( "*" | _Expression ) ")"
-     */
-    Guard: $ =>
-      seq("(", choice("*", $._Expression), ")"),
-    /*
-     * build/boogie.ebnf:79
-     * LabelOrAssign ::=  Ident ( ":" | "(" Idents ")" ":=" Attribute* _Expression ";" | ( MapAssignIndex | FieldAccess )* ( "," Ident ( MapAssignIndex | FieldAccess )* )* ":=" Attribute* _Expression ( "," _Expression )* ";" )
-     */
-    LabelOrAssign: $ =>
-      seq(
-        $.Ident,
+        repeat(choice($.ghost, $.nameonly)),
         choice(
-          ":",
-          seq("(", $.Idents, ")", ":=", repeat($.Attribute), $._Expression, ";"),
-          seq(
-            repeat(choice($.MapAssignIndex, $.FieldAccess)),
-            repeat(seq(",", $.Ident, repeat(choice($.MapAssignIndex, $.FieldAccess)))),
-            ":=",
-            repeat($.Attribute),
-            $._Expression,
-            repeat(seq(",", $._Expression)),
-            ";"
-          )
+          seq($.TypeAndToken, optional(seq($.colon, $.Type, $.ParameterDefaultValue))),
+          seq($.digits, $.colon, $.Type, $.ParameterDefaultValue)
         )
       ),
     /*
-     * build/boogie.ebnf:80
-     * MapAssignIndex ::=  "[" ( _Expression ( "," _Expression )* )? "]"
+     * build/boogie.ebnf:70
+     * TypeAndToken ::=  ( bool | char | int | nat | real | fp32 | fp64 | field | ORDINAL | bvToken | set OptGenericInstantiation | iset OptGenericInstantiation | multiset OptGenericInstantiation | seq OptGenericInstantiation | string | object | object_q | map OptGenericInstantiation | imap OptGenericInstantiation | arrayToken OptGenericInstantiation | TupleType | NamedType ) ( ( qarrow | larrow | sarrow ) Type )?
      */
-    MapAssignIndex: $ =>
-      seq("[", optional(seq($._Expression, repeat(seq(",", $._Expression)))), "]"),
+    TypeAndToken: $ =>
+      seq(
+        choice(
+          $.bool,
+          $.char,
+          $.int,
+          $.nat,
+          $.real,
+          $.fp32,
+          $.fp64,
+          $.field,
+          $.ORDINAL,
+          $.bvToken,
+          seq($.set, $.OptGenericInstantiation),
+          seq($.iset, $.OptGenericInstantiation),
+          seq($.multiset, $.OptGenericInstantiation),
+          seq($.seq, $.OptGenericInstantiation),
+          $.string,
+          $.object,
+          $.object_q,
+          seq($.map, $.OptGenericInstantiation),
+          seq($.imap, $.OptGenericInstantiation),
+          seq($.arrayToken, $.OptGenericInstantiation),
+          $.TupleType,
+          $.NamedType
+        ),
+        optional(seq(choice($.qarrow, $.larrow, $.sarrow), $.Type))
+      ),
+    /*
+     * build/boogie.ebnf:71
+     * ParameterDefaultValue ::=  ( gets Expression )?
+     */
+    ParameterDefaultValue: $ =>
+      optional(seq($.gets, $.Expression)),
+    /*
+     * build/boogie.ebnf:72
+     * IteratorName ::=  Name
+     */
+    IteratorName: $ =>
+      $.Name,
+    /*
+     * build/boogie.ebnf:73
+     * Formals ::=  openparen ( Attribute* GIdentType ParameterDefaultValue ( comma Attribute* GIdentType ParameterDefaultValue )* )? closeparen
+     */
+    Formals: $ =>
+      seq(
+        $.openparen,
+        optional(
+          seq(
+            repeat($.Attribute),
+            $.GIdentType,
+            $.ParameterDefaultValue,
+            repeat(seq($.comma, repeat($.Attribute), $.GIdentType, $.ParameterDefaultValue))
+          )
+        ),
+        $.closeparen
+      ),
+    /*
+     * build/boogie.ebnf:74
+     * IteratorSpec ::=  ( ReadsClause | ModifiesClause | ( "yield" )? ( RequiresClause | EnsuresClause ) | DecreasesClause )*
+     */
+    IteratorSpec: $ =>
+      repeat(
+        choice(
+          $.ReadsClause,
+          $.ModifiesClause,
+          seq(optional("yield"), choice($.RequiresClause, $.EnsuresClause)),
+          $.DecreasesClause
+        )
+      ),
+    /*
+     * build/boogie.ebnf:75
+     * BlockStmt ::=  lbrace Stmt* rbrace
+     */
+    BlockStmt: $ =>
+      seq($.lbrace, repeat($.Stmt), $.rbrace),
+    /*
+     * build/boogie.ebnf:76
+     * TypeVariableName ::=  Name
+     */
+    TypeVariableName: $ =>
+      $.Name,
+    /*
+     * build/boogie.ebnf:77
+     * OneTypeParameter ::=  ( Variance )? TypeVariableName TypeParameterCharacteristics* ( extends Type )*
+     */
+    OneTypeParameter: $ =>
+      seq(
+        optional($.Variance),
+        $.TypeVariableName,
+        repeat($.TypeParameterCharacteristics),
+        repeat(seq($.extends, $.Type))
+      ),
+    /*
+     * build/boogie.ebnf:78
+     * Variance ::=  ( star | "+" | "!" | minus )
+     */
+    Variance: $ =>
+      choice($.star, "+", "!", $.minus),
+    /*
+     * build/boogie.ebnf:79
+     * TPCharOption ::=  eq | digits | "!" new | "ANYYYYYYY"
+     */
+    TPCharOption: $ =>
+      choice($.eq, $.digits, seq("!", $.new), "ANYYYYYYY"),
+    /*
+     * build/boogie.ebnf:80
+     * MethodFunctionName ::=  NoDigitName
+     */
+    MethodFunctionName: $ =>
+      $.NoDigitName,
     /*
      * build/boogie.ebnf:81
-     * FieldAccess ::=  "->" Ident
+     * KType ::=  lbracket ( nat | ORDINAL ) rbracket
      */
-    FieldAccess: $ =>
-      seq("->", $.Ident),
+    KType: $ =>
+      seq($.lbracket, choice($.nat, $.ORDINAL), $.rbracket),
     /*
      * build/boogie.ebnf:82
-     * CallParams ::=  Attribute* Ident ( "(" ( _Expression ( "," _Expression )* )? ")" | ( "," Ident ( "," Ident )* )? ":=" Ident "(" ( _Expression ( "," _Expression )* )? ")" )
+     * MethodSpec ::=  ( ReadsClause | ModifiesClause | RequiresClause | EnsuresClause | DecreasesClause )*
      */
-    CallParams: $ =>
-      seq(
-        repeat($.Attribute),
-        $.Ident,
+    MethodSpec: $ =>
+      repeat(
         choice(
-          seq("(", optional(seq($._Expression, repeat(seq(",", $._Expression)))), ")"),
-          seq(
-            optional(seq(",", $.Ident, repeat(seq(",", $.Ident)))),
-            ":=",
-            $.Ident,
-            "(",
-            optional(seq($._Expression, repeat(seq(",", $._Expression)))),
-            ")"
-          )
+          $.ReadsClause,
+          $.ModifiesClause,
+          $.RequiresClause,
+          $.EnsuresClause,
+          $.DecreasesClause
         )
       ),
     /*
      * build/boogie.ebnf:83
-     * Expressions ::=  _Expression ( "," _Expression )*
+     * DividedBlockStmt ::=  lbrace Stmt* ( new semicolon Stmt* )? rbrace
      */
-    Expressions: $ =>
-      seq($._Expression, repeat(seq(",", $._Expression))),
+    DividedBlockStmt: $ =>
+      seq(
+        $.lbrace,
+        repeat($.Stmt),
+        optional(seq($.new, $.semicolon, repeat($.Stmt))),
+        $.rbrace
+      ),
     /*
      * build/boogie.ebnf:84
-     * _ImpliesExpression ::=  _LogicalExpression  | ImpliesExpression
+     * RequiresClause ::=  requires Attribute* ( LabelName colon )? Expression OldSemi
      */
-    _ImpliesExpression: $ =>
-      choice($._LogicalExpression, $.ImpliesExpression),
+    RequiresClause: $ =>
+      seq(
+        $.requires,
+        repeat($.Attribute),
+        optional(seq($.LabelName, $.colon)),
+        $.Expression,
+        $.OldSemi
+      ),
     /*
      * build/boogie.ebnf:85
-     * ImpliesExpression ::= >(   _LogicalExpression  (  ImpliesOp _ImpliesExpression | ExpliesOp _LogicalExpression ( ExpliesOp _LogicalExpression )* ) )
+     * LabelName ::=  NoUSIdentOrDigits
      */
-    ImpliesExpression: $ =>
-      prec.right(
-        seq(
-          $._LogicalExpression,
-          choice(
-            seq($.ImpliesOp, $._ImpliesExpression),
-            seq(
-              $.ExpliesOp,
-              $._LogicalExpression,
-              repeat(seq($.ExpliesOp, $._LogicalExpression))
-            )
-          )
-        )
-      ),
+    LabelName: $ =>
+      $.NoUSIdentOrDigits,
     /*
      * build/boogie.ebnf:86
-     * EquivOp ::=  "<==>" | "\u21d4"
+     * EnsuresClause ::=  ensures Attribute* Expression OldSemi
      */
-    EquivOp: $ =>
-      choice("<==>", "\u21d4"),
+    EnsuresClause: $ =>
+      seq($.ensures, repeat($.Attribute), $.Expression, $.OldSemi),
     /*
      * build/boogie.ebnf:87
-     * _LogicalExpression ::=  _RelationalExpression  | LogicalExpression
+     * ModifiesClause ::=  modifies Attribute* FrameExpression ( comma FrameExpression )* OldSemi
      */
-    _LogicalExpression: $ =>
-      choice($._RelationalExpression, $.LogicalExpression),
+    ModifiesClause: $ =>
+      seq(
+        $.modifies,
+        repeat($.Attribute),
+        $.FrameExpression,
+        repeat(seq($.comma, $.FrameExpression)),
+        $.OldSemi
+      ),
     /*
      * build/boogie.ebnf:88
-     * LogicalExpression ::= >(   _RelationalExpression  (  AndOp _RelationalExpression ( AndOp _RelationalExpression )* | OrOp _RelationalExpression ( OrOp _RelationalExpression )* ) )
+     * FrameExpression ::=  ( FrameField | Expression ( FrameField )? )
      */
-    LogicalExpression: $ =>
-      prec.right(
+    FrameExpression: $ =>
+      choice($.FrameField, seq($.Expression, optional($.FrameField))),
+    /*
+     * build/boogie.ebnf:89
+     * DecreasesClause ::=  decreases Attribute* DecreasesList OldSemi
+     */
+    DecreasesClause: $ =>
+      seq($.decreases, repeat($.Attribute), $.DecreasesList, $.OldSemi),
+    /*
+     * build/boogie.ebnf:90
+     * DecreasesList ::=  PossiblyWildExpression ( comma PossiblyWildExpression )*
+     */
+    DecreasesList: $ =>
+      seq($.PossiblyWildExpression, repeat(seq($.comma, $.PossiblyWildExpression))),
+    /*
+     * build/boogie.ebnf:91
+     * ReadsClause ::=  reads Attribute* PossiblyWildFrameExpression ( comma PossiblyWildFrameExpression )* OldSemi
+     */
+    ReadsClause: $ =>
+      seq(
+        $.reads,
+        repeat($.Attribute),
+        $.PossiblyWildFrameExpression,
+        repeat(seq($.comma, $.PossiblyWildFrameExpression)),
+        $.OldSemi
+      ),
+    /*
+     * build/boogie.ebnf:92
+     * PossiblyWildFrameExpression ::=  ( star | "**" | FrameExpression )
+     */
+    PossiblyWildFrameExpression: $ =>
+      choice($.star, "**", $.FrameExpression),
+    /*
+     * build/boogie.ebnf:93
+     * InvariantClause ::=  invariant Attribute* Expression OldSemi
+     */
+    InvariantClause: $ =>
+      seq($.invariant, repeat($.Attribute), $.Expression, $.OldSemi),
+    /*
+     * build/boogie.ebnf:94
+     * OptGenericInstantiation ::=  ( GenericInstantiation )?
+     */
+    OptGenericInstantiation: $ =>
+      optional($.GenericInstantiation),
+    /*
+     * build/boogie.ebnf:95
+     * TupleType ::=  openparen ( ( ghost )? Type ( comma ( ghost )? Type )* )? closeparen
+     */
+    TupleType: $ =>
+      seq(
+        $.openparen,
+        optional(seq(optional($.ghost), $.Type, repeat(seq($.comma, optional($.ghost), $.Type)))),
+        $.closeparen
+      ),
+    /*
+     * build/boogie.ebnf:96
+     * NamedType ::=  NameSegmentForTypeName ( dot TypeNameOrCtorSuffix OptGenericInstantiation )*
+     */
+    NamedType: $ =>
+      seq(
+        $.NameSegmentForTypeName,
+        repeat(seq($.dot, $.TypeNameOrCtorSuffix, $.OptGenericInstantiation))
+      ),
+    /*
+     * build/boogie.ebnf:97
+     * NameSegmentForTypeName ::=  Ident OptGenericInstantiation
+     */
+    NameSegmentForTypeName: $ =>
+      seq($.Ident, $.OptGenericInstantiation),
+    /*
+     * build/boogie.ebnf:98
+     * GenericInstantiation ::=  openAngleBracket ( closeAngleBracket | Type ( comma Type )* closeAngleBracket )
+     */
+    GenericInstantiation: $ =>
+      seq(
+        $.openAngleBracket,
+        choice(
+          $.closeAngleBracket,
+          seq($.Type, repeat(seq($.comma, $.Type)), $.closeAngleBracket)
+        )
+      ),
+    /*
+     * build/boogie.ebnf:99
+     * PredicateResult ::=  colon ( openparen Attribute* GIdentType closeparen | Type )
+     */
+    PredicateResult: $ =>
+      seq(
+        $.colon,
+        choice(seq($.openparen, repeat($.Attribute), $.GIdentType, $.closeparen), $.Type)
+      ),
+    /*
+     * build/boogie.ebnf:100
+     * FunctionSpec ::=  ( RequiresClause | ReadsClause | EnsuresClause | DecreasesClause )*
+     */
+    FunctionSpec: $ =>
+      repeat(choice($.RequiresClause, $.ReadsClause, $.EnsuresClause, $.DecreasesClause)),
+    /*
+     * build/boogie.ebnf:101
+     * FunctionBody ::=  lbrace Expression rbrace ( by method BlockStmt )?
+     */
+    FunctionBody: $ =>
+      seq($.lbrace, $.Expression, $.rbrace, optional(seq($.by, $.method, $.BlockStmt))),
+    /*
+     * build/boogie.ebnf:102
+     * PossiblyWildExpression ::=  ( star | Expression )
+     */
+    PossiblyWildExpression: $ =>
+      choice($.star, $.Expression),
+    /*
+     * build/boogie.ebnf:103
+     * FrameField ::=  backtick IdentOrDigits
+     */
+    FrameField: $ =>
+      seq($.backtick, $.IdentOrDigits),
+    /*
+     * build/boogie.ebnf:104
+     * IdentOrDigits ::=  ( Ident | digits )
+     */
+    IdentOrDigits: $ =>
+      choice($.Ident, $.digits),
+    /*
+     * build/boogie.ebnf:105
+     * Stmt ::=  OneStmt
+     */
+    Stmt: $ =>
+      $.OneStmt,
+    /*
+     * build/boogie.ebnf:106
+     * OpaqueBlock ::=  opaque ( ModifiesClause | EnsuresClause )* lbrace Stmt* rbrace
+     */
+    OpaqueBlock: $ =>
+      seq(
+        $.opaque,
+        repeat(choice($.ModifiesClause, $.EnsuresClause)),
+        $.lbrace,
+        repeat($.Stmt),
+        $.rbrace
+      ),
+    /*
+     * build/boogie.ebnf:107
+     * OneStmt ::=  ( BlockStmt | OpaqueBlock | RevealStmt | AssignStatement | VarDeclStatement | ReturnStmt | IfStmt | WhileStmt | ForLoopStmt | AssertStmt | AssumeStmt | BreakOrContinueStmt | CalcStmt | ExpectStmt | ForallStmt | LabeledStmt | MatchStmt | ModifyStmt | PrintStmt | SkeletonStmt | YieldStmt )
+     */
+    OneStmt: $ =>
+      choice(
+        $.BlockStmt,
+        $.OpaqueBlock,
+        $.RevealStmt,
+        $.AssignStatement,
+        $.VarDeclStatement,
+        $.ReturnStmt,
+        $.IfStmt,
+        $.WhileStmt,
+        $.ForLoopStmt,
+        $.AssertStmt,
+        $.AssumeStmt,
+        $.BreakOrContinueStmt,
+        $.CalcStmt,
+        $.ExpectStmt,
+        $.ForallStmt,
+        $.LabeledStmt,
+        $.MatchStmt,
+        $.ModifyStmt,
+        $.PrintStmt,
+        $.SkeletonStmt,
+        $.YieldStmt
+      ),
+    /*
+     * build/boogie.ebnf:108
+     * RevealStmt ::=  ( reveal | hide ) ( Expression ( comma Expression )* | star ) semicolon
+     */
+    RevealStmt: $ =>
+      seq(
+        choice($.reveal, $.hide),
+        choice(seq($.Expression, repeat(seq($.comma, $.Expression))), $.star),
+        $.semicolon
+      ),
+    /*
+     * build/boogie.ebnf:109
+     * AssignStatement ::=  ( Lhs ( ( comma Lhs )* ( gets Rhs ( comma Rhs )* | boredSmiley ( assume Attribute* )? Expression | ":-" ( ( expect | assert | assume ) Attribute* )? Expression Attribute* ( comma Rhs )* ) ( by BlockStmt | semicolon ) | colon | Attribute* ( by BlockStmt | semicolon ) | Attribute* ) | ":-" ( ( expect | assert | assume ) Attribute* )? Expression Attribute* ( comma Rhs )* ( by BlockStmt | semicolon ) )
+     */
+    AssignStatement: $ =>
+      choice(
         seq(
-          $._RelationalExpression,
+          $.Lhs,
           choice(
-            seq($.AndOp, $._RelationalExpression, repeat(seq($.AndOp, $._RelationalExpression))),
-            seq($.OrOp, $._RelationalExpression, repeat(seq($.OrOp, $._RelationalExpression)))
+            seq(
+              repeat(seq($.comma, $.Lhs)),
+              choice(
+                seq($.gets, $.Rhs, repeat(seq($.comma, $.Rhs))),
+                seq($.boredSmiley, optional(seq($.assume, repeat($.Attribute))), $.Expression),
+                seq(
+                  ":-",
+                  optional(seq(choice($.expect, $.assert, $.assume), repeat($.Attribute))),
+                  $.Expression,
+                  repeat($.Attribute),
+                  repeat(seq($.comma, $.Rhs))
+                )
+              ),
+              choice(seq($.by, $.BlockStmt), $.semicolon)
+            ),
+            $.colon,
+            seq(repeat($.Attribute), choice(seq($.by, $.BlockStmt), $.semicolon)),
+            repeat($.Attribute)
+          )
+        ),
+        seq(
+          ":-",
+          optional(seq(choice($.expect, $.assert, $.assume), repeat($.Attribute))),
+          $.Expression,
+          repeat($.Attribute),
+          repeat(seq($.comma, $.Rhs)),
+          choice(seq($.by, $.BlockStmt), $.semicolon)
+        )
+      ),
+    /*
+     * build/boogie.ebnf:110
+     * VarDeclStatement ::=  ( ghost )? var ( Attribute* LocalIdentTypeOptional ( comma Attribute* LocalIdentTypeOptional )* ( ( gets | singleeq ) Rhs ( comma Rhs )* | Attribute* boredSmiley ( assume Attribute* )? Expression | ":-" ( ( expect | assert | assume ) Attribute* )? Expression Attribute* ( comma Rhs )* )? ( by BlockStmt | semicolon ) | CasePatternLocal ( gets | Attribute* boredSmiley ) Expression semicolon )
+     */
+    VarDeclStatement: $ =>
+      seq(
+        optional($.ghost),
+        $.var,
+        choice(
+          seq(
+            repeat($.Attribute),
+            $.LocalIdentTypeOptional,
+            repeat(seq($.comma, repeat($.Attribute), $.LocalIdentTypeOptional)),
+            optional(
+              choice(
+                seq(choice($.gets, $.singleeq), $.Rhs, repeat(seq($.comma, $.Rhs))),
+                seq(
+                  repeat($.Attribute),
+                  $.boredSmiley,
+                  optional(seq($.assume, repeat($.Attribute))),
+                  $.Expression
+                ),
+                seq(
+                  ":-",
+                  optional(seq(choice($.expect, $.assert, $.assume), repeat($.Attribute))),
+                  $.Expression,
+                  repeat($.Attribute),
+                  repeat(seq($.comma, $.Rhs))
+                )
+              )
+            ),
+            choice(seq($.by, $.BlockStmt), $.semicolon)
+          ),
+          seq(
+            $.CasePatternLocal,
+            choice($.gets, seq(repeat($.Attribute), $.boredSmiley)),
+            $.Expression,
+            $.semicolon
           )
         )
       ),
     /*
-     * build/boogie.ebnf:89
-     * ImpliesOp ::=  "==>" | "\u21d2"
-     */
-    ImpliesOp: $ =>
-      choice("==>", "\u21d2"),
-    /*
-     * build/boogie.ebnf:90
-     * ExpliesOp ::=  "<==" | "\u21d0"
-     */
-    ExpliesOp: $ =>
-      choice("<==", "\u21d0"),
-    /*
-     * build/boogie.ebnf:91
-     * _RelationalExpression ::=  _BvTerm  | RelationalExpression
-     */
-    _RelationalExpression: $ =>
-      choice($._BvTerm, $.RelationalExpression),
-    /*
-     * build/boogie.ebnf:92
-     * RelationalExpression ::=   _BvTerm  (  RelOp _BvTerm )
-     */
-    RelationalExpression: $ =>
-      seq($._BvTerm, seq($.RelOp, $._BvTerm)),
-    /*
-     * build/boogie.ebnf:93
-     * AndOp ::=  "&&" | "\u2227"
-     */
-    AndOp: $ =>
-      choice("&&", "\u2227"),
-    /*
-     * build/boogie.ebnf:94
-     * OrOp ::=  "||" | "\u2228"
-     */
-    OrOp: $ =>
-      choice("||", "\u2228"),
-    /*
-     * build/boogie.ebnf:95
-     * _BvTerm ::=  _Term  | BvTerm
-     */
-    _BvTerm: $ =>
-      choice($._Term, $.BvTerm),
-    /*
-     * build/boogie.ebnf:96
-     * BvTerm ::= >(   _Term  (  "++" _Term )+ )
-     */
-    BvTerm: $ =>
-      prec.right(seq($._Term, repeat1(seq("++", $._Term)))),
-    /*
-     * build/boogie.ebnf:97
-     * RelOp ::=  ( "==" | "<" | ">" | "<=" | ">=" | "!=" | "\u2260" | "\u2264" | "\u2265" )
-     */
-    RelOp: $ =>
-      choice("==", "<", ">", "<=", ">=", "!=", "\u2260", "\u2264", "\u2265"),
-    /*
-     * build/boogie.ebnf:98
-     * _Term ::=  _Factor  | Term
-     */
-    _Term: $ =>
-      choice($._Factor, $.Term),
-    /*
-     * build/boogie.ebnf:99
-     * Term ::= >(   _Factor  (  AddOp _Factor )+ )
-     */
-    Term: $ =>
-      prec.right(seq($._Factor, repeat1(seq($.AddOp, $._Factor)))),
-    /*
-     * build/boogie.ebnf:100
-     * _Factor ::=  _Power  | Factor
-     */
-    _Factor: $ =>
-      choice($._Power, $.Factor),
-    /*
-     * build/boogie.ebnf:101
-     * Factor ::= >(   _Power  (  MulOp _Power )+ )
-     */
-    Factor: $ =>
-      prec.right(seq($._Power, repeat1(seq($.MulOp, $._Power)))),
-    /*
-     * build/boogie.ebnf:102
-     * AddOp ::=  ( "+" | "-" )
-     */
-    AddOp: $ =>
-      choice("+", "-"),
-    /*
-     * build/boogie.ebnf:103
-     * _Power ::=  _IsConstructor  | Power
-     */
-    _Power: $ =>
-      choice($._IsConstructor, $.Power),
-    /*
-     * build/boogie.ebnf:104
-     * Power ::=   _IsConstructor  (  "**" _Power )
-     */
-    Power: $ =>
-      seq($._IsConstructor, seq("**", $._Power)),
-    /*
-     * build/boogie.ebnf:105
-     * MulOp ::=  ( "*" | "div" | "mod" | "/" )
-     */
-    MulOp: $ =>
-      choice("*", "div", "mod", "/"),
-    /*
-     * build/boogie.ebnf:106
-     * _IsConstructor ::=  _UnaryExpression  | IsConstructor
-     */
-    _IsConstructor: $ =>
-      choice($._UnaryExpression, $.IsConstructor),
-    /*
-     * build/boogie.ebnf:107
-     * IsConstructor ::=   _UnaryExpression  (  "is" Ident )
-     */
-    IsConstructor: $ =>
-      seq($._UnaryExpression, seq("is", $.Ident)),
-    /*
-     * build/boogie.ebnf:108
-     * _UnaryExpression ::= UnaryExpression | _CoercionExpression
-     */
-    _UnaryExpression: $ =>
-      choice($.UnaryExpression, $._CoercionExpression),
-    /*
-     * build/boogie.ebnf:109
-     * UnaryExpression ::=  ( "-" _UnaryExpression | NegOp _UnaryExpression  )
-     */
-    UnaryExpression: $ =>
-      choice(seq("-", $._UnaryExpression), seq($.NegOp, $._UnaryExpression)),
-    /*
-     * build/boogie.ebnf:110
-     * NegOp ::=  "!" | "\u00ac"
-     */
-    NegOp: $ =>
-      choice("!", "\u00ac"),
-    /*
      * build/boogie.ebnf:111
-     * _CoercionExpression ::=  _ArrayExpression  | CoercionExpression
+     * ReturnStmt ::=  "return" Attribute? ( Rhs ( comma Rhs )* )? semicolon
      */
-    _CoercionExpression: $ =>
-      choice($._ArrayExpression, $.CoercionExpression),
+    ReturnStmt: $ =>
+      seq(
+        "return",
+        optional($.Attribute),
+        optional(seq($.Rhs, repeat(seq($.comma, $.Rhs)))),
+        $.semicolon
+      ),
     /*
      * build/boogie.ebnf:112
-     * CoercionExpression ::= >(   _ArrayExpression  (  ":" ( Type | Nat ) )+ )
+     * IfStmt ::=  "if" Attribute* ( AlternativeBlock | ( BindingGuard | Guard | ellipsis ) BlockStmt ( else ( IfStmt | Attribute* BlockStmt ) )? )
      */
-    CoercionExpression: $ =>
-      prec.right(seq($._ArrayExpression, repeat1(seq(":", choice($.Type, $.Nat))))),
-    /*
-     * build/boogie.ebnf:113
-     * _ArrayExpression ::=  AtomExpression  | ArrayExpression
-     */
-    _ArrayExpression: $ =>
-      choice($.AtomExpression, $.ArrayExpression),
-    /*
-     * build/boogie.ebnf:114
-     * ArrayExpression ::= >(   AtomExpression  (  "[" ( _Expression ( "," _Expression )* ( ":=" _Expression )? | ":=" _Expression )? "]" | "->" ( Ident | "(" Ident ":=" _Expression ")" ) )+ )
-     */
-    ArrayExpression: $ =>
-      prec.right(
-        seq(
-          $.AtomExpression,
-          repeat1(
-            choice(
-              seq(
-                "[",
-                optional(
-                  choice(
-                    seq(
-                      $._Expression,
-                      repeat(seq(",", $._Expression)),
-                      optional(seq(":=", $._Expression))
-                    ),
-                    seq(":=", $._Expression)
-                  )
-                ),
-                "]"
-              ),
-              seq("->", choice($.Ident, seq("(", $.Ident, ":=", $._Expression, ")")))
-            )
+    IfStmt: $ =>
+      seq(
+        "if",
+        repeat($.Attribute),
+        choice(
+          $.AlternativeBlock,
+          seq(
+            choice($.BindingGuard, $.Guard, $.ellipsis),
+            $.BlockStmt,
+            optional(seq($.else, choice($.IfStmt, seq(repeat($.Attribute), $.BlockStmt))))
           )
         )
+      ),
+    /*
+     * build/boogie.ebnf:113
+     * WhileStmt ::=  "while" Attribute* ( LoopSpec AlternativeBlock | ( Guard | ellipsis ) LoopSpec ( BlockStmt | ellipsis | ) )
+     */
+    WhileStmt: $ =>
+      seq(
+        "while",
+        repeat($.Attribute),
+        choice(
+          seq($.LoopSpec, $.AlternativeBlock),
+          seq(choice($.Guard, $.ellipsis), $.LoopSpec, choice($.BlockStmt, $.ellipsis, seq()))
+        )
+      ),
+    /*
+     * build/boogie.ebnf:114
+     * ForLoopStmt ::=  "for" Attribute* IdentTypeOptional gets Expression ForLoopDirection ( Expression | star ) LoopSpec ( BlockStmt | )
+     */
+    ForLoopStmt: $ =>
+      seq(
+        "for",
+        repeat($.Attribute),
+        $.IdentTypeOptional,
+        $.gets,
+        $.Expression,
+        $.ForLoopDirection,
+        choice($.Expression, $.star),
+        $.LoopSpec,
+        choice($.BlockStmt, seq())
       ),
     /*
      * build/boogie.ebnf:115
-     * Nat ::=  digits
+     * AssertStmt ::=  assert Attribute* ( ( LabelName colon )? Expression ( by BlockStmt | semicolon | ) | ellipsis semicolon )
      */
-    Nat: $ =>
-      $.digits,
-    /*
-     * build/boogie.ebnf:116
-     * AtomExpression ::=  ( "false" | "true" | ( "roundNearestTiesToEven" | "RNE" ) | ( "roundNearestTiesToAway" | "RNA" ) | ( "roundTowardPositive" | "RTP" ) | ( "roundTowardNegative" | "RTN" ) | ( "roundTowardZero" | "RTZ" ) | Nat | Dec | Float | BvLit | string | Ident ( "(" ( Expressions )? ")" )? | "old" "(" _Expression ")" | "int" "(" _Expression ")" | "real" "(" _Expression ")" | "(" ( _Expression | Forall QuantifierBody | Exists QuantifierBody | Lambda QuantifierBody | LetExpr ) ")" | IfThenElseExpression | CodeExpression )
-     */
-    AtomExpression: $ =>
-      choice(
-        "false",
-        "true",
-        "roundNearestTiesToEven",
-        "RNE",
-        "roundNearestTiesToAway",
-        "RNA",
-        "roundTowardPositive",
-        "RTP",
-        "roundTowardNegative",
-        "RTN",
-        "roundTowardZero",
-        "RTZ",
-        $.Nat,
-        $.Dec,
-        $.Float,
-        $.BvLit,
-        $.string,
-        seq($.Ident, optional(seq("(", optional($.Expressions), ")"))),
-        seq("old", "(", $._Expression, ")"),
-        seq("int", "(", $._Expression, ")"),
-        seq("real", "(", $._Expression, ")"),
-        seq(
-          "(",
-          choice(
-            $._Expression,
-            seq($.Forall, $.QuantifierBody),
-            seq($.Exists, $.QuantifierBody),
-            seq($.Lambda, $.QuantifierBody),
-            $.LetExpr
+    AssertStmt: $ =>
+      seq(
+        $.assert,
+        repeat($.Attribute),
+        choice(
+          seq(
+            optional(seq($.LabelName, $.colon)),
+            $.Expression,
+            choice(seq($.by, $.BlockStmt), $.semicolon, seq())
           ),
-          ")"
-        ),
-        $.IfThenElseExpression,
-        $.CodeExpression
+          seq($.ellipsis, $.semicolon)
+        )
       ),
     /*
-     * build/boogie.ebnf:117
-     * Dec ::=  ( decimal | dec_float )
+     * build/boogie.ebnf:116
+     * AssumeStmt ::=  assume Attribute* ( Expression | ellipsis ) semicolon
      */
-    Dec: $ =>
-      choice($.decimal, $.dec_float),
+    AssumeStmt: $ =>
+      seq($.assume, repeat($.Attribute), choice($.Expression, $.ellipsis), $.semicolon),
+    /*
+     * build/boogie.ebnf:117
+     * BreakOrContinueStmt ::=  ( "continue" Attribute? LabelName? | "break" ( LabelName | ( "break" )* ( "continue" )? ) ) semicolon
+     */
+    BreakOrContinueStmt: $ =>
+      seq(
+        choice(
+          seq("continue", optional($.Attribute), optional($.LabelName)),
+          seq("break", choice($.LabelName, seq(repeat("break"), optional("continue"))))
+        ),
+        $.semicolon
+      ),
     /*
      * build/boogie.ebnf:118
-     * Float ::=  float
+     * CalcStmt ::=  calc Attribute* ( CalcOp )? lbrace ( Expression semicolon ( CalcOp )? ( ( BlockStmt | CalcStmt ) )* )* rbrace
      */
-    Float: $ =>
-      $.float,
+    CalcStmt: $ =>
+      seq(
+        $.calc,
+        repeat($.Attribute),
+        optional($.CalcOp),
+        $.lbrace,
+        repeat(
+          seq(
+            $.Expression,
+            $.semicolon,
+            optional($.CalcOp),
+            repeat(choice($.BlockStmt, $.CalcStmt))
+          )
+        ),
+        $.rbrace
+      ),
     /*
      * build/boogie.ebnf:119
-     * BvLit ::=  bvlit
+     * ExpectStmt ::=  expect Attribute* ( Expression | ellipsis ) ( comma Expression )? semicolon
      */
-    BvLit: $ =>
-      $.bvlit,
+    ExpectStmt: $ =>
+      seq(
+        $.expect,
+        repeat($.Attribute),
+        choice($.Expression, $.ellipsis),
+        optional(seq($.comma, $.Expression)),
+        $.semicolon
+      ),
     /*
      * build/boogie.ebnf:120
-     * Forall ::=  "forall" | "\u2200"
+     * ForallStmt ::=  "forall" ( openparen QuantifierDomain? closeparen | ( QuantifierDomain )? ) ForallStatementEnsuresAndBody
      */
-    Forall: $ =>
-      choice("forall", "\u2200"),
+    ForallStmt: $ =>
+      seq(
+        "forall",
+        choice(
+          seq($.openparen, optional($.QuantifierDomain), $.closeparen),
+          optional($.QuantifierDomain)
+        ),
+        $.ForallStatementEnsuresAndBody
+      ),
     /*
      * build/boogie.ebnf:121
-     * QuantifierBody ::=  ( TypeParams BoundVars? | BoundVars ) QSep AttributeOrTrigger* _Expression
+     * LabeledStmt ::=  Label ( Label )* ( ( WhileStmt | ForLoopStmt | IfStmt | BlockStmt | OpaqueBlock ) | )
      */
-    QuantifierBody: $ =>
+    LabeledStmt: $ =>
       seq(
-        choice(seq($.TypeParams, optional($.BoundVars)), $.BoundVars),
-        $.QSep,
-        repeat($.AttributeOrTrigger),
-        $._Expression
+        $.Label,
+        repeat($.Label),
+        choice($.WhileStmt, $.ForLoopStmt, $.IfStmt, $.BlockStmt, $.OpaqueBlock, seq())
       ),
     /*
      * build/boogie.ebnf:122
-     * Exists ::=  "exists" | "\u2203"
+     * MatchStmt ::=  "match" Attribute* Expression ( lbrace ( CaseStmt )* rbrace | ( CaseStmt )* )
      */
-    Exists: $ =>
-      choice("exists", "\u2203"),
+    MatchStmt: $ =>
+      seq(
+        "match",
+        repeat($.Attribute),
+        $.Expression,
+        choice(seq($.lbrace, repeat($.CaseStmt), $.rbrace), repeat($.CaseStmt))
+      ),
     /*
      * build/boogie.ebnf:123
-     * Lambda ::=  "lambda" | "\u03bb"
+     * ModifyStmt ::=  "modify" Attribute* ( FrameExpression ( comma FrameExpression )* | ellipsis ) ( BlockStmt | semicolon )
      */
-    Lambda: $ =>
-      choice("lambda", "\u03bb"),
+    ModifyStmt: $ =>
+      seq(
+        "modify",
+        repeat($.Attribute),
+        choice(seq($.FrameExpression, repeat(seq($.comma, $.FrameExpression))), $.ellipsis),
+        choice($.BlockStmt, $.semicolon)
+      ),
     /*
      * build/boogie.ebnf:124
-     * LetExpr ::=  "var" LetVar ( "," LetVar )* ":=" _Expression ( "," _Expression )* ";" Attribute* _Expression
+     * PrintStmt ::=  "print" Expression ( comma Expression )* semicolon
      */
-    LetExpr: $ =>
-      seq(
-        "var",
-        $.LetVar,
-        repeat(seq(",", $.LetVar)),
-        ":=",
-        $._Expression,
-        repeat(seq(",", $._Expression)),
-        ";",
-        repeat($.Attribute),
-        $._Expression
-      ),
+    PrintStmt: $ =>
+      seq("print", $.Expression, repeat(seq($.comma, $.Expression)), $.semicolon),
     /*
      * build/boogie.ebnf:125
-     * IfThenElseExpression ::=  "if" _Expression "then" _Expression "else" _Expression
+     * SkeletonStmt ::=  ellipsis semicolon
      */
-    IfThenElseExpression: $ =>
-      seq("if", $._Expression, "then", $._Expression, "else", $._Expression),
+    SkeletonStmt: $ =>
+      seq($.ellipsis, $.semicolon),
     /*
      * build/boogie.ebnf:126
-     * CodeExpression ::=  "|{" LocalVars* SpecBlock ( SpecBlock )* "}|"
+     * YieldStmt ::=  "yield" ( Rhs ( comma Rhs )* )? semicolon
      */
-    CodeExpression: $ =>
-      seq("|{", repeat($.LocalVars), $.SpecBlock, repeat($.SpecBlock), "}|"),
+    YieldStmt: $ =>
+      seq("yield", optional(seq($.Rhs, repeat(seq($.comma, $.Rhs)))), $.semicolon),
     /*
      * build/boogie.ebnf:127
-     * SpecBlock ::=  Ident ":" ( LabelOrCmd )* ( "goto" Attribute* Idents | "return" Attribute* _Expression ) ";"
+     * Label ::=  "label" LabelName colon
      */
-    SpecBlock: $ =>
-      seq(
-        $.Ident,
-        ":",
-        repeat($.LabelOrCmd),
-        choice(
-          seq("goto", repeat($.Attribute), $.Idents),
-          seq("return", repeat($.Attribute), $._Expression)
-        ),
-        ";"
-      ),
+    Label: $ =>
+      seq("label", $.LabelName, $.colon),
     /*
      * build/boogie.ebnf:128
-     * AttributeOrTrigger ::=  "{" ( ":" Ident ( AttributeParameter ( "," AttributeParameter )* )? | _Expression ( "," _Expression )* ) "}"
+     * Rhs ::=  ( new ( NewArray | TypeAndToken ( NewArray | openparen ActualBindings? closeparen )? ) | star | Expression ) Attribute*
      */
-    AttributeOrTrigger: $ =>
+    Rhs: $ =>
       seq(
-        "{",
         choice(
           seq(
-            ":",
-            $.Ident,
-            optional(seq($.AttributeParameter, repeat(seq(",", $.AttributeParameter))))
+            $.new,
+            choice(
+              $.NewArray,
+              seq(
+                $.TypeAndToken,
+                optional(choice($.NewArray, seq($.openparen, optional($.ActualBindings), $.closeparen)))
+              )
+            )
           ),
-          seq($._Expression, repeat(seq(",", $._Expression)))
+          $.star,
+          $.Expression
         ),
-        "}"
+        repeat($.Attribute)
       ),
     /*
      * build/boogie.ebnf:129
-     * AttributeParameter ::=  ( _Expression )
+     * Lhs ::=  ( NameSegment Suffix* | ConstAtomExpression Suffix Suffix* )
      */
-    AttributeParameter: $ =>
-      $._Expression,
+    Lhs: $ =>
+      choice(
+        seq($.NameSegment, repeat($.Suffix)),
+        seq($.ConstAtomExpression, $.Suffix, repeat($.Suffix))
+      ),
     /*
      * build/boogie.ebnf:130
-     * QSep ::=  "::" | "\u2022"
+     * NewArray ::=  lbracket ( rbracket lbracket Expressions? rbracket | Expressions rbracket ( openparen Expression closeparen | lbracket Expressions? rbracket )? )
+     */
+    NewArray: $ =>
+      seq(
+        $.lbracket,
+        choice(
+          seq($.rbracket, $.lbracket, optional($.Expressions), $.rbracket),
+          seq(
+            $.Expressions,
+            $.rbracket,
+            optional(
+              choice(
+                seq($.openparen, $.Expression, $.closeparen),
+                seq($.lbracket, optional($.Expressions), $.rbracket)
+              )
+            )
+          )
+        )
+      ),
+    /*
+     * build/boogie.ebnf:131
+     * ActualBindings ::=  ActualBinding ( comma ActualBinding )*
+     */
+    ActualBindings: $ =>
+      seq($.ActualBinding, repeat(seq($.comma, $.ActualBinding))),
+    /*
+     * build/boogie.ebnf:132
+     * Expressions ::=  Expression ( comma Expression )*
+     */
+    Expressions: $ =>
+      seq($.Expression, repeat(seq($.comma, $.Expression))),
+    /*
+     * build/boogie.ebnf:133
+     * CasePatternLocal ::=  ( Ident openparen ( CasePatternLocal ( comma CasePatternLocal )* )? closeparen | openparen ( CasePatternLocal ( comma CasePatternLocal )* )? closeparen | LocalIdentTypeOptional )
+     */
+    CasePatternLocal: $ =>
+      choice(
+        seq(
+          $.Ident,
+          $.openparen,
+          optional(seq($.CasePatternLocal, repeat(seq($.comma, $.CasePatternLocal)))),
+          $.closeparen
+        ),
+        seq(
+          $.openparen,
+          optional(seq($.CasePatternLocal, repeat(seq($.comma, $.CasePatternLocal)))),
+          $.closeparen
+        ),
+        $.LocalIdentTypeOptional
+      ),
+    /*
+     * build/boogie.ebnf:134
+     * AlternativeBlock ::=  ( lbrace ( AlternativeBlockCase )* rbrace | AlternativeBlockCase ( AlternativeBlockCase )* )
+     */
+    AlternativeBlock: $ =>
+      choice(
+        seq($.lbrace, repeat($.AlternativeBlockCase), $.rbrace),
+        seq($.AlternativeBlockCase, repeat($.AlternativeBlockCase))
+      ),
+    /*
+     * build/boogie.ebnf:135
+     * BindingGuard ::=  IdentTypeOptional ( comma IdentTypeOptional )* Attribute* boredSmiley Expression
+     */
+    BindingGuard: $ =>
+      seq(
+        $.IdentTypeOptional,
+        repeat(seq($.comma, $.IdentTypeOptional)),
+        repeat($.Attribute),
+        $.boredSmiley,
+        $.Expression
+      ),
+    /*
+     * build/boogie.ebnf:136
+     * Guard ::=  ( star | openparen star closeparen | Expression )
+     */
+    Guard: $ =>
+      choice($.star, seq($.openparen, $.star, $.closeparen), $.Expression),
+    /*
+     * build/boogie.ebnf:137
+     * AlternativeBlockCase ::=  case Attribute* ( BindingGuard | Expression ) darrow ( Stmt )*
+     */
+    AlternativeBlockCase: $ =>
+      seq(
+        $.case,
+        repeat($.Attribute),
+        choice($.BindingGuard, $.Expression),
+        $.darrow,
+        repeat($.Stmt)
+      ),
+    /*
+     * build/boogie.ebnf:138
+     * LoopSpec ::=  ( InvariantClause | DecreasesClause | ModifiesClause )*
+     */
+    LoopSpec: $ =>
+      repeat(choice($.InvariantClause, $.DecreasesClause, $.ModifiesClause)),
+    /*
+     * build/boogie.ebnf:139
+     * ForLoopDirection ::=  ident
+     */
+    ForLoopDirection: $ =>
+      $.ident,
+    /*
+     * build/boogie.ebnf:140
+     * SingleExtendedPattern ::=  ( openparen ( ExtendedPattern ( comma ExtendedPattern )* )? closeparen | Ident openparen ( ExtendedPattern ( comma ExtendedPattern )* )? closeparen | PossiblyNegatedLiteralExpr | IdentTypeOptional )
+     */
+    SingleExtendedPattern: $ =>
+      choice(
+        seq(
+          $.openparen,
+          optional(seq($.ExtendedPattern, repeat(seq($.comma, $.ExtendedPattern)))),
+          $.closeparen
+        ),
+        seq(
+          $.Ident,
+          $.openparen,
+          optional(seq($.ExtendedPattern, repeat(seq($.comma, $.ExtendedPattern)))),
+          $.closeparen
+        ),
+        $.PossiblyNegatedLiteralExpr,
+        $.IdentTypeOptional
+      ),
+    /*
+     * build/boogie.ebnf:141
+     * ExtendedPattern ::=  verticalbar? SingleExtendedPattern ( verticalbar SingleExtendedPattern )*
+     */
+    ExtendedPattern: $ =>
+      seq(
+        optional($.verticalbar),
+        $.SingleExtendedPattern,
+        repeat(seq($.verticalbar, $.SingleExtendedPattern))
+      ),
+    /*
+     * build/boogie.ebnf:142
+     * PossiblyNegatedLiteralExpr ::=  ( minus ( Nat | Dec ) | LiteralExpression )
+     */
+    PossiblyNegatedLiteralExpr: $ =>
+      choice(seq($.minus, choice($.Nat, $.Dec)), $.LiteralExpression),
+    /*
+     * build/boogie.ebnf:143
+     * CaseStmt ::=  case Attribute* ExtendedPattern darrow ( Stmt )*
+     */
+    CaseStmt: $ =>
+      seq($.case, repeat($.Attribute), $.ExtendedPattern, $.darrow, repeat($.Stmt)),
+    /*
+     * build/boogie.ebnf:144
+     * QuantifierDomain ::=  QuantifierVariableDecl ( comma QuantifierVariableDecl )*
+     */
+    QuantifierDomain: $ =>
+      seq($.QuantifierVariableDecl, repeat(seq($.comma, $.QuantifierVariableDecl))),
+    /*
+     * build/boogie.ebnf:145
+     * ForallStatementEnsuresAndBody ::=  EnsuresClause* ( BlockStmt )?
+     */
+    ForallStatementEnsuresAndBody: $ =>
+      seq(repeat($.EnsuresClause), optional($.BlockStmt)),
+    /*
+     * build/boogie.ebnf:146
+     * CalcOp ::=  ( eq ( "#" lbracket Expression rbracket )? | openAngleBracket | closeAngleBracket | "<=" | ">=" | neq | EquivOp | ImpliesOp | ExpliesOp )
+     */
+    CalcOp: $ =>
+      choice(
+        seq($.eq, optional(seq("#", $.lbracket, $.Expression, $.rbracket))),
+        $.openAngleBracket,
+        $.closeAngleBracket,
+        "<=",
+        ">=",
+        $.neq,
+        $.EquivOp,
+        $.ImpliesOp,
+        $.ExpliesOp
+      ),
+    /*
+     * build/boogie.ebnf:147
+     * EquivOp ::=  "<==>"
+     */
+    EquivOp: $ =>
+      "<==>",
+    /*
+     * build/boogie.ebnf:148
+     * ImpliesOp ::=  "==>"
+     */
+    ImpliesOp: $ =>
+      "==>",
+    /*
+     * build/boogie.ebnf:149
+     * ExpliesOp ::=  "<=="
+     */
+    ExpliesOp: $ =>
+      "<==",
+    /*
+     * build/boogie.ebnf:150
+     * AndOp ::=  "&&"
+     */
+    AndOp: $ =>
+      "&&",
+    /*
+     * build/boogie.ebnf:151
+     * OrOp ::=  "||"
+     */
+    OrOp: $ =>
+      "||",
+    /*
+     * build/boogie.ebnf:152
+     * NegOp ::=  "!"
+     */
+    NegOp: $ =>
+      "!",
+    /*
+     * build/boogie.ebnf:153
+     * Forall ::=  "forall"
+     */
+    Forall: $ =>
+      "forall",
+    /*
+     * build/boogie.ebnf:154
+     * Exists ::=  "exists"
+     */
+    Exists: $ =>
+      "exists",
+    /*
+     * build/boogie.ebnf:155
+     * QSep ::=  doublecolon
      */
     QSep: $ =>
-      choice("::", "\u2022"),
+      $.doublecolon,
     /*
-     * build/boogie.ebnf:131-134
-     * LetVar ::=  Attribute* Ident
+     * build/boogie.ebnf:156
+     * EquivExpression ::=  ImpliesExpliesExpression ( EquivOp ImpliesExpliesExpression )*
+     */
+    EquivExpression: $ =>
+      seq($.ImpliesExpliesExpression, repeat(seq($.EquivOp, $.ImpliesExpliesExpression))),
+    /*
+     * build/boogie.ebnf:157
+     * DecreasesTo ::=  ( decreases | nonincreases ) ident
+     */
+    DecreasesTo: $ =>
+      seq(choice($.decreases, $.nonincreases), $.ident),
+    /*
+     * build/boogie.ebnf:158
+     * ImpliesExpliesExpression ::=  LogicalExpression ( ( ImpliesOp ImpliesExpression | ExpliesOp LogicalExpression ( ExpliesOp LogicalExpression )* ( ImpliesOp LogicalExpression ( ( ImpliesOp | ExpliesOp ) LogicalExpression )* )? ) )?
+     */
+    ImpliesExpliesExpression: $ =>
+      seq(
+        $.LogicalExpression,
+        optional(
+          choice(
+            seq($.ImpliesOp, $.ImpliesExpression),
+            seq(
+              $.ExpliesOp,
+              $.LogicalExpression,
+              repeat(seq($.ExpliesOp, $.LogicalExpression)),
+              optional(
+                seq(
+                  $.ImpliesOp,
+                  $.LogicalExpression,
+                  repeat(seq(choice($.ImpliesOp, $.ExpliesOp), $.LogicalExpression))
+                )
+              )
+            )
+          )
+        )
+      ),
+    /*
+     * build/boogie.ebnf:159
+     * LogicalExpression ::=  ( ( AndOp | OrOp ) )? RelationalExpression ( ( AndOp | OrOp ) RelationalExpression )*
+     */
+    LogicalExpression: $ =>
+      seq(
+        optional(choice($.AndOp, $.OrOp)),
+        $.RelationalExpression,
+        repeat(seq(choice($.AndOp, $.OrOp), $.RelationalExpression))
+      ),
+    /*
+     * build/boogie.ebnf:160
+     * ImpliesExpression ::=  LogicalExpression ( ( ImpliesOp | ExpliesOp ) ImpliesExpression )?
+     */
+    ImpliesExpression: $ =>
+      seq(
+        $.LogicalExpression,
+        optional(seq(choice($.ImpliesOp, $.ExpliesOp), $.ImpliesExpression))
+      ),
+    /*
+     * build/boogie.ebnf:161
+     * RelationalExpression ::=  ShiftTerm ( RelOp ShiftTerm ( RelOp ShiftTerm )* )?
+     */
+    RelationalExpression: $ =>
+      seq(
+        $.ShiftTerm,
+        optional(seq($.RelOp, $.ShiftTerm, repeat(seq($.RelOp, $.ShiftTerm))))
+      ),
+    /*
+     * build/boogie.ebnf:162
+     * ShiftTerm ::=  Term ( ( openAngleBracket openAngleBracket | closeAngleBracket closeAngleBracket ) Term )*
+     */
+    ShiftTerm: $ =>
+      seq(
+        $.Term,
+        repeat(
+          seq(
+            choice(
+              seq($.openAngleBracket, $.openAngleBracket),
+              seq($.closeAngleBracket, $.closeAngleBracket)
+            ),
+            $.Term
+          )
+        )
+      ),
+    /*
+     * build/boogie.ebnf:163
+     * RelOp ::=  ( eq ( "#" lbracket Expression rbracket )? | openAngleBracket | closeAngleBracket | "<=" | ">=" | neq ( "#" lbracket Expression rbracket )? | in | notIn | "!" ( "!" )? )
+     */
+    RelOp: $ =>
+      choice(
+        seq($.eq, optional(seq("#", $.lbracket, $.Expression, $.rbracket))),
+        $.openAngleBracket,
+        $.closeAngleBracket,
+        "<=",
+        ">=",
+        seq($.neq, optional(seq("#", $.lbracket, $.Expression, $.rbracket))),
+        $.in,
+        $.notIn,
+        seq("!", optional("!"))
+      ),
+    /*
+     * build/boogie.ebnf:164
+     * Term ::=  Factor ( AddOp Factor )*
+     */
+    Term: $ =>
+      seq($.Factor, repeat(seq($.AddOp, $.Factor))),
+    /*
+     * build/boogie.ebnf:165
+     * Factor ::=  BitvectorFactor ( MulOp BitvectorFactor )*
+     */
+    Factor: $ =>
+      seq($.BitvectorFactor, repeat(seq($.MulOp, $.BitvectorFactor))),
+    /*
+     * build/boogie.ebnf:166
+     * AddOp ::=  ( "+" | minus )
+     */
+    AddOp: $ =>
+      choice("+", $.minus),
+    /*
+     * build/boogie.ebnf:167
+     * BitvectorFactor ::=  AsExpression ( ( "&" | verticalbar | "^" ) AsExpression ( ( "&" | verticalbar | "^" ) AsExpression )* )?
+     */
+    BitvectorFactor: $ =>
+      seq(
+        $.AsExpression,
+        optional(
+          seq(
+            choice("&", $.verticalbar, "^"),
+            $.AsExpression,
+            repeat(seq(choice("&", $.verticalbar, "^"), $.AsExpression))
+          )
+        )
+      ),
+    /*
+     * build/boogie.ebnf:168
+     * MulOp ::=  ( star | "/" | "%" )
+     */
+    MulOp: $ =>
+      choice($.star, "/", "%"),
+    /*
+     * build/boogie.ebnf:169
+     * AsExpression ::=  UnaryExpression ( ( as TypeAndToken | is TypeAndToken ) )*
+     */
+    AsExpression: $ =>
+      seq(
+        $.UnaryExpression,
+        repeat(choice(seq($.as, $.TypeAndToken), seq($.is, $.TypeAndToken)))
+      ),
+    /*
+     * build/boogie.ebnf:170
+     * UnaryExpression ::=  ( minus UnaryExpression | NegOp UnaryExpression | "~" UnaryExpression | PrimaryExpression )
+     */
+    UnaryExpression: $ =>
+      choice(
+        seq($.minus, $.UnaryExpression),
+        seq($.NegOp, $.UnaryExpression),
+        seq("~", $.UnaryExpression),
+        $.PrimaryExpression
+      ),
+    /*
+     * build/boogie.ebnf:171
+     * PrimaryExpression ::=  ( MapDisplayExpr ( Suffix )* | SetDisplayExpr ( Suffix )* | LambdaExpression | EndlessExpression | NameSegment ( Suffix )* | SeqDisplayExpr ( Suffix )* | ConstAtomExpression ( Suffix )* )
+     */
+    PrimaryExpression: $ =>
+      choice(
+        seq($.MapDisplayExpr, repeat($.Suffix)),
+        seq($.SetDisplayExpr, repeat($.Suffix)),
+        $.LambdaExpression,
+        $.EndlessExpression,
+        seq($.NameSegment, repeat($.Suffix)),
+        seq($.SeqDisplayExpr, repeat($.Suffix)),
+        seq($.ConstAtomExpression, repeat($.Suffix))
+      ),
+    /*
+     * build/boogie.ebnf:172
+     * MapDisplayExpr ::=  ( map | imap ) lbracket MapLiteralExpressions? rbracket
+     */
+    MapDisplayExpr: $ =>
+      seq(choice($.map, $.imap), $.lbracket, optional($.MapLiteralExpressions), $.rbracket),
+    /*
+     * build/boogie.ebnf:173
+     * Suffix ::=  ( dot ( openparen MemberBindingUpdate ( comma MemberBindingUpdate )* closeparen | DotSuffix ( GenericInstantiation ( AtCall )? | HashCall | ( AtCall )? ) ) | lbracket ( Expression ( ".." ( Expression )? | gets Expression | colon ( Expression ( colon Expression )* ( colon )? )? | ( comma Expression )* ) | ".." ( Expression )? ) rbracket | openparen ActualBindings? closeparen | FieldLocationSuffix )
+     */
+    Suffix: $ =>
+      choice(
+        seq(
+          $.dot,
+          choice(
+            seq(
+              $.openparen,
+              $.MemberBindingUpdate,
+              repeat(seq($.comma, $.MemberBindingUpdate)),
+              $.closeparen
+            ),
+            seq(
+              $.DotSuffix,
+              choice(seq($.GenericInstantiation, optional($.AtCall)), $.HashCall, optional($.AtCall))
+            )
+          )
+        ),
+        seq(
+          $.lbracket,
+          choice(
+            seq(
+              $.Expression,
+              choice(
+                seq("..", optional($.Expression)),
+                seq($.gets, $.Expression),
+                seq(
+                  $.colon,
+                  optional(seq($.Expression, repeat(seq($.colon, $.Expression)), optional($.colon)))
+                ),
+                repeat(seq($.comma, $.Expression))
+              )
+            ),
+            seq("..", optional($.Expression))
+          ),
+          $.rbracket
+        ),
+        seq($.openparen, optional($.ActualBindings), $.closeparen),
+        $.FieldLocationSuffix
+      ),
+    /*
+     * build/boogie.ebnf:174
+     * SetDisplayExpr ::=  ( ( iset | multiset ) )? ( lbrace Expressions? rbrace | openparen Expression closeparen )
+     */
+    SetDisplayExpr: $ =>
+      seq(
+        optional(choice($.iset, $.multiset)),
+        choice(
+          seq($.lbrace, optional($.Expressions), $.rbrace),
+          seq($.openparen, $.Expression, $.closeparen)
+        )
+      ),
+    /*
+     * build/boogie.ebnf:175
+     * LambdaExpression ::=  ( WildIdent | openparen ( IdentTypeOptional ( comma IdentTypeOptional )* )? closeparen ) LambdaSpec darrow Expression
+     */
+    LambdaExpression: $ =>
+      seq(
+        choice(
+          $.WildIdent,
+          seq(
+            $.openparen,
+            optional(seq($.IdentTypeOptional, repeat(seq($.comma, $.IdentTypeOptional)))),
+            $.closeparen
+          )
+        ),
+        $.LambdaSpec,
+        $.darrow,
+        $.Expression
+      ),
+    /*
+     * build/boogie.ebnf:176
+     * EndlessExpression ::=  ( IfExpression | MatchExpression | QuantifierExpression | SetComprehensionExpr | StmtInExpr Expression | LetExpression | MapComprehensionExpr )
+     */
+    EndlessExpression: $ =>
+      choice(
+        $.IfExpression,
+        $.MatchExpression,
+        $.QuantifierExpression,
+        $.SetComprehensionExpr,
+        seq($.StmtInExpr, $.Expression),
+        $.LetExpression,
+        $.MapComprehensionExpr
+      ),
+    /*
+     * build/boogie.ebnf:177
+     * NameSegment ::=  Ident ( GenericInstantiation ( AtCall )? | HashCall | ( AtCall )? )
+     */
+    NameSegment: $ =>
+      seq(
+        $.Ident,
+        choice(seq($.GenericInstantiation, optional($.AtCall)), $.HashCall, optional($.AtCall))
+      ),
+    /*
+     * build/boogie.ebnf:178
+     * SeqDisplayExpr ::=  ( seq ( GenericInstantiation )? openparen Expression comma Expression closeparen | lbracket Expressions? rbracket )
+     */
+    SeqDisplayExpr: $ =>
+      choice(
+        seq(
+          $.seq,
+          optional($.GenericInstantiation),
+          $.openparen,
+          $.Expression,
+          $.comma,
+          $.Expression,
+          $.closeparen
+        ),
+        seq($.lbracket, optional($.Expressions), $.rbracket)
+      ),
+    /*
+     * build/boogie.ebnf:179
+     * ConstAtomExpression ::=  ( LiteralExpression | "this" | "allocated" openparen Expression closeparen | "fresh" ( at LabelName )? openparen Expression closeparen | "unchanged" ( at LabelName )? openparen FrameExpression ( comma FrameExpression )* closeparen | "old" ( at LabelName )? openparen Expression closeparen | verticalbar Expression verticalbar | "assigned" openparen NameSegment closeparen | backtick FieldLocationBody | ParensExpression )
+     */
+    ConstAtomExpression: $ =>
+      choice(
+        $.LiteralExpression,
+        "this",
+        seq("allocated", $.openparen, $.Expression, $.closeparen),
+        seq(
+          "fresh",
+          optional(seq($.at, $.LabelName)),
+          $.openparen,
+          $.Expression,
+          $.closeparen
+        ),
+        seq(
+          "unchanged",
+          optional(seq($.at, $.LabelName)),
+          $.openparen,
+          $.FrameExpression,
+          repeat(seq($.comma, $.FrameExpression)),
+          $.closeparen
+        ),
+        seq("old", optional(seq($.at, $.LabelName)), $.openparen, $.Expression, $.closeparen),
+        seq($.verticalbar, $.Expression, $.verticalbar),
+        seq("assigned", $.openparen, $.NameSegment, $.closeparen),
+        seq($.backtick, $.FieldLocationBody),
+        $.ParensExpression
+      ),
+    /*
+     * build/boogie.ebnf:180
+     * LiteralExpression ::=  ( "false" | "true" | "null" | Dec | Nat | Dec | charToken | stringToken )
+     */
+    LiteralExpression: $ =>
+      choice("false", "true", "null", $.Dec, $.Nat, $.Dec, $.charToken, $.stringToken),
+    /*
+     * build/boogie.ebnf:181
+     * FieldLocationBody ::=  NoDigitName | lbracket Expression ( comma Expression )* rbracket
+     */
+    FieldLocationBody: $ =>
+      choice(
+        $.NoDigitName,
+        seq($.lbracket, $.Expression, repeat(seq($.comma, $.Expression)), $.rbracket)
+      ),
+    /*
+     * build/boogie.ebnf:182
+     * ParensExpression ::=  openparen ( closeparen | DecreasesTo DecreasesToExpressionList closeparen | TupleArgs ( DecreasesTo DecreasesToExpressionList )? closeparen )
+     */
+    ParensExpression: $ =>
+      seq(
+        $.openparen,
+        choice(
+          $.closeparen,
+          seq($.DecreasesTo, $.DecreasesToExpressionList, $.closeparen),
+          seq(
+            $.TupleArgs,
+            optional(seq($.DecreasesTo, $.DecreasesToExpressionList)),
+            $.closeparen
+          )
+        )
+      ),
+    /*
+     * build/boogie.ebnf:183
+     * Dec ::=  ( realnumber | digits dot | dot ( digits | realnumber ) )
+     */
+    Dec: $ =>
+      choice($.realnumber, seq($.digits, $.dot), seq($.dot, choice($.digits, $.realnumber))),
+    /*
+     * build/boogie.ebnf:184
+     * Nat ::=  ( digits | hexdigits )
+     */
+    Nat: $ =>
+      choice($.digits, $.hexdigits),
+    /*
+     * build/boogie.ebnf:185
+     * LambdaSpec ::=  ( ReadsClause | requires Expression )*
+     */
+    LambdaSpec: $ =>
+      repeat(choice($.ReadsClause, seq($.requires, $.Expression))),
+    /*
+     * build/boogie.ebnf:186
+     * DecreasesToExpressionList ::=  ( Expression ( comma Expression )* )?
+     */
+    DecreasesToExpressionList: $ =>
+      optional(seq($.Expression, repeat(seq($.comma, $.Expression)))),
+    /*
+     * build/boogie.ebnf:187
+     * TupleArgs ::=  ( ghost )? ActualBinding ( comma ( ghost )? ActualBinding )*
+     */
+    TupleArgs: $ =>
+      seq(
+        optional($.ghost),
+        $.ActualBinding,
+        repeat(seq($.comma, optional($.ghost), $.ActualBinding))
+      ),
+    /*
+     * build/boogie.ebnf:188
+     * ActualBinding ::=  ( NoUSIdentOrDigits gets )? Expression
+     */
+    ActualBinding: $ =>
+      seq(optional(seq($.NoUSIdentOrDigits, $.gets)), $.Expression),
+    /*
+     * build/boogie.ebnf:189
+     * MapLiteralExpressions ::=  Expression gets Expression ( comma Expression gets Expression )*
+     */
+    MapLiteralExpressions: $ =>
+      seq(
+        $.Expression,
+        $.gets,
+        $.Expression,
+        repeat(seq($.comma, $.Expression, $.gets, $.Expression))
+      ),
+    /*
+     * build/boogie.ebnf:190
+     * MapComprehensionExpr ::=  ( map | imap ) QuantifierDomain QSep Expression ( gets Expression )?
+     */
+    MapComprehensionExpr: $ =>
+      seq(
+        choice($.map, $.imap),
+        $.QuantifierDomain,
+        $.QSep,
+        $.Expression,
+        optional(seq($.gets, $.Expression))
+      ),
+    /*
+     * build/boogie.ebnf:191
+     * IfExpression ::=  "if" ( BindingGuard | Expression ) then Expression else Expression
+     */
+    IfExpression: $ =>
+      seq(
+        "if",
+        choice($.BindingGuard, $.Expression),
+        $.then,
+        $.Expression,
+        $.else,
+        $.Expression
+      ),
+    /*
+     * build/boogie.ebnf:192
+     * MatchExpression ::=  "match" Expression ( lbrace ( CaseExpression )* rbrace | ( CaseExpression )* )
+     */
+    MatchExpression: $ =>
+      seq(
+        "match",
+        $.Expression,
+        choice(seq($.lbrace, repeat($.CaseExpression), $.rbrace), repeat($.CaseExpression))
+      ),
+    /*
+     * build/boogie.ebnf:193
+     * QuantifierExpression ::=  ( Forall QuantifierDomain ( ForallStatementEnsuresAndBody Expression | QSep Expression ) | Exists QuantifierDomain QSep Expression )
+     */
+    QuantifierExpression: $ =>
+      choice(
+        seq(
+          $.Forall,
+          $.QuantifierDomain,
+          choice(seq($.ForallStatementEnsuresAndBody, $.Expression), seq($.QSep, $.Expression))
+        ),
+        seq($.Exists, $.QuantifierDomain, $.QSep, $.Expression)
+      ),
+    /*
+     * build/boogie.ebnf:194
+     * SetComprehensionExpr ::=  ( set | iset ) QuantifierDomain ( QSep Expression )?
+     */
+    SetComprehensionExpr: $ =>
+      seq(choice($.set, $.iset), $.QuantifierDomain, optional(seq($.QSep, $.Expression))),
+    /*
+     * build/boogie.ebnf:195
+     * StmtInExpr ::=  ( AssertStmt | ExpectStmt | AssumeStmt | RevealStmt | CalcStmt )
+     */
+    StmtInExpr: $ =>
+      choice($.AssertStmt, $.ExpectStmt, $.AssumeStmt, $.RevealStmt, $.CalcStmt),
+    /*
+     * build/boogie.ebnf:196
+     * LetExpression ::=  ( LetExprWithLHS | LetExprWithoutLHS )
+     */
+    LetExpression: $ =>
+      choice($.LetExprWithLHS, $.LetExprWithoutLHS),
+    /*
+     * build/boogie.ebnf:197
+     * LetExprWithLHS ::=  ( ghost )? var CasePattern ( comma CasePattern )* ( gets | Attribute* boredSmiley | ":-" | singleeq ) Expression ( comma Expression )* semicolon Expression
+     */
+    LetExprWithLHS: $ =>
+      seq(
+        optional($.ghost),
+        $.var,
+        $.CasePattern,
+        repeat(seq($.comma, $.CasePattern)),
+        choice($.gets, seq(repeat($.Attribute), $.boredSmiley), ":-", $.singleeq),
+        $.Expression,
+        repeat(seq($.comma, $.Expression)),
+        $.semicolon,
+        $.Expression
+      ),
+    /*
+     * build/boogie.ebnf:198
+     * LetExprWithoutLHS ::=  ":-" Expression semicolon Expression
+     */
+    LetExprWithoutLHS: $ =>
+      seq(":-", $.Expression, $.semicolon, $.Expression),
+    /*
+     * build/boogie.ebnf:199
+     * CasePattern ::=  ( Ident openparen ( CasePattern ( comma CasePattern )* )? closeparen | openparen ( CasePattern ( comma CasePattern )* )? closeparen | IdentTypeOptional )
+     */
+    CasePattern: $ =>
+      choice(
+        seq(
+          $.Ident,
+          $.openparen,
+          optional(seq($.CasePattern, repeat(seq($.comma, $.CasePattern)))),
+          $.closeparen
+        ),
+        seq(
+          $.openparen,
+          optional(seq($.CasePattern, repeat(seq($.comma, $.CasePattern)))),
+          $.closeparen
+        ),
+        $.IdentTypeOptional
+      ),
+    /*
+     * build/boogie.ebnf:200
+     * CaseExpression ::=  case Attribute* ExtendedPattern darrow Expression
+     */
+    CaseExpression: $ =>
+      seq($.case, repeat($.Attribute), $.ExtendedPattern, $.darrow, $.Expression),
+    /*
+     * build/boogie.ebnf:201
+     * AtCall ::=  at LabelName openparen ActualBindings? closeparen
+     */
+    AtCall: $ =>
+      seq($.at, $.LabelName, $.openparen, optional($.ActualBindings), $.closeparen),
+    /*
+     * build/boogie.ebnf:202
+     * HashCall ::=  "#" ( GenericInstantiation )? lbracket Expression rbracket openparen ActualBindings? closeparen
+     */
+    HashCall: $ =>
+      seq(
+        "#",
+        optional($.GenericInstantiation),
+        $.lbracket,
+        $.Expression,
+        $.rbracket,
+        $.openparen,
+        optional($.ActualBindings),
+        $.closeparen
+      ),
+    /*
+     * build/boogie.ebnf:203
+     * MemberBindingUpdate ::=  NoUSIdentOrDigits gets Expression
+     */
+    MemberBindingUpdate: $ =>
+      seq($.NoUSIdentOrDigits, $.gets, $.Expression),
+    /*
+     * build/boogie.ebnf:204
+     * DotSuffix ::=  ( Ident | digits | realnumber | requires | reads )
+     */
+    DotSuffix: $ =>
+      choice($.Ident, $.digits, $.realnumber, $.requires, $.reads),
+    /*
+     * build/boogie.ebnf:205
+     * FieldLocationSuffix ::=  backtick FieldLocationBody
+     */
+    FieldLocationSuffix: $ =>
+      seq($.backtick, $.FieldLocationBody),
+    /*
+     * build/boogie.ebnf:206
+     * QuantifierVariableDecl ::=  IdentTypeOptional ( openAngleBracket minus Expression )? ( Attribute )* ( verticalbar Expression )?
+     */
+    QuantifierVariableDecl: $ =>
+      seq(
+        $.IdentTypeOptional,
+        optional(seq($.openAngleBracket, $.minus, $.Expression)),
+        repeat($.Attribute),
+        optional(seq($.verticalbar, $.Expression))
+      ),
+    /*
+     * build/boogie.ebnf:207
+     * AttributeName ::=  NoUSIdent
+     */
+    AttributeName: $ =>
+      $.NoUSIdent,
+    /*
+     * build/boogie.ebnf:208-211
+     * AtAttribute ::=  at Expression
      * ;
      * ; tokens
      * ;
      */
-    LetVar: $ =>
-      seq(repeat($.Attribute), $.Ident),
+    AtAttribute: $ =>
+      seq($.at, $.Expression),
     /*
-     * build/boogie.ebnf:135
-     * ident ::=  [\\]? [\u0023-$'.?A-Z^-z~] ( [\u0023-$'.?A-Z^-z~] | [0-9] )*
+     * build/boogie.ebnf:212
+     * ident ::=  [?A-Z_c-z] ['0-9?A-Z_a-z]* | [a] ( ['0-9?A-Z_a-qs-z] ['0-9?A-Z_a-z]* )? | [a] [r] ( ['0-9?A-Z_a-qs-z] ['0-9?A-Z_a-z]* )? | [a] [r] [r] ( ['0-9?A-Z_b-z] ['0-9?A-Z_a-z]* )? | [a] [r] [r] [a] ( ['0-9?A-Z_a-xz] ['0-9?A-Z_a-z]* )? | [a] [r] [r] [a] [y] ['0A-Z_a-z] ['0-9?A-Z_a-z]* | [a] [r] [r] [a] [y] [1] [?]? | [a] [r] [r] [a] [y] [?] ['0-9?A-Z_a-z] ['0-9?A-Z_a-z]* | [a] [r] [r] [a] [y] [1-9] [0-9]* ['A-Z_a-z] ['0-9?A-Z_a-z]* | [a] [r] [r] [a] [y] [1-9] [0-9]* [?] ['0-9?A-Z_a-z] ['0-9?A-Z_a-z]* | [b] ( ['0-9?A-Z_a-uw-z] ['0-9?A-Z_a-z]* )? | [b] [v] ( ['?A-Z_a-z] ['0-9?A-Z_a-z]* )? | [b] [v] [0] ['0-9?A-Z_a-z] ['0-9?A-Z_a-z]* | [b] [v] [1-9] ['0-9?A-Z_a-z]* ['?A-Z_a-z] ['0-9?A-Z_a-z]* | ['] ['0-9?A-Z_a-z]? | ['] ['0-9?A-Z_a-z] [0-9?A-Z_a-z] | ['] ['0-9?A-Z_a-z] ['0-9?A-Z_a-z] ['0-9?A-Z_a-z] ['0-9?A-Z_a-z]*
      */
     ident: $ =>
-      regexseq(
-        regexoptional(/[\\]/),
-        /[\u0023-$'.?A-Z^-z~]/,
-        regexrepeat(regexchoice(/[\u0023-$'.?A-Z^-z~]/, /[0-9]/))
-      ),
-    /*
-     * build/boogie.ebnf:136
-     * bvlit ::=  [0-9] [0-9]* [b] [v] [0-9] [0-9]*
-     */
-    bvlit: $ =>
-      regexseq(/[0-9]/, regexrepeat(/[0-9]/), /[b]/, /[v]/, /[0-9]/, regexrepeat(/[0-9]/)),
-    /*
-     * build/boogie.ebnf:137
-     * digits ::=  [0-9] [0-9]*
-     */
-    digits: $ =>
-      regexseq(/[0-9]/, regexrepeat(/[0-9]/)),
-    /*
-     * build/boogie.ebnf:138
-     * string ::=  ["] ( [\u0000-\u0009\u000b-\u000c\u000e-!\u0023-\uffff] | [\\] ["] )* ["]
-     */
-    string: $ =>
-      regexseq(
-        /["]/,
-        regexrepeat(regexchoice(/[\u0000-\u0009\u000b-\u000c\u000e-!\u0023-\uffff]/, regexseq(/[\\]/, /["]/))),
-        /["]/
-      ),
-    /*
-     * build/boogie.ebnf:139
-     * decimal ::=  [0-9] [0-9]* [e] [-]? [0-9] [0-9]*
-     */
-    decimal: $ =>
-      regexseq(/[0-9]/, regexrepeat(/[0-9]/), /[e]/, regexoptional(/[-]/), /[0-9]/, regexrepeat(/[0-9]/)),
-    /*
-     * build/boogie.ebnf:140
-     * dec_float ::=  [0-9] [0-9]* [.] [0-9] [0-9]* ( [e] [-]? [0-9] [0-9]* )?
-     */
-    dec_float: $ =>
-      regexseq(
-        /[0-9]/,
-        regexrepeat(/[0-9]/),
-        /[.]/,
-        /[0-9]/,
-        regexrepeat(/[0-9]/),
-        regexoptional(regexseq(/[e]/, regexoptional(/[-]/), /[0-9]/, regexrepeat(/[0-9]/)))
-      ),
-    /*
-     * build/boogie.ebnf:141
-     * float ::=  [-]? [0] [x] [0-9A-Fa-f] [0-9A-Fa-f]* [.] [0-9A-Fa-f] [0-9A-Fa-f]* [e] [-]? [0-9] [0-9]* [f] [0-9] [0-9]* [e] [0-9] [0-9]* | [0] [N] [a] [N] [0-9] [0-9]* [e] [0-9] [0-9]* | [0] [n] [a] [n] [0-9] [0-9]* [e] [0-9] [0-9]* | [0] [+] [o] [o] [0-9] [0-9]* [e] [0-9] [0-9]* | [0] [-] [o] [o] [0-9] [0-9]* [e] [0-9] [0-9]*
-     */
-    float: $ =>
       regexchoice(
+        regexseq(/[?A-Z_c-z]/, regexrepeat(/['0-9?A-Z_a-z]/)),
+        regexseq(/[a]/, regexoptional(regexseq(/['0-9?A-Z_a-qs-z]/, regexrepeat(/['0-9?A-Z_a-z]/)))),
+        regexseq(/[a]/, /[r]/, regexoptional(regexseq(/['0-9?A-Z_a-qs-z]/, regexrepeat(/['0-9?A-Z_a-z]/)))),
+        regexseq(/[a]/, /[r]/, /[r]/, regexoptional(regexseq(/['0-9?A-Z_b-z]/, regexrepeat(/['0-9?A-Z_a-z]/)))),
         regexseq(
-          regexoptional(/[-]/),
-          /[0]/,
-          /[x]/,
-          /[0-9A-Fa-f]/,
-          regexrepeat(/[0-9A-Fa-f]/),
-          /[.]/,
-          /[0-9A-Fa-f]/,
-          regexrepeat(/[0-9A-Fa-f]/),
-          /[e]/,
-          regexoptional(/[-]/),
-          /[0-9]/,
-          regexrepeat(/[0-9]/),
-          /[f]/,
-          /[0-9]/,
-          regexrepeat(/[0-9]/),
-          /[e]/,
-          /[0-9]/,
-          regexrepeat(/[0-9]/)
-        ),
-        regexseq(
-          /[0]/,
-          /[N]/,
           /[a]/,
-          /[N]/,
-          /[0-9]/,
-          regexrepeat(/[0-9]/),
-          /[e]/,
-          /[0-9]/,
-          regexrepeat(/[0-9]/)
-        ),
-        regexseq(
-          /[0]/,
-          /[n]/,
+          /[r]/,
+          /[r]/,
           /[a]/,
-          /[n]/,
-          /[0-9]/,
-          regexrepeat(/[0-9]/),
-          /[e]/,
-          /[0-9]/,
-          regexrepeat(/[0-9]/)
+          regexoptional(regexseq(/['0-9?A-Z_a-xz]/, regexrepeat(/['0-9?A-Z_a-z]/)))
+        ),
+        regexseq(/[a]/, /[r]/, /[r]/, /[a]/, /[y]/, /['0A-Z_a-z]/, regexrepeat(/['0-9?A-Z_a-z]/)),
+        regexseq(/[a]/, /[r]/, /[r]/, /[a]/, /[y]/, /[1]/, regexoptional(/[?]/)),
+        regexseq(
+          /[a]/,
+          /[r]/,
+          /[r]/,
+          /[a]/,
+          /[y]/,
+          /[?]/,
+          /['0-9?A-Z_a-z]/,
+          regexrepeat(/['0-9?A-Z_a-z]/)
         ),
         regexseq(
-          /[0]/,
-          /[+]/,
-          /[o]/,
-          /[o]/,
-          /[0-9]/,
+          /[a]/,
+          /[r]/,
+          /[r]/,
+          /[a]/,
+          /[y]/,
+          /[1-9]/,
           regexrepeat(/[0-9]/),
-          /[e]/,
-          /[0-9]/,
-          regexrepeat(/[0-9]/)
+          /['A-Z_a-z]/,
+          regexrepeat(/['0-9?A-Z_a-z]/)
         ),
         regexseq(
-          /[0]/,
-          /[-]/,
-          /[o]/,
-          /[o]/,
-          /[0-9]/,
+          /[a]/,
+          /[r]/,
+          /[r]/,
+          /[a]/,
+          /[y]/,
+          /[1-9]/,
           regexrepeat(/[0-9]/),
-          /[e]/,
-          /[0-9]/,
-          regexrepeat(/[0-9]/)
+          /[?]/,
+          /['0-9?A-Z_a-z]/,
+          regexrepeat(/['0-9?A-Z_a-z]/)
+        ),
+        regexseq(/[b]/, regexoptional(regexseq(/['0-9?A-Z_a-uw-z]/, regexrepeat(/['0-9?A-Z_a-z]/)))),
+        regexseq(/[b]/, /[v]/, regexoptional(regexseq(/['?A-Z_a-z]/, regexrepeat(/['0-9?A-Z_a-z]/)))),
+        regexseq(/[b]/, /[v]/, /[0]/, /['0-9?A-Z_a-z]/, regexrepeat(/['0-9?A-Z_a-z]/)),
+        regexseq(
+          /[b]/,
+          /[v]/,
+          /[1-9]/,
+          regexrepeat(/['0-9?A-Z_a-z]/),
+          /['?A-Z_a-z]/,
+          regexrepeat(/['0-9?A-Z_a-z]/)
+        ),
+        regexseq(/[']/, regexoptional(/['0-9?A-Z_a-z]/)),
+        regexseq(/[']/, /['0-9?A-Z_a-z]/, /[0-9?A-Z_a-z]/),
+        regexseq(
+          /[']/,
+          /['0-9?A-Z_a-z]/,
+          /['0-9?A-Z_a-z]/,
+          /['0-9?A-Z_a-z]/,
+          regexrepeat(/['0-9?A-Z_a-z]/)
         )
       ),
     /*
-     * build/boogie.ebnf:142
+     * build/boogie.ebnf:213
+     * digits ::=  [0-9] ( [_]? [0-9] )*
+     */
+    digits: $ =>
+      regexseq(/[0-9]/, regexrepeat(regexseq(regexoptional(/[_]/), /[0-9]/))),
+    /*
+     * build/boogie.ebnf:214
+     * hexdigits ::=  [0] [x] [0-9A-Fa-f] ( [_]? [0-9A-Fa-f] )*
+     */
+    hexdigits: $ =>
+      regexseq(/[0]/, /[x]/, /[0-9A-Fa-f]/, regexrepeat(regexseq(regexoptional(/[_]/), /[0-9A-Fa-f]/))),
+    /*
+     * build/boogie.ebnf:215
+     * realnumber ::=  [0-9] ( [_]? [0-9] )* ( [.] [0-9] ( [_]? [0-9] )* ( [e] [-]? [0-9] ( [_]? [0-9] )* )? | [e] [-]? [0-9] ( [_]? [0-9] )* )
+     */
+    realnumber: $ =>
+      regexseq(
+        /[0-9]/,
+        regexrepeat(regexseq(regexoptional(/[_]/), /[0-9]/)),
+        regexchoice(
+          regexseq(
+            /[.]/,
+            /[0-9]/,
+            regexrepeat(regexseq(regexoptional(/[_]/), /[0-9]/)),
+            regexoptional(regexseq(/[e]/, regexoptional(/[-]/), /[0-9]/, regexrepeat(regexseq(regexoptional(/[_]/), /[0-9]/))))
+          ),
+          regexseq(/[e]/, regexoptional(/[-]/), /[0-9]/, regexrepeat(regexseq(regexoptional(/[_]/), /[0-9]/)))
+        )
+      ),
+    /*
+     * build/boogie.ebnf:216
+     * arrayToken ::=  [a] [r] [r] [a] [y] ( ( [1] [0-9] | [2-9] ) [0-9]* )? [?]?
+     */
+    arrayToken: $ =>
+      regexseq(
+        /[a]/,
+        /[r]/,
+        /[r]/,
+        /[a]/,
+        /[y]/,
+        regexoptional(regexseq(regexchoice(regexseq(/[1]/, /[0-9]/), /[2-9]/), regexrepeat(/[0-9]/))),
+        regexoptional(/[?]/)
+      ),
+    /*
+     * build/boogie.ebnf:217
+     * bvToken ::=  [b] [v] ( [0] | [1-9] [0-9]* )
+     */
+    bvToken: $ =>
+      regexseq(/[b]/, /[v]/, regexchoice(/[0]/, regexseq(/[1-9]/, regexrepeat(/[0-9]/)))),
+    /*
+     * build/boogie.ebnf:218
+     * bool ::= "bool"
+     */
+    bool: $ =>
+      "bool",
+    /*
+     * build/boogie.ebnf:219
+     * char ::= "char"
+     */
+    char: $ =>
+      "char",
+    /*
+     * build/boogie.ebnf:220
+     * int ::= "int"
+     */
+    int: $ =>
+      "int",
+    /*
+     * build/boogie.ebnf:221
+     * nat ::= "nat"
+     */
+    nat: $ =>
+      "nat",
+    /*
+     * build/boogie.ebnf:222
+     * real ::= "real"
+     */
+    real: $ =>
+      "real",
+    /*
+     * build/boogie.ebnf:223
+     * fp32 ::= "fp32"
+     */
+    fp32: $ =>
+      "fp32",
+    /*
+     * build/boogie.ebnf:224
+     * fp64 ::= "fp64"
+     */
+    fp64: $ =>
+      "fp64",
+    /*
+     * build/boogie.ebnf:225
+     * ORDINAL ::= "ORDINAL"
+     */
+    ORDINAL: $ =>
+      "ORDINAL",
+    /*
+     * build/boogie.ebnf:226
+     * object ::= "object"
+     */
+    object: $ =>
+      "object",
+    /*
+     * build/boogie.ebnf:227
+     * object_q ::= "object?"
+     */
+    object_q: $ =>
+      "object?",
+    /*
+     * build/boogie.ebnf:228
+     * field ::= "field"
+     */
+    field: $ =>
+      "field",
+    /*
+     * build/boogie.ebnf:229
+     * locals ::= "locals"
+     */
+    locals: $ =>
+      "locals",
+    /*
+     * build/boogie.ebnf:230
+     * string ::= "string"
+     */
+    string: $ =>
+      "string",
+    /*
+     * build/boogie.ebnf:231
+     * set ::= "set"
+     */
+    set: $ =>
+      "set",
+    /*
+     * build/boogie.ebnf:232
+     * iset ::= "iset"
+     */
+    iset: $ =>
+      "iset",
+    /*
+     * build/boogie.ebnf:233
+     * multiset ::= "multiset"
+     */
+    multiset: $ =>
+      "multiset",
+    /*
+     * build/boogie.ebnf:234
+     * seq ::= "seq"
+     */
+    seq: $ =>
+      "seq",
+    /*
+     * build/boogie.ebnf:235
+     * map ::= "map"
+     */
+    map: $ =>
+      "map",
+    /*
+     * build/boogie.ebnf:236
+     * imap ::= "imap"
+     */
+    imap: $ =>
+      "imap",
+    /*
+     * build/boogie.ebnf:237
+     * charToken ::=  ['] ( [\u0000-\u0009\u000b-\u000c\u000e-&(-\[\]-\ud7ff\ue000-\uffff] | [\ud800-\udbff] [\udc00-\udfff] | [\\] ['] | [\\] ["] | [\\] [\\] | [\\] [0] | [\\] [n] | [\\] [r] | [\\] [t] | [\\] [u] [0-9A-Fa-f] [0-9A-Fa-f] [0-9A-Fa-f] [0-9A-Fa-f] | [\\] [U] [{] [0-9A-Fa-f] ( [_]? [0-9A-Fa-f] )* [}] ) [']
+     */
+    charToken: $ =>
+      regexseq(
+        /[']/,
+        regexchoice(
+          /[\u0000-\u0009\u000b-\u000c\u000e-&(-\[\]-\ud7ff\ue000-\uffff]/,
+          regexseq(/[\ud800-\udbff]/, /[\udc00-\udfff]/),
+          regexseq(/[\\]/, /[']/),
+          regexseq(/[\\]/, /["]/),
+          regexseq(/[\\]/, /[\\]/),
+          regexseq(/[\\]/, /[0]/),
+          regexseq(/[\\]/, /[n]/),
+          regexseq(/[\\]/, /[r]/),
+          regexseq(/[\\]/, /[t]/),
+          regexseq(/[\\]/, /[u]/, /[0-9A-Fa-f]/, /[0-9A-Fa-f]/, /[0-9A-Fa-f]/, /[0-9A-Fa-f]/),
+          regexseq(
+            /[\\]/,
+            /[U]/,
+            /[{]/,
+            /[0-9A-Fa-f]/,
+            regexrepeat(regexseq(regexoptional(/[_]/), /[0-9A-Fa-f]/)),
+            /[}]/
+          )
+        ),
+        /[']/
+      ),
+    /*
+     * build/boogie.ebnf:238
+     * stringToken ::=  ["] ( [\u0000-\u0009\u000b-\u000c\u000e-!\u0023-\[\]-\uffff] | [\\] ['] | [\\] ["] | [\\] [\\] | [\\] [0] | [\\] [n] | [\\] [r] | [\\] [t] | [\\] [u] [0-9A-Fa-f] [0-9A-Fa-f] [0-9A-Fa-f] [0-9A-Fa-f] | [\\] [U] [{] [0-9A-Fa-f] ( [_]? [0-9A-Fa-f] )* [}] )* ["] | [@] ["] ( [\u0000-!\u0023-\uffff] | ["] ["] )* ["]
+     */
+    stringToken: $ =>
+      regexchoice(
+        regexseq(
+          /["]/,
+          regexrepeat(
+            regexchoice(
+              /[\u0000-\u0009\u000b-\u000c\u000e-!\u0023-\[\]-\uffff]/,
+              regexseq(/[\\]/, /[']/),
+              regexseq(/[\\]/, /["]/),
+              regexseq(/[\\]/, /[\\]/),
+              regexseq(/[\\]/, /[0]/),
+              regexseq(/[\\]/, /[n]/),
+              regexseq(/[\\]/, /[r]/),
+              regexseq(/[\\]/, /[t]/),
+              regexseq(/[\\]/, /[u]/, /[0-9A-Fa-f]/, /[0-9A-Fa-f]/, /[0-9A-Fa-f]/, /[0-9A-Fa-f]/),
+              regexseq(
+                /[\\]/,
+                /[U]/,
+                /[{]/,
+                /[0-9A-Fa-f]/,
+                regexrepeat(regexseq(regexoptional(/[_]/), /[0-9A-Fa-f]/)),
+                /[}]/
+              )
+            )
+          ),
+          /["]/
+        ),
+        regexseq(
+          /[@]/,
+          /["]/,
+          regexrepeat(regexchoice(/[\u0000-!\u0023-\uffff]/, regexseq(/["]/, /["]/))),
+          /["]/
+        )
+      ),
+    /*
+     * build/boogie.ebnf:239
+     * colon ::= ":"
+     */
+    colon: $ =>
+      ":",
+    /*
+     * build/boogie.ebnf:240
+     * comma ::= ","
+     */
+    comma: $ =>
+      ",",
+    /*
+     * build/boogie.ebnf:241
+     * verticalbar ::= "|"
+     */
+    verticalbar: $ =>
+      "|",
+    /*
+     * build/boogie.ebnf:242
+     * doublecolon ::= "::"
+     */
+    doublecolon: $ =>
+      "::",
+    /*
+     * build/boogie.ebnf:243
+     * gets ::= ":="
+     */
+    gets: $ =>
+      ":=",
+    /*
+     * build/boogie.ebnf:244
+     * boredSmiley ::= ":|"
+     */
+    boredSmiley: $ =>
+      ":|",
+    /*
+     * build/boogie.ebnf:245
+     * dot ::= "."
+     */
+    dot: $ =>
+      ".",
+    /*
+     * build/boogie.ebnf:246
+     * backtick ::= "`"
+     */
+    backtick: $ =>
+      "`",
+    /*
+     * build/boogie.ebnf:247
+     * semicolon ::= ";"
+     */
+    semicolon: $ =>
+      ";",
+    /*
+     * build/boogie.ebnf:248
+     * darrow ::= "=>"
+     */
+    darrow: $ =>
+      "=>",
+    /*
+     * build/boogie.ebnf:249
+     * assume ::= "assume"
+     */
+    assume: $ =>
+      "assume",
+    /*
+     * build/boogie.ebnf:250
+     * assert ::= "assert"
+     */
+    assert: $ =>
+      "assert",
+    /*
+     * build/boogie.ebnf:251
+     * calc ::= "calc"
+     */
+    calc: $ =>
+      "calc",
+    /*
+     * build/boogie.ebnf:252
+     * case ::= "case"
+     */
+    case: $ =>
+      "case",
+    /*
+     * build/boogie.ebnf:253
+     * then ::= "then"
+     */
+    then: $ =>
+      "then",
+    /*
+     * build/boogie.ebnf:254
+     * else ::= "else"
+     */
+    else: $ =>
+      "else",
+    /*
+     * build/boogie.ebnf:255
+     * as ::= "as"
+     */
+    as: $ =>
+      "as",
+    /*
+     * build/boogie.ebnf:256
+     * is ::= "is"
+     */
+    is: $ =>
+      "is",
+    /*
+     * build/boogie.ebnf:257
+     * by ::= "by"
+     */
+    by: $ =>
+      "by",
+    /*
+     * build/boogie.ebnf:258
+     * in ::= "in"
+     */
+    in: $ =>
+      "in",
+    /*
+     * build/boogie.ebnf:259
+     * decreases ::= "decreases"
+     */
+    decreases: $ =>
+      "decreases",
+    /*
+     * build/boogie.ebnf:260
+     * nonincreases ::= "nonincreases"
+     */
+    nonincreases: $ =>
+      "nonincreases",
+    /*
+     * build/boogie.ebnf:261
+     * invariant ::= "invariant"
+     */
+    invariant: $ =>
+      "invariant",
+    /*
+     * build/boogie.ebnf:262
+     * function ::= "function"
+     */
+    function: $ =>
+      "function",
+    /*
+     * build/boogie.ebnf:263
+     * predicate ::= "predicate"
+     */
+    predicate: $ =>
+      "predicate",
+    /*
+     * build/boogie.ebnf:264
+     * least ::= "least"
+     */
+    least: $ =>
+      "least",
+    /*
+     * build/boogie.ebnf:265
+     * greatest ::= "greatest"
+     */
+    greatest: $ =>
+      "greatest",
+    /*
+     * build/boogie.ebnf:266
+     * opaque ::= "opaque"
+     */
+    opaque: $ =>
+      "opaque",
+    /*
+     * build/boogie.ebnf:267
+     * inductive ::= "inductive"
+     */
+    inductive: $ =>
+      "inductive",
+    /*
+     * build/boogie.ebnf:268
+     * twostate ::= "twostate"
+     */
+    twostate: $ =>
+      "twostate",
+    /*
+     * build/boogie.ebnf:269
+     * copredicate ::= "copredicate"
+     */
+    copredicate: $ =>
+      "copredicate",
+    /*
+     * build/boogie.ebnf:270
+     * lemma ::= "lemma"
+     */
+    lemma: $ =>
+      "lemma",
+    /*
+     * build/boogie.ebnf:271
+     * static ::= "static"
+     */
+    static: $ =>
+      "static",
+    /*
+     * build/boogie.ebnf:272
+     * import ::= "import"
+     */
+    import: $ =>
+      "import",
+    /*
+     * build/boogie.ebnf:273
+     * export ::= "export"
+     */
+    export: $ =>
+      "export",
+    /*
+     * build/boogie.ebnf:274
+     * class ::= "class"
+     */
+    class: $ =>
+      "class",
+    /*
+     * build/boogie.ebnf:275
+     * trait ::= "trait"
+     */
+    trait: $ =>
+      "trait",
+    /*
+     * build/boogie.ebnf:276
+     * datatype ::= "datatype"
+     */
+    datatype: $ =>
+      "datatype",
+    /*
+     * build/boogie.ebnf:277
+     * codatatype ::= "codatatype"
+     */
+    codatatype: $ =>
+      "codatatype",
+    /*
+     * build/boogie.ebnf:278
+     * var ::= "var"
+     */
+    var: $ =>
+      "var",
+    /*
+     * build/boogie.ebnf:279
+     * const ::= "const"
+     */
+    const: $ =>
+      "const",
+    /*
+     * build/boogie.ebnf:280
+     * newtype ::= "newtype"
+     */
+    newtype: $ =>
+      "newtype",
+    /*
+     * build/boogie.ebnf:281
+     * type ::= "type"
+     */
+    type: $ =>
+      "type",
+    /*
+     * build/boogie.ebnf:282
+     * iterator ::= "iterator"
+     */
+    iterator: $ =>
+      "iterator",
+    /*
+     * build/boogie.ebnf:283
+     * method ::= "method"
+     */
+    method: $ =>
+      "method",
+    /*
+     * build/boogie.ebnf:284
+     * colemma ::= "colemma"
+     */
+    colemma: $ =>
+      "colemma",
+    /*
+     * build/boogie.ebnf:285
+     * constructor ::= "constructor"
+     */
+    constructor: $ =>
+      "constructor",
+    /*
+     * build/boogie.ebnf:286
+     * modifies ::= "modifies"
+     */
+    modifies: $ =>
+      "modifies",
+    /*
+     * build/boogie.ebnf:287
+     * reads ::= "reads"
+     */
+    reads: $ =>
+      "reads",
+    /*
+     * build/boogie.ebnf:288
+     * requires ::= "requires"
+     */
+    requires: $ =>
+      "requires",
+    /*
+     * build/boogie.ebnf:289
+     * ensures ::= "ensures"
+     */
+    ensures: $ =>
+      "ensures",
+    /*
+     * build/boogie.ebnf:290
+     * ghost ::= "ghost"
+     */
+    ghost: $ =>
+      "ghost",
+    /*
+     * build/boogie.ebnf:291
+     * provides ::= "provides"
+     */
+    provides: $ =>
+      "provides",
+    /*
+     * build/boogie.ebnf:292
+     * reveals ::= "reveals"
+     */
+    reveals: $ =>
+      "reveals",
+    /*
+     * build/boogie.ebnf:293
+     * extends ::= "extends"
+     */
+    extends: $ =>
+      "extends",
+    /*
+     * build/boogie.ebnf:294
+     * new ::= "new"
+     */
+    new: $ =>
+      "new",
+    /*
+     * build/boogie.ebnf:295
+     * nameonly ::= "nameonly"
+     */
+    nameonly: $ =>
+      "nameonly",
+    /*
+     * build/boogie.ebnf:296
+     * older ::= "older"
+     */
+    older: $ =>
+      "older",
+    /*
+     * build/boogie.ebnf:297
+     * witness ::= "witness"
+     */
+    witness: $ =>
+      "witness",
+    /*
+     * build/boogie.ebnf:298
+     * lbracecolon ::= "{:"
+     */
+    lbracecolon: $ =>
+      "{:",
+    /*
+     * build/boogie.ebnf:299
+     * lbrace ::= "{"
+     */
+    lbrace: $ =>
+      "{",
+    /*
+     * build/boogie.ebnf:300
+     * rbrace ::= "}"
+     */
+    rbrace: $ =>
+      "}",
+    /*
+     * build/boogie.ebnf:301
+     * lbracket ::= "["
+     */
+    lbracket: $ =>
+      "[",
+    /*
+     * build/boogie.ebnf:302
+     * rbracket ::= "]"
+     */
+    rbracket: $ =>
+      "]",
+    /*
+     * build/boogie.ebnf:303
+     * openparen ::= "("
+     */
+    openparen: $ =>
+      "(",
+    /*
+     * build/boogie.ebnf:304
+     * closeparen ::= ")"
+     */
+    closeparen: $ =>
+      ")",
+    /*
+     * build/boogie.ebnf:305
+     * openAngleBracket ::= "<"
+     */
+    openAngleBracket: $ =>
+      "<",
+    /*
+     * build/boogie.ebnf:306
+     * closeAngleBracket ::= ">"
+     */
+    closeAngleBracket: $ =>
+      ">",
+    /*
+     * build/boogie.ebnf:307
+     * singleeq ::= "="
+     */
+    singleeq: $ =>
+      "=",
+    /*
+     * build/boogie.ebnf:308
+     * eq ::= "=="
+     */
+    eq: $ =>
+      "==",
+    /*
+     * build/boogie.ebnf:309
+     * neq ::= "!="
+     */
+    neq: $ =>
+      "!=",
+    /*
+     * build/boogie.ebnf:310
+     * star ::= "*"
+     */
+    star: $ =>
+      "*",
+    /*
+     * build/boogie.ebnf:311
+     * at ::= "@"
+     */
+    at: $ =>
+      "@",
+    /*
+     * build/boogie.ebnf:312
+     * notIn ::=  [!] [i] [n] [\u0000-&(-/:->@\[-^`{-\uffff]
+     */
+    notIn: $ =>
+      regexseq(/[!]/, /[i]/, /[n]/, /[\u0000-&(-/:->@\[-^`{-\uffff]/),
+    /*
+     * build/boogie.ebnf:313
+     * ellipsis ::= "..."
+     */
+    ellipsis: $ =>
+      "...",
+    /*
+     * build/boogie.ebnf:314
+     * reveal ::= "reveal"
+     */
+    reveal: $ =>
+      "reveal",
+    /*
+     * build/boogie.ebnf:315
+     * hide ::= "hide"
+     */
+    hide: $ =>
+      "hide",
+    /*
+     * build/boogie.ebnf:316
+     * expect ::= "expect"
+     */
+    expect: $ =>
+      "expect",
+    /*
+     * build/boogie.ebnf:317
+     * sarrow ::= "->"
+     */
+    sarrow: $ =>
+      "->",
+    /*
+     * build/boogie.ebnf:318
+     * qarrow ::= "~>"
+     */
+    qarrow: $ =>
+      "~>",
+    /*
+     * build/boogie.ebnf:319
+     * larrow ::= "-->"
+     */
+    larrow: $ =>
+      "-->",
+    /*
+     * build/boogie.ebnf:320
+     * minus ::= "-"
+     */
+    minus: $ =>
+      "-",
+    /*
+     * build/boogie.ebnf:321
      * comment ::= /\/\/[^\n]*∕
      */
     comment: $ =>
       /\/\/[^\n]*/,
     /*
-     * build/boogie.ebnf:143
+     * build/boogie.ebnf:322
      * comment_multiline ::= /[/][*](?:(?:[^*∕]|[*]+[^*∕]|[/]+[^/*])*|[/]+[*](?:(?:[^*∕]|[*]+[^*∕]|[/]+[^/*])*|[/]+[*](?:(?:[^*∕]|[*]+[^*∕]|[/]+[^/*])*|[/]+[*](?:(?:[^*∕]|[*]+[^*∕]|[/]+[^/*])*|[/]+[*](?:[^*]|[*]+[^*∕])*[*]+[/])*[*]+[/])*[*]+[/])*[*]+[/])*[*]+[/]/
      */
     comment_multiline: $ =>
       /[/][*](?:(?:[^*/]|[*]+[^*/]|[/]+[^/*])*|[/]+[*](?:(?:[^*/]|[*]+[^*/]|[/]+[^/*])*|[/]+[*](?:(?:[^*/]|[*]+[^*/]|[/]+[^/*])*|[/]+[*](?:(?:[^*/]|[*]+[^*/]|[/]+[^/*])*|[/]+[*](?:[^*]|[*]+[^*/])*[*]+[/])*[*]+[/])*[*]+[/])*[*]+[/])*[*]+[/]/,
     /*
-     * build/boogie.ebnf:144
+     * build/boogie.ebnf:323
      * _newline ::= /[\r\n]/
      */
     _newline: $ =>
       /[\r\n]/,
     /*
-     * build/boogie.ebnf:145
+     * build/boogie.ebnf:324
      * directive ::= @( 2( /[\r\n]#[^\n]+/ ) )
      */
     directive: $ =>
