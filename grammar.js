@@ -86,10 +86,10 @@ module.exports = grammar({
 
   /*
    * build/boogie.ebnf:1
-   * extras ::= { comment comment_multiline _directive_or_space }
+   * extras ::= { comment comment_multiline /[ \t]+/ directive _newline }
    */
   extras: $ =>
-    [$.comment, $.comment_multiline, $._directive_or_space],
+    [$.comment, $.comment_multiline, /[ \t]+/, $.directive, $._newline],
   /*
    * build/boogie.ebnf:3
    * conflicts ::= { { Type } { TypeArgs } }
@@ -1242,9 +1242,15 @@ module.exports = grammar({
       /[/][*](?:(?:[^*/]|[*]+[^*/]|[/]+[^/*])*|[/]+[*](?:(?:[^*/]|[*]+[^*/]|[/]+[^/*])*|[/]+[*](?:(?:[^*/]|[*]+[^*/]|[/]+[^/*])*|[/]+[*](?:(?:[^*/]|[*]+[^*/]|[/]+[^/*])*|[/]+[*](?:[^*]|[*]+[^*/])*[*]+[/])*[*]+[/])*[*]+[/])*[*]+[/])*[*]+[/]/,
     /*
      * build/boogie.ebnf:144
-     * _directive_or_space ::= /\s*(?:\n#[^\n]*|\s)/
+     * _newline ::= /[\r\n]/
      */
-    _directive_or_space: $ =>
-      /\s*(?:\n#[^\n]*|\s)/
+    _newline: $ =>
+      /[\r\n]/,
+    /*
+     * build/boogie.ebnf:145
+     * directive ::= @( 2( /[\r\n]#[^\n]+/ ) )
+     */
+    directive: $ =>
+      token(prec(2, /[\r\n]#[^\n]+/))
   }
 });

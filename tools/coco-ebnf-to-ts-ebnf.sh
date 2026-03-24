@@ -4,7 +4,7 @@ set -o pipefail
 exec <$1 >$2
 
 cat <<EOF
-extras ::= { comment comment_multiline _directive_or_space }
+extras ::= { comment comment_multiline /[ \t]+/ directive _newline }
 
 conflicts ::= { { Type } { TypeArgs } }
 
@@ -22,4 +22,5 @@ cat \
 
 echo '  comment ::= /\/\/[^\n]*/'
 echo '  comment_multiline ::= /[/][*](?:(?:[^*/]|[*]+[^*/]|[/]+[^/*])*|[/]+[*](?:(?:[^*/]|[*]+[^*/]|[/]+[^/*])*|[/]+[*](?:(?:[^*/]|[*]+[^*/]|[/]+[^/*])*|[/]+[*](?:(?:[^*/]|[*]+[^*/]|[/]+[^/*])*|[/]+[*](?:[^*]|[*]+[^*/])*[*]+[/])*[*]+[/])*[*]+[/])*[*]+[/])*[*]+[/]/'
-echo '  _directive_or_space ::= /\s*(?:\n#[^\n]*|\s)/'
+echo '  _newline ::= /[\r\n]/'
+echo '  directive ::= @( 2( /[\r\n]#[^\n]+/ ) )'

@@ -1,0 +1,67 @@
+=====
+directive basic
+=====
+
+#if boop
+axiom true;
+#endif
+
+#if FILE_0
+const x: int;
+#else
+const y: int;
+#endif
+
+-----
+
+(BoogiePL
+  (directive)
+  (Axiom
+    (Proposition
+      (AtomExpression)))
+  (directive)
+  (directive)
+  (Consts
+    (IdsType
+      (Idents
+        (Ident
+          (ident)))
+      (Type
+        (TypeAtom))))
+  (directive)
+  (Consts
+    (IdsType
+      (Idents
+        (Ident
+          (ident)))
+      (Type
+        (TypeAtom))))
+  (directive))
+
+===
+hash ident is not directive
+===
+
+const #y: int;
+
+---
+
+(BoogiePL
+  (Consts
+    (IdsType
+      (Idents
+        (Ident
+          (ident)))
+      (Type
+        (TypeAtom)))))
+
+===
+directive must be at line begin
+:error
+===
+
+ #y
+
+---
+
+

@@ -24,6 +24,8 @@
   ] @keyword
 (Pure) @keyword
 
+(directive) @comment ; or @keyword.directive
+
 (AtomExpression (Ident) @variable.builtin (#eq? @variable.builtin "this"))
 (AtomExpression (Ident) @constant.builtin (#eq? @constant.builtin "null"))
 
