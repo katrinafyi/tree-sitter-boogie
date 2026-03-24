@@ -1,0 +1,230 @@
+============
+magic$
+============
+
+var $magic: [int]int;
+
+procedure helper();
+  modifies $magic;
+  ensures $magic == old($magic);
+  ensures $magic == $magic[0 := 0];
+  ensures $magic == $magic[1 := 2];
+
+procedure p$main_2276();
+  modifies $magic;
+
+implementation p$main_2276()
+{
+  $magic[3] := 0;
+  $magic[0] := 1;
+  call helper();
+  assert $magic[0] == 0;
+  assert $magic[1] == 2;
+  assert $magic[3] == 5;
+  assert (forall #i: bv64 :: i > 1 <==> (if true then i > 1 else i <= 1));
+}
+
+---------
+
+(BoogiePL
+  (GlobalVars
+    (IdsTypeWheres
+      (Idents
+        (Ident
+          (ident)))
+      (Type
+        (MapType
+          (Types
+            (Type
+              (TypeAtom)))
+          (Type
+            (TypeAtom))))))
+  (Procedure
+    (ProcSignature
+      (Ident
+        (ident))
+      (ProcFormals))
+    (Spec
+      (SpecModifies
+        (Idents
+          (Ident
+            (ident)))))
+    (Spec
+      (SpecPrePost
+        (Proposition
+          (RelationalExpression
+            (AtomExpression
+              (Ident
+                (ident)))
+            (RelOp)
+            (AtomExpression
+              (AtomExpression
+                (Ident
+                  (ident))))))))
+    (Spec
+      (SpecPrePost
+        (Proposition
+          (RelationalExpression
+            (AtomExpression
+              (Ident
+                (ident)))
+            (RelOp)
+            (ArrayExpression
+              (AtomExpression
+                (Ident
+                  (ident)))
+              (AtomExpression
+                (Nat
+                  (digits)))
+              (AtomExpression
+                (Nat
+                  (digits))))))))
+    (Spec
+      (SpecPrePost
+        (Proposition
+          (RelationalExpression
+            (AtomExpression
+              (Ident
+                (ident)))
+            (RelOp)
+            (ArrayExpression
+              (AtomExpression
+                (Ident
+                  (ident)))
+              (AtomExpression
+                (Nat
+                  (digits)))
+              (AtomExpression
+                (Nat
+                  (digits)))))))))
+  (Procedure
+    (ProcSignature
+      (Ident
+        (ident))
+      (ProcFormals))
+    (Spec
+      (SpecModifies
+        (Idents
+          (Ident
+            (ident))))))
+  (Implementation
+    (ProcSignature
+      (Ident
+        (ident))
+      (ProcFormals))
+    (ImplBody
+      (StmtList
+        (LabelOrCmd
+          (LabelOrAssign
+            (Ident
+              (ident))
+            (MapAssignIndex
+              (AtomExpression
+                (Nat
+                  (digits))))
+            (AtomExpression
+              (Nat
+                (digits)))))
+        (LabelOrCmd
+          (LabelOrAssign
+            (Ident
+              (ident))
+            (MapAssignIndex
+              (AtomExpression
+                (Nat
+                  (digits))))
+            (AtomExpression
+              (Nat
+                (digits)))))
+        (LabelOrCmd
+          (CallCmd
+            (CallParams
+              (Ident
+                (ident)))))
+        (LabelOrCmd
+          (Proposition
+            (RelationalExpression
+              (ArrayExpression
+                (AtomExpression
+                  (Ident
+                    (ident)))
+                (AtomExpression
+                  (Nat
+                    (digits))))
+              (RelOp)
+              (AtomExpression
+                (Nat
+                  (digits))))))
+        (LabelOrCmd
+          (Proposition
+            (RelationalExpression
+              (ArrayExpression
+                (AtomExpression
+                  (Ident
+                    (ident)))
+                (AtomExpression
+                  (Nat
+                    (digits))))
+              (RelOp)
+              (AtomExpression
+                (Nat
+                  (digits))))))
+        (LabelOrCmd
+          (Proposition
+            (RelationalExpression
+              (ArrayExpression
+                (AtomExpression
+                  (Ident
+                    (ident)))
+                (AtomExpression
+                  (Nat
+                    (digits))))
+              (RelOp)
+              (AtomExpression
+                (Nat
+                  (digits))))))
+        (LabelOrCmd
+          (Proposition
+            (AtomExpression
+              (Forall)
+              (QuantifierBody
+                (BoundVars
+                  (AttributesIdsTypeWheres
+                    (AttributesIdsTypeWhere
+                      (Idents
+                        (Ident
+                          (ident)))
+                      (Type
+                        (Ident
+                          (ident))))))
+                (QSep)
+                (EquivExpression
+                  (RelationalExpression
+                    (AtomExpression
+                      (Ident
+                        (ident)))
+                    (RelOp)
+                    (AtomExpression
+                      (Nat
+                        (digits))))
+                  (EquivOp)
+                  (AtomExpression
+                    (AtomExpression
+                      (IfThenElseExpression
+                        (AtomExpression)
+                        (RelationalExpression
+                          (AtomExpression
+                            (Ident
+                              (ident)))
+                          (RelOp)
+                          (AtomExpression
+                            (Nat
+                              (digits))))
+                        (RelationalExpression
+                          (AtomExpression
+                            (Ident
+                              (ident)))
+                          (RelOp)
+                          (AtomExpression
+                            (Nat
+                              (digits))))))))))))))))

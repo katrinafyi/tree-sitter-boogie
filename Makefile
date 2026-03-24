@@ -85,12 +85,12 @@ $(rr_ebnf): tools/coco-ebnf-to-rr-ebnf.sh $(boogie_coco_ebnf)
 	./$< < $(boogie_coco_ebnf) > $@
 
 rr_zip = $(b)/rr.zip
-$(rr_zip): $(rr_jar) rr.ebnf
-	java -jar $(rr_jar) -html -noembedded -out:$@ rr.ebnf  # note: uses rr.ebnf OUTSIDE of build dir
+$(rr_zip): $(rr_jar) $(rr_ebnf)
+	java -jar $(rr_jar) -html -noembedded -out:$@ $(rr_ebnf)
 
 # ===== PUBLIC TARGETS =====
 
-force: $(grammar_js) $(rr_ebnf)
+force: $(grammar_js) $(boogie_ts_ebnf)
 	cp -v $^ .
 
 rr: $(rr_zip)
