@@ -220,3 +220,40 @@ function f() returns (int) {
           (AtomExpression)
           (AtomExpression)
           (AtomExpression))))))
+
+=======
+ite multiple
+=======
+
+axiom 1 + if true then 2 else 3 + if true then 4 else 5;
+
+----
+
+(BoogiePL
+  (Axiom
+    (Proposition
+      (Term
+        (AtomExpression
+          (Nat
+            (digits)))
+        (AddOp)
+        (AtomExpression
+          (IfThenElseExpression
+            (AtomExpression)
+            (AtomExpression
+              (Nat
+                (digits)))
+            (Term
+              (AtomExpression
+                (Nat
+                  (digits)))
+              (AddOp)
+              (AtomExpression
+                (IfThenElseExpression
+                  (AtomExpression)
+                  (AtomExpression
+                    (Nat
+                      (digits)))
+                  (AtomExpression
+                    (Nat
+                      (digits))))))))))))
