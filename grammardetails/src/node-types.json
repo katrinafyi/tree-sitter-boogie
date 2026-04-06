@@ -3,35 +3,239 @@
     "type": "grammar",
     "named": true,
     "root": true,
-    "fields": {
-      "afield": {
-        "multiple": false,
-        "required": false,
-        "types": [
-          {
-            "type": "a",
-            "named": false
-          }
-        ]
-      },
-      "bfield": {
-        "multiple": false,
-        "required": false,
-        "types": [
-          {
-            "type": "b",
-            "named": false
-          }
-        ]
-      }
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": false,
+      "types": [
+        {
+          "type": "rule",
+          "named": true
+        }
+      ]
     }
   },
   {
-    "type": "a",
+    "type": "literal",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": false,
+      "required": false,
+      "types": [
+        {
+          "type": "char_literal",
+          "named": true
+        },
+        {
+          "type": "string_literal",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "rule",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": false,
+      "required": true,
+      "types": [
+        {
+          "type": "terminal_decl",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "terminal_addition",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "terminal_rule",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "terminal_alternation",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "terminal_rule",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "terminal_atom",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": false,
+      "required": true,
+      "types": [
+        {
+          "type": "literal",
+          "named": true
+        },
+        {
+          "type": "terminal_name",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "terminal_decl",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "terminal_name",
+          "named": true
+        },
+        {
+          "type": "terminal_rule",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "terminal_rule",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": false,
+      "required": true,
+      "types": [
+        {
+          "type": "terminal_addition",
+          "named": true
+        },
+        {
+          "type": "terminal_alternation",
+          "named": true
+        },
+        {
+          "type": "terminal_atom",
+          "named": true
+        },
+        {
+          "type": "terminal_rule",
+          "named": true
+        },
+        {
+          "type": "terminal_sequence",
+          "named": true
+        },
+        {
+          "type": "terminal_subtraction",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "terminal_sequence",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "terminal_rule",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "terminal_subtraction",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "terminal_rule",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "(",
     "named": false
   },
   {
-    "type": "b",
+    "type": ")",
+    "named": false
+  },
+  {
+    "type": "+",
+    "named": false
+  },
+  {
+    "type": "-",
+    "named": false
+  },
+  {
+    "type": "=",
+    "named": false
+  },
+  {
+    "type": "ANY",
+    "named": false
+  },
+  {
+    "type": "[",
+    "named": false
+  },
+  {
+    "type": "]",
+    "named": false
+  },
+  {
+    "type": "char_literal",
+    "named": true
+  },
+  {
+    "type": "string_literal",
+    "named": true
+  },
+  {
+    "type": "terminal_name",
+    "named": true
+  },
+  {
+    "type": "{",
+    "named": false
+  },
+  {
+    "type": "|",
+    "named": false
+  },
+  {
+    "type": "}",
     "named": false
   }
 ]
