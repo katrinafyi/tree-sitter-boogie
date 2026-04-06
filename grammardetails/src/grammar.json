@@ -1,0 +1,39 @@
+{
+  "$schema": "https://tree-sitter.github.io/tree-sitter/assets/schemas/grammar.schema.json",
+  "name": "grammar_details_md",
+  "rules": {
+    "grammar": {
+      "type": "CHOICE",
+      "members": [
+        {
+          "type": "FIELD",
+          "name": "afield",
+          "content": {
+            "type": "STRING",
+            "value": "a"
+          }
+        },
+        {
+          "type": "FIELD",
+          "name": "bfield",
+          "content": {
+            "type": "STRING",
+            "value": "b"
+          }
+        }
+      ]
+    }
+  },
+  "extras": [
+    {
+      "type": "PATTERN",
+      "value": "\\s"
+    }
+  ],
+  "conflicts": [],
+  "precedences": [],
+  "externals": [],
+  "inline": [],
+  "supertypes": [],
+  "reserved": {}
+}

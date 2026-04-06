@@ -1,0 +1,37 @@
+[
+  {
+    "type": "grammar",
+    "named": true,
+    "root": true,
+    "fields": {
+      "afield": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "a",
+            "named": false
+          }
+        ]
+      },
+      "bfield": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "b",
+            "named": false
+          }
+        ]
+      }
+    }
+  },
+  {
+    "type": "a",
+    "named": false
+  },
+  {
+    "type": "b",
+    "named": false
+  }
+]

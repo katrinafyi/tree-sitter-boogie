@@ -1,0 +1,38 @@
+{
+  "$schema": "https://tree-sitter.github.io/tree-sitter/assets/schemas/config.schema.json",
+  "grammars": [
+    {
+      "name": "grammar_details_md",
+      "camelcase": "GrammarDetailsMd",
+      "title": "GrammarDetailsMd",
+      "scope": "source.grammar_details_md",
+      "file-types": [
+        "grammar_details_md"
+      ],
+      "injection-regex": "^grammar_details_md$",
+      "class-name": "TreeSitterGrammarDetailsMd"
+    }
+  ],
+  "metadata": {
+    "version": "0.1.0",
+    "license": "MPL-2.0",
+    "description": "GrammarDetailsMd grammar for tree-sitter",
+    "authors": [
+      {
+        "name": "Kait Lam"
+      }
+    ],
+    "links": {
+      "repository": "https://github.com/tree-sitter/tree-sitter-grammar_details_md"
+    }
+  },
+  "bindings": {
+    "c": true,
+    "go": true,
+    "node": true,
+    "python": true,
+    "rust": true,
+    "swift": true,
+    "zig": false
+  }
+}
