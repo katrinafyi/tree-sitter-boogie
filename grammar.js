@@ -15,6 +15,8 @@ const regexrepeat = (arg) => new RegExp("(?:" + arg.source + ")*");
 const regexchoice = (...args) => new RegExp("(?:" + args.map(x => x.source).join("|") + ")");
 const regexoptional = arg => new RegExp("(?:" + arg.source + ")?");
 
+const seql = (...args) => prec.left(seq(...args));
+
 // In the vast majority of cases, the Boogie grammar is unambiguous and explicit,
 // so these precedences won't get used. HOWEVER, they DO get used in the presence
 // of "if-then-else" expressions to resolve conflicts between ITE and other infix
@@ -82,7 +84,10 @@ module.exports = grammar({
   name: 'boogie',
 
   // See comments above.
-  precedences: _ => [],
+  precedences: $ => [
+    [$.Dec, $.Nat],
+    [$.Ident, $.RevealStmt],
+  ],
 
   /*
    * build/boogie.ebnf:1
@@ -322,7 +327,7 @@ module.exports = grammar({
      * ModuleExport ::=  export ( ExportId )? ( ellipsis )? ( ( provides ( ExportSignature ( comma ExportSignature )* | star ) | reveals ( ExportSignature ( comma ExportSignature )* | star ) | extends ExportId ( comma ExportId )* ) ( comma )? )*
      */
     ModuleExport: $ =>
-      seq(
+      prec.left(seq(
         $.export,
         optional($.ExportId),
         optional($.ellipsis),
@@ -342,7 +347,7 @@ module.exports = grammar({
             optional($.comma)
           )
         )
-      ),
+      )),
     /*
      * build/boogie.ebnf:28
      * Attribute ::=  lbracecolon AttributeName Expressions? rbrace
@@ -470,7 +475,7 @@ module.exports = grammar({
      * ConstantFieldDecl ::=  const Attribute* ( | CIdentType ellipsis? ( ( gets | singleeq ) Expression )? (OldSemi)? )
      */
     ConstantFieldDecl: $ =>
-      seq(
+      prec.left(seq(
         $.const,
         repeat($.Attribute),
         choice(
@@ -482,7 +487,7 @@ module.exports = grammar({
             optional($.OldSemi)
           )
         )
-      ),
+      )),
     /*
      * build/boogie.ebnf:45
      * FunctionDecl ::=  ( twostate )? ( function ( method )? Attribute* MethodFunctionName ( GenericParameters? Formals colon ( openparen GIdentType closeparen | Type ) | ellipsis ) | predicate ( method )? Attribute* MethodFunctionName ( GenericParameters? ( KType )? Formals PredicateResult? | ellipsis ) | ( least | inductive ) predicate Attribute* MethodFunctionName ( GenericParameters? KType? Formals PredicateResult? | ellipsis ) | ( greatest predicate | copredicate ) Attribute* MethodFunctionName ( GenericParameters? KType? Formals PredicateResult? | ellipsis ) ) (FunctionSpec)? FunctionBody?
@@ -653,12 +658,12 @@ module.exports = grammar({
      * Expression ::=  ( new )? EquivExpression ( DecreasesTo EquivExpression )? ( semicolon Expression )?
      */
     Expression: $ =>
-      seq(
+      prec.left(seq(
         optional($.new),
         $.EquivExpression,
         optional(seq($.DecreasesTo, $.EquivExpression)),
         optional(seq($.semicolon, $.Expression))
-      ),
+      )),
     /*
      * build/boogie.ebnf:56
      * NewtypeName ::=  Name
@@ -1659,7 +1664,7 @@ module.exports = grammar({
      * EquivExpression ::=  ImpliesExpliesExpression ( EquivOp ImpliesExpliesExpression )*
      */
     EquivExpression: $ =>
-      seq($.ImpliesExpliesExpression, repeat(seq($.EquivOp, $.ImpliesExpliesExpression))),
+      prec.left(seq($.ImpliesExpliesExpression, repeat(seq($.EquivOp, $.ImpliesExpliesExpression)))),
     /*
      * build/boogie.ebnf:157
      * DecreasesTo ::=  ( decreases | nonincreases ) ident
@@ -1671,7 +1676,7 @@ module.exports = grammar({
      * ImpliesExpliesExpression ::=  LogicalExpression ( ( ImpliesOp ImpliesExpression | ExpliesOp LogicalExpression ( ExpliesOp LogicalExpression )* ( ImpliesOp LogicalExpression ( ( ImpliesOp | ExpliesOp ) LogicalExpression )* )? ) )?
      */
     ImpliesExpliesExpression: $ =>
-      seq(
+      prec.left(seq(
         $.LogicalExpression,
         optional(
           choice(
@@ -1690,13 +1695,13 @@ module.exports = grammar({
             )
           )
         )
-      ),
+      )),
     /*
      * build/boogie.ebnf:159
      * LogicalExpression ::=  ( ( AndOp | OrOp ) )? RelationalExpression ( ( AndOp | OrOp ) RelationalExpression )*
      */
     LogicalExpression: $ =>
-      seq(
+      seql(
         optional(choice($.AndOp, $.OrOp)),
         $.RelationalExpression,
         repeat(seq(choice($.AndOp, $.OrOp), $.RelationalExpression))
@@ -1715,7 +1720,7 @@ module.exports = grammar({
      * RelationalExpression ::=  ShiftTerm ( RelOp ShiftTerm ( RelOp ShiftTerm )* )?
      */
     RelationalExpression: $ =>
-      seq(
+      seql(
         $.ShiftTerm,
         optional(seq($.RelOp, $.ShiftTerm, repeat(seq($.RelOp, $.ShiftTerm))))
       ),
@@ -1724,13 +1729,13 @@ module.exports = grammar({
      * ShiftTerm ::=  Term ( ( openAngleBracket openAngleBracket | closeAngleBracket closeAngleBracket ) Term )*
      */
     ShiftTerm: $ =>
-      seq(
+      seql(
         $.Term,
         repeat(
           seq(
             choice(
-              seq($.openAngleBracket, $.openAngleBracket),
-              seq($.closeAngleBracket, $.closeAngleBracket)
+              "<<",
+              ">>"
             ),
             $.Term
           )
@@ -1757,13 +1762,13 @@ module.exports = grammar({
      * Term ::=  Factor ( AddOp Factor )*
      */
     Term: $ =>
-      seq($.Factor, repeat(seq($.AddOp, $.Factor))),
+      seql($.Factor, repeat(seq($.AddOp, $.Factor))),
     /*
      * build/boogie.ebnf:165
      * Factor ::=  BitvectorFactor ( MulOp BitvectorFactor )*
      */
     Factor: $ =>
-      seq($.BitvectorFactor, repeat(seq($.MulOp, $.BitvectorFactor))),
+      seql($.BitvectorFactor, repeat(seq($.MulOp, $.BitvectorFactor))),
     /*
      * build/boogie.ebnf:166
      * AddOp ::=  ( "+" | minus )
@@ -1775,7 +1780,7 @@ module.exports = grammar({
      * BitvectorFactor ::=  AsExpression ( ( "&" | verticalbar | "^" ) AsExpression ( ( "&" | verticalbar | "^" ) AsExpression )* )?
      */
     BitvectorFactor: $ =>
-      seq(
+      seql(
         $.AsExpression,
         optional(
           seq(
@@ -1796,7 +1801,7 @@ module.exports = grammar({
      * AsExpression ::=  UnaryExpression ( ( as TypeAndToken | is TypeAndToken ) )*
      */
     AsExpression: $ =>
-      seq(
+      seql(
         $.UnaryExpression,
         repeat(choice(seq($.as, $.TypeAndToken), seq($.is, $.TypeAndToken)))
       ),
@@ -1816,7 +1821,7 @@ module.exports = grammar({
      * PrimaryExpression ::=  ( MapDisplayExpr ( Suffix )* | SetDisplayExpr ( Suffix )* | LambdaExpression | EndlessExpression | NameSegment ( Suffix )* | SeqDisplayExpr ( Suffix )* | ConstAtomExpression ( Suffix )* )
      */
     PrimaryExpression: $ =>
-      choice(
+      (choice(
         seq($.MapDisplayExpr, repeat($.Suffix)),
         seq($.SetDisplayExpr, repeat($.Suffix)),
         $.LambdaExpression,
@@ -1824,7 +1829,7 @@ module.exports = grammar({
         seq($.NameSegment, repeat($.Suffix)),
         seq($.SeqDisplayExpr, repeat($.Suffix)),
         seq($.ConstAtomExpression, repeat($.Suffix))
-      ),
+      )),
     /*
      * build/boogie.ebnf:172
      * MapDisplayExpr ::=  ( map | imap ) lbracket MapLiteralExpressions? rbracket
@@ -1923,10 +1928,10 @@ module.exports = grammar({
      * NameSegment ::=  Ident ( GenericInstantiation ( AtCall )? | HashCall | ( AtCall )? )
      */
     NameSegment: $ =>
-      seq(
+      prec.left(seq(
         $.Ident,
         choice(seq($.GenericInstantiation, optional($.AtCall)), $.HashCall, optional($.AtCall))
-      ),
+      )),
     /*
      * build/boogie.ebnf:178
      * SeqDisplayExpr ::=  ( seq ( GenericInstantiation )? openparen Expression comma Expression closeparen | lbracket Expressions? rbracket )
@@ -2217,7 +2222,7 @@ module.exports = grammar({
      * QuantifierVariableDecl ::=  IdentTypeOptional ( openAngleBracket minus Expression )? ( Attribute )* ( verticalbar Expression )?
      */
     QuantifierVariableDecl: $ =>
-      seq(
+      seql(
         $.IdentTypeOptional,
         optional(seq($.openAngleBracket, $.minus, $.Expression)),
         repeat($.Attribute),
