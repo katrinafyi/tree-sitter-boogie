@@ -68,7 +68,7 @@ $(boogie_coco_ebnf): $(coco) $(boogie_atg) frames/Parser.frame frames/Scanner.fr
 boogie_patched_ebnf = $(b)/coco.ebnf
 $(boogie_patched_ebnf): boogie.ebnf.diff $(boogie_coco_ebnf)
 	cp $(boogie_coco_ebnf) $@
-	# patch --verbose --merge --output $@ -i $< $(boogie_coco_ebnf)
+	patch --verbose --merge --output $@ -i $< $(boogie_coco_ebnf)
 
 boogie_ts_ebnf = $(b)/boogie.ebnf
 $(boogie_ts_ebnf): tools/coco-ebnf-to-ts-ebnf.sh $(boogie_patched_ebnf)

@@ -82,11 +82,7 @@ module.exports = grammar({
   name: 'boogie',
 
   // See comments above.
-  precedences: $ => [
-    [$.Dec, $.Nat],
-    [$.RevealStmt, $.Ident],
-    // [$.NameSegment, $.Ident],
-  ],
+  precedences: _ => [],
 
   /*
    * build/boogie.ebnf:1
@@ -326,7 +322,7 @@ module.exports = grammar({
      * ModuleExport ::=  export ( ExportId )? ( ellipsis )? ( ( provides ( ExportSignature ( comma ExportSignature )* | star ) | reveals ( ExportSignature ( comma ExportSignature )* | star ) | extends ExportId ( comma ExportId )* ) ( comma )? )*
      */
     ModuleExport: $ =>
-      prec.left(seq(
+      seq(
         $.export,
         optional($.ExportId),
         optional($.ellipsis),
@@ -346,7 +342,7 @@ module.exports = grammar({
             optional($.comma)
           )
         )
-      )),
+      ),
     /*
      * build/boogie.ebnf:28
      * Attribute ::=  lbracecolon AttributeName Expressions? rbrace
@@ -474,7 +470,7 @@ module.exports = grammar({
      * ConstantFieldDecl ::=  const Attribute* ( | CIdentType ellipsis? ( ( gets | singleeq ) Expression )? (OldSemi)? )
      */
     ConstantFieldDecl: $ =>
-      prec.left(seq(
+      seq(
         $.const,
         repeat($.Attribute),
         choice(
@@ -486,7 +482,7 @@ module.exports = grammar({
             optional($.OldSemi)
           )
         )
-      )),
+      ),
     /*
      * build/boogie.ebnf:45
      * FunctionDecl ::=  ( twostate )? ( function ( method )? Attribute* MethodFunctionName ( GenericParameters? Formals colon ( openparen GIdentType closeparen | Type ) | ellipsis ) | predicate ( method )? Attribute* MethodFunctionName ( GenericParameters? ( KType )? Formals PredicateResult? | ellipsis ) | ( least | inductive ) predicate Attribute* MethodFunctionName ( GenericParameters? KType? Formals PredicateResult? | ellipsis ) | ( greatest predicate | copredicate ) Attribute* MethodFunctionName ( GenericParameters? KType? Formals PredicateResult? | ellipsis ) ) (FunctionSpec)? FunctionBody?
@@ -657,12 +653,12 @@ module.exports = grammar({
      * Expression ::=  ( new )? EquivExpression ( DecreasesTo EquivExpression )? ( semicolon Expression )?
      */
     Expression: $ =>
-      prec.left(seq(
+      seq(
         optional($.new),
         $.EquivExpression,
         optional(seq($.DecreasesTo, $.EquivExpression)),
         optional(seq($.semicolon, $.Expression))
-      )),
+      ),
     /*
      * build/boogie.ebnf:56
      * NewtypeName ::=  Name
@@ -1663,7 +1659,7 @@ module.exports = grammar({
      * EquivExpression ::=  ImpliesExpliesExpression ( EquivOp ImpliesExpliesExpression )*
      */
     EquivExpression: $ =>
-      prec.right(seq($.ImpliesExpliesExpression, repeat(seq($.EquivOp, $.ImpliesExpliesExpression)))),
+      seq($.ImpliesExpliesExpression, repeat(seq($.EquivOp, $.ImpliesExpliesExpression))),
     /*
      * build/boogie.ebnf:157
      * DecreasesTo ::=  ( decreases | nonincreases ) ident
@@ -1675,7 +1671,7 @@ module.exports = grammar({
      * ImpliesExpliesExpression ::=  LogicalExpression ( ( ImpliesOp ImpliesExpression | ExpliesOp LogicalExpression ( ExpliesOp LogicalExpression )* ( ImpliesOp LogicalExpression ( ( ImpliesOp | ExpliesOp ) LogicalExpression )* )? ) )?
      */
     ImpliesExpliesExpression: $ =>
-      prec.right(seq(
+      seq(
         $.LogicalExpression,
         optional(
           choice(
@@ -1694,17 +1690,17 @@ module.exports = grammar({
             )
           )
         )
-      )),
+      ),
     /*
      * build/boogie.ebnf:159
      * LogicalExpression ::=  ( ( AndOp | OrOp ) )? RelationalExpression ( ( AndOp | OrOp ) RelationalExpression )*
      */
     LogicalExpression: $ =>
-      prec.right(seq(
+      seq(
         optional(choice($.AndOp, $.OrOp)),
         $.RelationalExpression,
         repeat(seq(choice($.AndOp, $.OrOp), $.RelationalExpression))
-      )),
+      ),
     /*
      * build/boogie.ebnf:160
      * ImpliesExpression ::=  LogicalExpression ( ( ImpliesOp | ExpliesOp ) ImpliesExpression )?
@@ -1719,27 +1715,27 @@ module.exports = grammar({
      * RelationalExpression ::=  ShiftTerm ( RelOp ShiftTerm ( RelOp ShiftTerm )* )?
      */
     RelationalExpression: $ =>
-      prec.right(seq(
+      seq(
         $.ShiftTerm,
         optional(seq($.RelOp, $.ShiftTerm, repeat(seq($.RelOp, $.ShiftTerm))))
-      )),
+      ),
     /*
      * build/boogie.ebnf:162
      * ShiftTerm ::=  Term ( ( openAngleBracket openAngleBracket | closeAngleBracket closeAngleBracket ) Term )*
      */
     ShiftTerm: $ =>
-      prec.left(seq(
+      seq(
         $.Term,
         repeat(
           seq(
             choice(
-              "<<",
-              ">>"
+              seq($.openAngleBracket, $.openAngleBracket),
+              seq($.closeAngleBracket, $.closeAngleBracket)
             ),
             $.Term
           )
         )
-      )),
+      ),
     /*
      * build/boogie.ebnf:163
      * RelOp ::=  ( eq ( "#" lbracket Expression rbracket )? | openAngleBracket | closeAngleBracket | "<=" | ">=" | neq ( "#" lbracket Expression rbracket )? | in | notIn | "!" ( "!" )? )
@@ -1927,10 +1923,10 @@ module.exports = grammar({
      * NameSegment ::=  Ident ( GenericInstantiation ( AtCall )? | HashCall | ( AtCall )? )
      */
     NameSegment: $ =>
-      prec.left(seq(
+      seq(
         $.Ident,
         choice(seq($.GenericInstantiation, optional($.AtCall)), $.HashCall, optional($.AtCall))
-      )),
+      ),
     /*
      * build/boogie.ebnf:178
      * SeqDisplayExpr ::=  ( seq ( GenericInstantiation )? openparen Expression comma Expression closeparen | lbracket Expressions? rbracket )
@@ -2481,7 +2477,7 @@ module.exports = grammar({
       "imap",
     /*
      * build/boogie.ebnf:237
-     * charToken ::=  ['] ( [\u0000-\u0009\u000b-\u000c\u000e-&(-\u005b\u005d-\ud7ff\ue000-\uffff] | [\ud800-\udbff] [\udc00-\udfff] | [\u005c] ['] | [\u005c] ["] | [\u005c] [\u005c] | [\u005c] [0] | [\u005c] [n] | [\u005c] [r] | [\u005c] [t] | [\u005c] [u] [0-9A-Fa-f] [0-9A-Fa-f] [0-9A-Fa-f] [0-9A-Fa-f] | [\u005c] [U] [{] [0-9A-Fa-f] ( [_]? [0-9A-Fa-f] )* [}] ) [']
+     * charToken ::=  ['] ( [\u0000-\u0009\u000b-\u000c\u000e-&(-\u005b\u005d-\ud7ff\ue000-\uffff] | [\u005c] ['] | [\u005c] ["] | [\u005c] [\u005c] | [\u005c] [0] | [\u005c] [n] | [\u005c] [r] | [\u005c] [t] | [\u005c] [u] [0-9A-Fa-f] [0-9A-Fa-f] [0-9A-Fa-f] [0-9A-Fa-f] | [\u005c] [U] [{] [0-9A-Fa-f] ( [_]? [0-9A-Fa-f] )* [}] ) [']
      */
     charToken: $ =>
       regexseq(
