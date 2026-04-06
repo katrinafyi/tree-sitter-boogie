@@ -93,7 +93,7 @@ TopDecl(isTopLevel, isAbstract) =
   )
 DeclModifier = ( "abstract" | "ghost" | "static" | "opaque" )
 SubModuleDecl(isTopLevel) = ( ModuleDefinition | ModuleImport | ModuleExport )
-ModuleDefinition(isTopLevel) = 
+ModuleDefinition(isTopLevel) =
   "module" { Attribute } ModuleQualifiedName
   [ "refines" ModuleQualifiedName ]
   "{" { TopDecl(isTopLevel:false, isAbstract) } "}"
@@ -211,7 +211,7 @@ SubsetTypeDecl_ =
   "|"
   Expression(allowLemma: false, allowLambda: true)
   [ "ghost" "witness" Expression(allowLemma: false, allowLambda: true)
-  | "witness" Expression((allowLemma: false, allowLambda: true)
+  | "witness" Expression(allowLemma: false, allowLambda: true)
   | "witness" "*"
   ]
 
@@ -223,7 +223,7 @@ NewtypeDecl = "newtype" { Attribute } NewtypeName "="
     "|"
     Expression(allowLemma: false, allowLambda: true)
     [ "ghost" "witness" Expression(allowLemma: false, allowLambda: true)
-    | "witness" Expression((allowLemma: false, allowLambda: true)
+    | "witness" Expression(allowLemma: false, allowLambda: true)
     | "witness" "*"
     ]
   | Type
@@ -235,7 +235,7 @@ ClassDecl = "class" { Attribute } ClassName [ GenericParameters ]
         ClassMemberDecl(modifiers,
                         allowConstructors: true,
                         isValueType: false,
-                        moduleLevelDecl: false) 
+                        moduleLevelDecl: false)
       }
   "}"
 
@@ -258,9 +258,9 @@ ObjectType_ = "object" | "object?"
 ArrayType_ = arrayToken [ GenericInstantiation ]
 IteratorDecl = "iterator" { Attribute } IteratorName
   ( [ GenericParameters ]
-    Formals(allowGhostKeyword: true, allowNewKeyword: false, 
+    Formals(allowGhostKeyword: true, allowNewKeyword: false,
                                      allowOlderKeyword: false)
-    [ "yields" Formals(allowGhostKeyword: true, allowNewKeyword: false, 
+    [ "yields" Formals(allowGhostKeyword: true, allowNewKeyword: false,
                                                 allowOlderKeyword: false) ]
   | ellipsis
   )
@@ -274,7 +274,7 @@ DatatypeDecl =
   ( "datatype" | "codatatype" )
   { Attribute }
   DatatypeName [ GenericParameters ]
-  "=" 
+  "="
   [ ellipsis ]
   [ "|" ] DatatypeMemberDecl
   { "|" DatatypeMemberDecl }
@@ -308,9 +308,9 @@ MethodKeyword_ = ( "method"
 MethodSignature_(isGhost, isExtreme) =
   [ GenericParameters ]
   [ KType ]    // permitted only if isExtreme == true
-  Formals(allowGhostKeyword: !isGhost, allowNewKeyword: isTwostateLemma, 
+  Formals(allowGhostKeyword: !isGhost, allowNewKeyword: isTwostateLemma,
           allowOlderKeyword: false, allowDefault: true)
-  [ "returns" Formals(allowGhostKeyword: !isGhost, allowNewKeyword: false, 
+  [ "returns" Formals(allowGhostKeyword: !isGhost, allowNewKeyword: false,
                       allowOlderKeyword: false, allowDefault: false) ]
 
 KType = "[" ( "nat" | "ORDINAL" ) "]"
@@ -340,7 +340,7 @@ FunctionDecl(isWithinAbstractModule) =
     MethodFunctionName
     PredicateSignatureOrEllipsis_(allowGhostKeyword: false,
                          allowNewKeyword: "twostate" present,
-                         allowOlderKeyword: false))
+                         allowOlderKeyword: false)
   )
   FunctionSpec
   [ FunctionBody ]
@@ -350,7 +350,7 @@ FunctionSignatureOrEllipsis_(allowGhostKeyword) =
 
 FunctionSignature_(allowGhostKeyword, allowNewKeyword) =
   [ GenericParameters ]
-  Formals(allowGhostKeyword, allowNewKeyword, allowOlderKeyword: true, 
+  Formals(allowGhostKeyword, allowNewKeyword, allowOlderKeyword: true,
           allowDefault: true)
   ":"
   ( Type
@@ -362,15 +362,15 @@ FunctionSignature_(allowGhostKeyword, allowNewKeyword) =
     ")"
   )
 
-PredicateSignatureOrEllipsis_(allowGhostKeyword, allowNewKeyword, 
+PredicateSignatureOrEllipsis_(allowGhostKeyword, allowNewKeyword,
                               allowOlderKeyword) =
-    PredicateSignature_(allowGhostKeyword, allowNewKeyword, allowOlderKeyword) 
+    PredicateSignature_(allowGhostKeyword, allowNewKeyword, allowOlderKeyword)
   | ellipsis
 
 PredicateSignature_(allowGhostKeyword, allowNewKeyword, allowOlderKeyword) =
   [ GenericParameters ]
   [ KType ]
-  Formals(allowGhostKeyword, allowNewKeyword, allowOlderKeyword, 
+  Formals(allowGhostKeyword, allowNewKeyword, allowOlderKeyword,
           allowDefault: true)
   [
     ":"
@@ -508,7 +508,7 @@ VarDeclStatement =
   )
   ";"
 
-CasePatternLocal = 
+CasePatternLocal =
   ( [ Ident ] "(" CasePatternLocal { "," CasePatternLocal } ")"
   | LocalIdentTypeOptional
   )
@@ -548,9 +548,7 @@ WhileStmt =
     AlternativeBlock(allowBindingGuards: false)
   | Guard
     LoopSpec
-    ( BlockStmt
-    |           // no body
-    )
+    [ BlockStmt ]
   )
 ForLoopStmt =
   "for" IdentTypeOptional ":="
@@ -559,9 +557,7 @@ ForLoopStmt =
   ( "*" | Expression(allowLemma: false, allowLambda: false)
   )
   LoopSpec
-  ( BlockStmt
-  |           // no body
-  )
+  [ BlockStmt ]
 MatchStmt =
   "match"
   Expression(allowLemma: true, allowLambda: true)
@@ -627,12 +623,12 @@ CalcOp =
   | "!=" | "<=" | ">="
   | "<==>" | "==>" | "<=="
   )
-OpaqueBlock = "opaque" OpaqueSpec BlockStmt
-  
-OpaqueSpec = {
-  | ModifiesClause(allowLambda: false)
+OpaqueBlock = "opaque" [ OpaqueSpec ] BlockStmt
+
+OpaqueSpec =
+  ModifiesClause(allowLambda: false)
   | EnsuresClause(allowLambda: false)
-}
+
 Expression(allowLemma, allowLambda, allowBitwiseOps = true) =
   EquivExpression(allowLemma, allowLambda, allowBitwiseOps)
   [ ";" Expression(allowLemma, allowLambda, allowBitwiseOps) ]
@@ -719,7 +715,7 @@ Lhs =
   | ConstAtomExpression Suffix { Suffix }
   )
 Rhs =
-    ArrayAllocation
+  ( ArrayAllocation
   | ObjectAllocation_
   | Expression(allowLemma: false, allowLambda: true, allowBitwiseOps: true)
   | HavocRhs_
@@ -795,11 +791,11 @@ MapDisplayExpr =
 
 MapLiteralExpressions =
   Expression(allowLemma: true, allowLambda: true)
-  ":=" 
+  ":="
   Expression(allowLemma: true, allowLambda: true)
-  { "," 
+  { ","
     Expression(allowLemma: true, allowLambda: true)
-    ":=" 
+    ":="
     Expression(allowLemma: true, allowLambda: true)
   }
 EndlessExpression(allowLemma, allowLambda, allowBitwiseOps) =
@@ -926,19 +922,19 @@ ActualBinding(isGhost = false) =
   [ NoUSIdentOrDigits ":=" ]
   Expression(allowLemma: true, allowLambda: true)
 QuantifierDomain(allowLemma, allowLambda) =
-  QuantifierVarDecl(allowLemma, allowLambda) 
+  QuantifierVarDecl(allowLemma, allowLambda)
   { "," QuantifierVarDecl(allowLemma, allowLambda) }
 
 QuantifierVarDecl(allowLemma, allowLambda) =
   IdentTypeOptional
   [ "<-" Expression(allowLemma, allowLambda) ]
   { Attribute }
-  [ | Expression(allowLemma, allowLambda) ]
+  [ Expression(allowLemma, allowLambda) ]
 Ident = ident
 
 DotSuffix = ( ident | digits | "requires" | "reads" )
 
-NoUSIdent = ident - "_" { idchar }
+NoUSIdent = ident
 
 WildIdent = NoUSIdent | "_"
 

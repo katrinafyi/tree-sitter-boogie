@@ -15,6 +15,10 @@
         {
           "type": "SYMBOL",
           "name": "terminal_decl"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "nonterminal_decl"
         }
       ]
     },
@@ -96,6 +100,14 @@
         {
           "type": "STRING",
           "value": "ANY"
+        },
+        {
+          "type": "STRING",
+          "value": "EOF"
+        },
+        {
+          "type": "STRING",
+          "value": "0"
         }
       ]
     },
@@ -103,9 +115,114 @@
       "type": "PATTERN",
       "value": "[a-z]\\w*"
     },
-    "nonterminal_name": {
+    "nonterminal_name_bare": {
       "type": "PATTERN",
       "value": "[A-Z]\\w*"
+    },
+    "variable_value": {
+      "type": "CHOICE",
+      "members": [
+        {
+          "type": "PATTERN",
+          "value": "[^,)\\s][^,)]*"
+        },
+        {
+          "type": "PATTERN",
+          "value": "\\([^,)\\s][^,)]*\\)"
+        }
+      ]
+    },
+    "variable": {
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "SYMBOL",
+          "name": "terminal_name"
+        },
+        {
+          "type": "CHOICE",
+          "members": [
+            {
+              "type": "SEQ",
+              "members": [
+                {
+                  "type": "CHOICE",
+                  "members": [
+                    {
+                      "type": "STRING",
+                      "value": ":"
+                    },
+                    {
+                      "type": "STRING",
+                      "value": "="
+                    }
+                  ]
+                },
+                {
+                  "type": "SYMBOL",
+                  "name": "variable_value"
+                }
+              ]
+            },
+            {
+              "type": "BLANK"
+            }
+          ]
+        }
+      ]
+    },
+    "nonterminal_name": {
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "SYMBOL",
+          "name": "nonterminal_name_bare"
+        },
+        {
+          "type": "CHOICE",
+          "members": [
+            {
+              "type": "SEQ",
+              "members": [
+                {
+                  "type": "IMMEDIATE_TOKEN",
+                  "content": {
+                    "type": "STRING",
+                    "value": "("
+                  }
+                },
+                {
+                  "type": "SYMBOL",
+                  "name": "variable"
+                },
+                {
+                  "type": "REPEAT",
+                  "content": {
+                    "type": "SEQ",
+                    "members": [
+                      {
+                        "type": "STRING",
+                        "value": ","
+                      },
+                      {
+                        "type": "SYMBOL",
+                        "name": "variable"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "STRING",
+                  "value": ")"
+                }
+              ]
+            },
+            {
+              "type": "BLANK"
+            }
+          ]
+        }
+      ]
     },
     "name": {
       "type": "CHOICE",
@@ -305,6 +422,203 @@
           }
         ]
       }
+    },
+    "nonterminal_decl": {
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "SYMBOL",
+          "name": "nonterminal_name"
+        },
+        {
+          "type": "STRING",
+          "value": "="
+        },
+        {
+          "type": "SYMBOL",
+          "name": "nonterminal_rule"
+        }
+      ]
+    },
+    "comment": {
+      "type": "PATTERN",
+      "value": "//[^\\n]*"
+    },
+    "nonterminal_rule": {
+      "type": "CHOICE",
+      "members": [
+        {
+          "type": "SEQ",
+          "members": [
+            {
+              "type": "SYMBOL",
+              "name": "nonterminal_atom"
+            },
+            {
+              "type": "CHOICE",
+              "members": [
+                {
+                  "type": "SYMBOL",
+                  "name": "comment"
+                },
+                {
+                  "type": "BLANK"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "SYMBOL",
+          "name": "nonterminal_alternation"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "nonterminal_sequence"
+        },
+        {
+          "type": "SEQ",
+          "members": [
+            {
+              "type": "STRING",
+              "value": "("
+            },
+            {
+              "type": "SYMBOL",
+              "name": "nonterminal_rule"
+            },
+            {
+              "type": "STRING",
+              "value": ")"
+            },
+            {
+              "type": "CHOICE",
+              "members": [
+                {
+                  "type": "SYMBOL",
+                  "name": "comment"
+                },
+                {
+                  "type": "BLANK"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "SEQ",
+          "members": [
+            {
+              "type": "STRING",
+              "value": "["
+            },
+            {
+              "type": "SYMBOL",
+              "name": "nonterminal_rule"
+            },
+            {
+              "type": "STRING",
+              "value": "]"
+            },
+            {
+              "type": "CHOICE",
+              "members": [
+                {
+                  "type": "SYMBOL",
+                  "name": "comment"
+                },
+                {
+                  "type": "BLANK"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "SEQ",
+          "members": [
+            {
+              "type": "STRING",
+              "value": "{"
+            },
+            {
+              "type": "SYMBOL",
+              "name": "nonterminal_rule"
+            },
+            {
+              "type": "STRING",
+              "value": "}"
+            },
+            {
+              "type": "CHOICE",
+              "members": [
+                {
+                  "type": "SYMBOL",
+                  "name": "comment"
+                },
+                {
+                  "type": "BLANK"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "nonterminal_atom": {
+      "type": "CHOICE",
+      "members": [
+        {
+          "type": "SYMBOL",
+          "name": "literal"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "terminal_name"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "nonterminal_name"
+        }
+      ]
+    },
+    "nonterminal_alternation": {
+      "type": "PREC_LEFT",
+      "value": 0,
+      "content": {
+        "type": "SEQ",
+        "members": [
+          {
+            "type": "SYMBOL",
+            "name": "nonterminal_rule"
+          },
+          {
+            "type": "STRING",
+            "value": "|"
+          },
+          {
+            "type": "SYMBOL",
+            "name": "nonterminal_rule"
+          }
+        ]
+      }
+    },
+    "nonterminal_sequence": {
+      "type": "PREC_LEFT",
+      "value": 0,
+      "content": {
+        "type": "SEQ",
+        "members": [
+          {
+            "type": "SYMBOL",
+            "name": "nonterminal_rule"
+          },
+          {
+            "type": "SYMBOL",
+            "name": "nonterminal_rule"
+          }
+        ]
+      }
     }
   },
   "extras": [
@@ -317,6 +631,10 @@
     [
       "terminal_sequence",
       "terminal_decl"
+    ],
+    [
+      "nonterminal_sequence",
+      "nonterminal_decl"
     ]
   ],
   "precedences": [],
