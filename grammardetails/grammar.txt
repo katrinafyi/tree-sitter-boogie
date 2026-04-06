@@ -54,7 +54,7 @@ arrayToken = "array" [ posDigitFrom2 | posDigit digit { digit }]["?"]
 
 bvToken = "bv" ( 0 | posDigit { digit } )
 
-ident = nondigitIdChar { idchar } - charToken - reservedword
+ident = nondigitIdChar { idchar }
 
 digits = digit {["_"] digit}
 
