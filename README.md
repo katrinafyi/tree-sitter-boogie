@@ -7,7 +7,7 @@ The repository for this grammar is available [on Github](https://github.com/katr
 
 ## usage
 
-(PAC users may refer to [the bincaml guide](https://agle.github.io/bincaml/bincaml/tooling.html), but
+(PAC users may refer to [the bincaml guide](https://uq-pac.github.io/bincaml/bincaml/tooling.html), but
 applied to this boogie grammar instead of basilir.)
 
 See your own editor's instructions for installing Tree-sitter grammars. Note that this repository
